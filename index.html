@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Omikse | Projects</title>
+    <title>Omikse | Portfolio</title>
     <style>
         :root {
-            --bg: #08080c;
+            --bg: #050508;
             --card-bg: rgba(255, 255, 255, 0.03);
             --accent: #00ffd5;
+            --accent-soft: rgba(0, 255, 213, 0.1);
             --text: #ffffff;
             --text-dim: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.08);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
@@ -26,140 +27,153 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
+            line-height: 1.6;
         }
 
-        /* Animated background elements */
+        /* Ambient Backgrounds */
         .bg-glow {
             position: fixed;
-            width: 40vw;
-            height: 40vw;
-            background: radial-gradient(circle, rgba(0, 255, 213, 0.05) 0%, transparent 70%);
-            top: -10vw;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(0, 255, 213, 0.03) 0%, transparent 70%);
+            top: -20vw;
             right: -10vw;
             z-index: -1;
             pointer-events: none;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 4rem 1.5rem;
-            width: 100%;
+            padding: 6rem 1.5rem;
         }
 
         header {
-            margin-bottom: 5rem;
-            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 6rem;
+            animation: fadeIn 1s ease-out;
         }
 
         .logo {
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
             text-transform: uppercase;
             color: var(--accent);
             margin-bottom: 2rem;
-            display: inline-block;
+            display: block;
         }
 
         h1 {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
-            line-height: 1.1;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            line-height: 1;
             font-weight: 800;
             margin-bottom: 1.5rem;
-            background: linear-gradient(to bottom right, #fff 30%, #64748b);
+            letter-spacing: -2px;
+            background: linear-gradient(to bottom right, #fff 40%, #475569);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .description {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             color: var(--text-dim);
-            max-width: 600px;
+            max-width: 650px;
         }
 
-        /* Project Section */
-        .projects-header {
+        /* Section Styling */
+        section {
+            margin-bottom: 6rem;
+        }
+
+        .section-header {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            opacity: 0.5;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
         }
 
-        .projects-header hr {
+        .section-header h2 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        .section-header hr {
             flex-grow: 1;
             border: none;
             border-top: 1px solid var(--border);
         }
 
+        /* Grid & Cards */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 2.5rem;
             text-decoration: none;
             color: inherit;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 220px;
-            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+            min-height: 260px;
+            backdrop-filter: blur(12px);
         }
 
         .card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-10px) scale(1.02);
             border-color: var(--accent);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .card:hover .card-arrow {
-            transform: translateX(5px);
-            color: var(--accent);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 
+                        0 18px 36px -18px rgba(0, 255, 213, 0.2);
         }
 
         .card-tag {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             margin-bottom: 1rem;
-            display: block;
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--accent-soft);
+            border-radius: 6px;
         }
 
         .card-title {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             margin-bottom: 0.75rem;
+            font-weight: 700;
         }
 
         .card-desc {
             color: var(--text-dim);
-            font-size: 0.95rem;
-            line-height: 1.5;
+            font-size: 1rem;
+            line-height: 1.6;
         }
 
         .card-footer {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             display: flex;
             align-items: center;
             font-weight: 600;
             font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .card:hover .card-footer {
+            color: var(--accent);
         }
 
         .card-arrow {
@@ -167,32 +181,39 @@
             transition: transform 0.3s ease;
         }
 
-        /* Empty/Placeholder States */
+        .card:hover .card-arrow {
+            transform: translateX(6px);
+        }
+
+        /* Placeholder state for non-links */
         .card.placeholder {
             border-style: dashed;
-            opacity: 0.4;
-            pointer-events: none;
+            opacity: 0.5;
+            cursor: default;
+        }
+        
+        .card.placeholder:hover {
+            transform: none;
+            border-color: var(--border);
+            background: var(--card-bg);
+            box-shadow: none;
         }
 
         /* Animations */
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Entrance Staggering */
+        .reveal {
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
         }
 
-        .stagger-1 { animation-delay: 0.1s; }
-        .stagger-2 { animation-delay: 0.2s; }
-        .stagger-3 { animation-delay: 0.3s; }
-
-        @media (max-width: 640px) {
-            .container { padding: 3rem 1.25rem; }
-            h1 { margin-bottom: 1rem; }
-            header { margin-bottom: 3rem; }
+        @media (max-width: 768px) {
+            .container { padding: 4rem 1.5rem; }
+            h1 { margin-bottom: 2rem; }
+            section { margin-bottom: 4rem; }
         }
     </style>
 </head>
@@ -202,47 +223,78 @@
 
     <div class="container">
         <header>
-            <div class="logo">OMIKSE</div>
-            <h1>Selected<br>Work.</h1>
-            <p class="description">Digital explorer building web experiences and interactive experiments. Focused on clean aesthetics and smooth motion.</p>
+            <span class="logo">Omikse</span>
+            <h1>Design.<br>Develop.<br>Deploy.</h1>
+            <p class="description">A multifaceted portfolio showcasing my journey through web architecture, 3D space, and software engineering.</p>
         </header>
 
-        <div class="projects-header">
-            <span>Projects</span>
-            <hr>
-        </div>
+        <!-- Web Projects Section -->
+        <section class="reveal" style="animation-delay: 0.1s;">
+            <div class="section-header">
+                <h2>Web Projects</h2>
+                <hr>
+            </div>
+            <div class="grid">
+                <a href="./zdamtoio/index.html" class="card">
+                    <div>
+                        <span class="card-tag">Repository Explorer</span>
+                        <h3 class="card-title">Zdamtoio</h3>
+                        <p class="card-desc">Navigating deeper repository structures with a clean, interactive landing interface.</p>
+                    </div>
+                    <div class="card-footer">Launch Experiment <span class="card-arrow">→</span></div>
+                </a>
 
-        <main class="grid">
-            <!-- Active Project -->
-            <a href="./zdamtoio/index.html" class="card stagger-1">
-                <div>
-                    <span class="card-tag">Web Application</span>
-                    <h3 class="card-title">Zdamtoio</h3>
-                    <p class="card-desc">An interactive project explorer hosted within the deeper repository structure.</p>
-                </div>
-                <div class="card-footer">
-                    Explore Project <span class="card-arrow">→</span>
-                </div>
-            </a>
+                <a href="./imagewarp/imagewarp.html" class="card">
+                    <div>
+                        <span class="card-tag">Visual Tech</span>
+                        <h3 class="card-title">Image Warp</h3>
+                        <p class="card-desc">Manipulating pixels and perspective through advanced CSS and JS transformations.</p>
+                    </div>
+                    <div class="card-footer">View Project <span class="card-arrow">→</span></div>
+                </a>
+            </div>
+        </section>
 
-            <!-- Placeholder 1 -->
-            <div class="card placeholder stagger-2">
-                <div>
-                    <span class="card-tag">Coming Soon</span>
-                    <h3 class="card-title">Future Project</h3>
-                    <p class="card-desc">Working on something new. Check back later for updates on upcoming experiments.</p>
+        <!-- 3D Modeling Section -->
+        <section class="reveal" style="animation-delay: 0.2s;">
+            <div class="section-header">
+                <h2>3D Modeling</h2>
+                <hr>
+            </div>
+            <div class="grid">
+                <div class="card placeholder">
+                    <div>
+                        <span class="card-tag">In Progress</span>
+                        <h3 class="card-title">Cyber City</h3>
+                        <p class="card-desc">A low-poly procedural environment built for real-time web rendering.</p>
+                    </div>
+                </div>
+                <div class="card placeholder">
+                    <div>
+                        <span class="card-tag">Concept</span>
+                        <h3 class="card-title">Artifact-01</h3>
+                        <p class="card-desc">Hard-surface modeling study focused on industrial aesthetics and lighting.</p>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Placeholder 2 -->
-            <div class="card placeholder stagger-3">
-                <div>
-                    <span class="card-tag">Concept</span>
-                    <h3 class="card-title">Next Venture</h3>
-                    <p class="card-desc">Defining the next iteration of the digital landscape through code and design.</p>
+        <!-- Software Section -->
+        <section class="reveal" style="animation-delay: 0.3s;">
+            <div class="section-header">
+                <h2>Software</h2>
+                <hr>
+            </div>
+            <div class="grid">
+                <div class="card placeholder">
+                    <div>
+                        <span class="card-tag">Utility</span>
+                        <h3 class="card-title">Core Engine</h3>
+                        <p class="card-desc">Back-end logic and data processing scripts designed for automation and speed.</p>
+                    </div>
                 </div>
             </div>
-        </main>
+        </section>
     </div>
 
 </body>
