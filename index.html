@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omikse | Projects</title>
+    <style>
+        :root {
+            --bg: #08080c;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --accent: #00ffd5;
+            --text: #ffffff;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Animated background elements */
+        .bg-glow {
+            position: fixed;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(0, 255, 213, 0.05) 0%, transparent 70%);
+            top: -10vw;
+            right: -10vw;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            width: 100%;
+        }
+
+        header {
+            margin-bottom: 5rem;
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to bottom right, #fff 30%, #64748b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .description {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 600px;
+        }
+
+        /* Project Section */
+        .projects-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            opacity: 0.5;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .projects-header hr {
+            flex-grow: 1;
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 220px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card:hover .card-arrow {
+            transform: translateX(5px);
+            color: var(--accent);
+        }
+
+        .card-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-desc {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .card-arrow {
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        /* Empty/Placeholder States */
+        .card.placeholder {
+            border-style: dashed;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+
+        @media (max-width: 640px) {
+            .container { padding: 3rem 1.25rem; }
+            h1 { margin-bottom: 1rem; }
+            header { margin-bottom: 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">OMIKSE</div>
+            <h1>Selected<br>Work.</h1>
+            <p class="description">Digital explorer building web experiences and interactive experiments. Focused on clean aesthetics and smooth motion.</p>
+        </header>
+
+        <div class="projects-header">
+            <span>Projects</span>
+            <hr>
+        </div>
+
+        <main class="grid">
+            <!-- Active Project -->
+            <a href="./zdamtoio/index.html" class="card stagger-1">
+                <div>
+                    <span class="card-tag">Web Application</span>
+                    <h3 class="card-title">Zdamtoio</h3>
+                    <p class="card-desc">An interactive project explorer hosted within the deeper repository structure.</p>
+                </div>
+                <div class="card-footer">
+                    Explore Project <span class="card-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- Placeholder 1 -->
+            <div class="card placeholder stagger-2">
+                <div>
+                    <span class="card-tag">Coming Soon</span>
+                    <h3 class="card-title">Future Project</h3>
+                    <p class="card-desc">Working on something new. Check back later for updates on upcoming experiments.</p>
+                </div>
+            </div>
+
+            <!-- Placeholder 2 -->
+            <div class="card placeholder stagger-3">
+                <div>
+                    <span class="card-tag">Concept</span>
+                    <h3 class="card-title">Next Venture</h3>
+                    <p class="card-desc">Defining the next iteration of the digital landscape through code and design.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
