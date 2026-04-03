@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perspective Scanner & Warper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        .canvas-container { position: relative; display: inline-block; touch-action: none; cursor: crosshair; }
+        
+        canvas { max-width: 100%; height: auto; border-radius: 4px; }
+        
+        .handle {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: move;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+        .handle::after {
+            content: '';
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.6);
+            position: absolute;
+        }
+        .handle::before {
+            content: '';
+            width: 1px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.6);
+            position: absolute;
+        }
+        .handle:hover { border-color: #ffffff; background: rgba(59, 130, 246, 0.5); }
+        .handle:active { border-color: #ef4444; background: rgba(239, 68, 68, 0.4); }
+
+        #drop-zone { 
+            border: 2px dashed #334155; 
+            transition: all 0.2s; 
+        }
+        #drop-zone.dragover { 
+            border-color: #3b82f6; 
+            background: rgba(59, 130, 246, 0.1); 
+            transform: scale(1.01);
+        }
+        .hidden { display: none !important; }
+
+        #zoom-lens {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 180px;
+            height: 180px;
+            border: 4px solid #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            background-color: #000;
+            z-index: 30;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        #zoom-lens-canvas {
+            image-rendering: pixelated;
+        }
+        .zoom-crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .zoom-crosshair::before, .zoom-crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(239, 68, 68, 0.9);
+        }
+        .zoom-crosshair::before { left: 50%; width: 1px; height: 100%; }
+        .zoom-crosshair::after { top: 50%; height: 1px; width: 100%; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4">
+
+    <header class="text-center my-6">
+        <h1 class="text-2xl font-bold text-slate-200">Perspective Scanner</h1>
+    </header>
+
+    <main class="w-full max-w-5xl space-y-4">
+        <div id="toolbar" class="flex flex-wrap gap-3 justify-center items-center hidden">
+            <button id="upload-new" class="text-xs font-semibold uppercase tracking-wider bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded transition">New Image</button>
+            <button id="apply-warp" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-2 rounded font-bold shadow-lg transition">Apply Warp</button>
+            <button id="download-btn" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-2 rounded font-bold shadow-lg transition">Download Image</button>
+            <button id="back-to-edit" class="hidden bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded transition">Adjust Corners</button>
+        </div>
+
+        <div id="editor-view" class="hidden flex flex-col items-center">
+            <div class="canvas-container" id="container">
+                <canvas id="main-canvas"></canvas>
+                <div id="handles-layer"></div>
+                <div id="zoom-lens" class="hidden">
+                    <canvas id="zoom-lens-canvas" width="180" height="180"></canvas>
+                    <div class="zoom-crosshair"></div>
+                </div>
+            </div>
+            <p class="mt-4 text-slate-500 text-sm italic">Slow-motion adjustment active: Mouse moves faster than corners for precision.</p>
+        </div>
+
+        <div id="result-view" class="hidden flex flex-col items-center">
+            <canvas id="result-canvas" class="shadow-2xl"></canvas>
+        </div>
+
+        <div id="drop-zone" class="w-full h-80 flex flex-col items-center justify-center rounded-xl cursor-pointer">
+            <p class="text-slate-400 font-medium">Drag image here or click to upload</p>
+            <input type="file" id="image-input" accept="image/*" class="hidden">
+        </div>
+    </main>
+
+    <script>
+        let originalImg = null;
+        let corners = []; 
+        let activeHandle = null;
+        let lastMousePos = { x: 0, y: 0 };
+        const SENSITIVITY = 0.4; // 40% of normal speed
+        
+        const container = document.getElementById('container');
+        const mainCanvas = document.getElementById('main-canvas');
+        const resCanvas = document.getElementById('result-canvas');
+        const zoomLensCanvas = document.getElementById('zoom-lens-canvas');
+        const zoomLens = document.getElementById('zoom-lens');
+        
+        const mCtx = mainCanvas.getContext('2d');
+        const rCtx = resCanvas.getContext('2d');
+        const zCtx = zoomLensCanvas.getContext('2d');
+        
+        const editorView = document.getElementById('editor-view');
+        const resultView = document.getElementById('result-view');
+        const toolbar = document.getElementById('toolbar');
+        const dropZone = document.getElementById('drop-zone');
+        const input = document.getElementById('image-input');
+
+        const Matrix = {
+            solve: (A, b) => {
+                const n = 8;
+                for (let i = 0; i < n; i++) {
+                    let max = i;
+                    for (let j = i + 1; j < n; j++) if (Math.abs(A[j][i]) > Math.abs(A[max][i])) max = j;
+                    [A[i], A[max]] = [A[max], A[i]]; [b[i], b[max]] = [b[max], b[i]];
+                    for (let j = i + 1; j < n; j++) {
+                        const f = A[j][i] / A[i][i];
+                        b[j] -= f * b[i];
+                        for (let k = i; k < n; k++) A[j][k] -= f * A[i][k];
+                    }
+                }
+                const x = new Array(n);
+                for (let i = n - 1; i >= 0; i--) {
+                    let s = 0;
+                    for (let j = i + 1; j < n; j++) s += A[i][j] * x[j];
+                    x[i] = (b[i] - s) / A[i][i];
+                }
+                return [...x, 1];
+            },
+            getHomography: (src, dst) => {
+                const p = [];
+                for (let i = 0; i < 4; i++) {
+                    p.push([src[i].x, src[i].y, 1, 0, 0, 0, -src[i].x * dst[i].x, -src[i].y * dst[i].x]);
+                    p.push([0, 0, 0, src[i].x, src[i].y, 1, -src[i].x * dst[i].y, -src[i].y * dst[i].y]);
+                }
+                return Matrix.solve(p, [dst[0].x, dst[0].y, dst[1].x, dst[1].y, dst[2].x, dst[2].y, dst[3].x, dst[3].y]);
+            }
+        };
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            window.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+
+        dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragleave'));
+        dropZone.addEventListener('drop', (e) => {
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) loadFile(file);
+        });
+
+        dropZone.onclick = () => input.click();
+        input.onchange = (e) => loadFile(e.target.files[0]);
+        document.getElementById('upload-new').onclick = () => location.reload();
+        
+        function loadFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => { originalImg = img; initEditor(); };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function initEditor() {
+            dropZone.classList.add('hidden');
+            editorView.classList.remove('hidden');
+            toolbar.classList.remove('hidden');
+            
+            const scale = Math.min((window.innerWidth * 0.95) / originalImg.width, (window.innerHeight * 0.75) / originalImg.height);
+            mainCanvas.width = originalImg.width * scale;
+            mainCanvas.height = originalImg.height * scale;
+            
+            const w = mainCanvas.width;
+            const h = mainCanvas.height;
+            corners = [
+                {x: w*0.2, y: h*0.2}, {x: w*0.8, y: h*0.2},
+                {x: w*0.8, y: h*0.8}, {x: w*0.2, y: h*0.8}
+            ];
+            renderEditor();
+        }
+
+        function renderEditor() {
+            mCtx.drawImage(originalImg, 0, 0, mainCanvas.width, mainCanvas.height);
+            mCtx.save();
+            mCtx.shadowBlur = 4;
+            mCtx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            mCtx.strokeStyle = '#60a5fa'; 
+            mCtx.lineWidth = 2;
+            mCtx.beginPath();
+            mCtx.moveTo(corners[0].x, corners[0].y);
+            corners.forEach(p => mCtx.lineTo(p.x, p.y));
+            mCtx.closePath();
+            mCtx.stroke();
+            mCtx.restore();
+            mCtx.fillStyle = 'rgba(59, 130, 246, 0.12)';
+            mCtx.fill();
+
+            const layer = document.getElementById('handles-layer');
+            layer.innerHTML = '';
+            corners.forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = 'handle';
+                div.style.left = p.x + 'px';
+                div.style.top = p.y + 'px';
+                div.onmousedown = (e) => startAdjust(e, i);
+                div.ontouchstart = (e) => startAdjust(e.touches[0], i);
+                layer.appendChild(div);
+            });
+            updateZoomLens();
+        }
+
+        function startAdjust(e, index) {
+            activeHandle = index;
+            lastMousePos = { x: e.clientX, y: e.clientY };
+            e.preventDefault();
+        }
+
+        function updateZoomLens() {
+            if (activeHandle === null) {
+                zoomLens.classList.add('hidden');
+                return;
+            }
+            zoomLens.classList.remove('hidden');
+            
+            const scaleX = originalImg.width / mainCanvas.width;
+            const scaleY = originalImg.height / mainCanvas.height;
+            const p = corners[activeHandle];
+            const origX = p.x * scaleX;
+            const origY = p.y * scaleY;
+            
+            const sizeInOriginal = 80; 
+            const lensSize = zoomLensCanvas.width;
+            
+            zCtx.fillStyle = '#000';
+            zCtx.fillRect(0, 0, lensSize, lensSize);
+            zCtx.drawImage(
+                originalImg,
+                origX - sizeInOriginal / 2, origY - sizeInOriginal / 2, sizeInOriginal, sizeInOriginal,
+                0, 0, lensSize, lensSize
+            );
+        }
+
+        function handleMove(e) {
+            if (activeHandle === null) return;
+
+            const dx = (e.clientX - lastMousePos.x) * SENSITIVITY;
+            const dy = (e.clientY - lastMousePos.y) * SENSITIVITY;
+
+            corners[activeHandle].x = Math.max(0, Math.min(corners[activeHandle].x + dx, mainCanvas.width));
+            corners[activeHandle].y = Math.max(0, Math.min(corners[activeHandle].y + dy, mainCanvas.height));
+
+            lastMousePos = { x: e.clientX, y: e.clientY };
+            renderEditor();
+        }
+
+        window.onmousemove = handleMove;
+        window.ontouchmove = (e) => handleMove(e.touches[0]);
+
+        window.onmouseup = window.ontouchend = () => {
+            activeHandle = null;
+            renderEditor();
+        };
+
+        document.getElementById('apply-warp').onclick = () => {
+            const scaleX = originalImg.width / mainCanvas.width;
+            const scaleY = originalImg.height / mainCanvas.height;
+            const srcPoints = corners.map(p => ({ x: p.x * scaleX, y: p.y * scaleY }));
+            
+            const w1 = Math.hypot(srcPoints[1].x - srcPoints[0].x, srcPoints[1].y - srcPoints[0].y);
+            const w2 = Math.hypot(srcPoints[2].x - srcPoints[3].x, srcPoints[2].y - srcPoints[3].y);
+            const h1 = Math.hypot(srcPoints[3].x - srcPoints[0].x, srcPoints[3].y - srcPoints[0].y);
+            const h2 = Math.hypot(srcPoints[2].x - srcPoints[1].x, srcPoints[2].y - srcPoints[1].y);
+            
+            const destW = Math.max(w1, w2);
+            const destH = Math.max(h1, h2);
+
+            resCanvas.width = destW;
+            resCanvas.height = destH;
+
+            const dstPoints = [{x:0, y:0}, {x:destW, y:0}, {x:destW, y:destH}, {x:0, y:destH}];
+            const homography = Matrix.getHomography(dstPoints, srcPoints); 
+            
+            const helper = document.createElement('canvas');
+            helper.width = originalImg.width;
+            helper.height = originalImg.height;
+            const hCtx = helper.getContext('2d');
+            hCtx.drawImage(originalImg, 0, 0);
+            const srcData = hCtx.getImageData(0, 0, helper.width, helper.height);
+            const dstData = rCtx.createImageData(destW, destH);
+
+            for (let y = 0; y < destH; y++) {
+                for (let x = 0; x < destW; x++) {
+                    const z = homography[6]*x + homography[7]*y + homography[8];
+                    const px = (homography[0]*x + homography[1]*y + homography[2]) / z;
+                    const py = (homography[3]*x + homography[4]*y + homography[5]) / z;
+
+                    if (px >= 0 && px < helper.width && py >= 0 && py < helper.height) {
+                        const srcIdx = (Math.floor(py) * helper.width + Math.floor(px)) * 4;
+                        const dstIdx = (y * Math.floor(destW) + x) * 4;
+                        for(let i=0; i<4; i++) dstData.data[dstIdx+i] = srcData.data[srcIdx+i];
+                    }
+                }
+            }
+            rCtx.putImageData(dstData, 0, 0);
+
+            editorView.classList.add('hidden');
+            resultView.classList.remove('hidden');
+            document.getElementById('apply-warp').classList.add('hidden');
+            document.getElementById('download-btn').classList.remove('hidden');
+            document.getElementById('back-to-edit').classList.remove('hidden');
+        };
+
+        document.getElementById('back-to-edit').onclick = () => {
+            resultView.classList.add('hidden');
+            editorView.classList.remove('hidden');
+            document.getElementById('apply-warp').classList.remove('hidden');
+            document.getElementById('download-btn').classList.add('hidden');
+            document.getElementById('back-to-edit').classList.add('hidden');
+        };
+
+        document.getElementById('download-btn').onclick = () => {
+            const link = document.createElement('a');
+            link.download = 'perspective-scan.png';
+            link.href = resCanvas.toDataURL();
+            link.click();
+        };
+    </script>
+</body>
+</html>
