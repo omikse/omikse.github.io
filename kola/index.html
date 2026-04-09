@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twierdzenie o kącie między styczną i cięciwą - Toczenie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        canvas {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            touch-action: none;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .angle-card {
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="max-w-5xl w-full space-y-6">
+    <!-- Nagłówek -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Twierdzenie o kącie między styczną i cięciwą</h1>
+        <p class="text-slate-600">
+            Przesuwaj <strong class="text-slate-900">punkt O</strong>, aby toczyć koło po prostej. Zmieniaj położenie <strong class="text-slate-900">punktów B i P</strong>, aby obserwować zależności.
+        </p>
+    </div>
+
+    <!-- Liczniki kątów -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="angle-card bg-purple-600 p-5 rounded-2xl text-white shadow-lg">
+            <span class="block text-xs font-bold uppercase tracking-wider opacity-80">Kąt styczna-cienciwa</span>
+            <div class="flex items-baseline gap-1">
+                <span class="text-4xl font-black" id="val-cab">0</span>
+                <span class="text-xl">°</span>
+            </div>
+            <span class="text-sm mt-1 opacity-90 italic">|∠CAB|</span>
+        </div>
+        
+        <div class="angle-card bg-blue-600 p-5 rounded-2xl text-white shadow-lg">
+            <span class="block text-xs font-bold uppercase tracking-wider opacity-80">Kąt wpisany</span>
+            <div class="flex items-baseline gap-1">
+                <span class="text-4xl font-black" id="val-apb">0</span>
+                <span class="text-xl">°</span>
+            </div>
+            <span class="text-sm mt-1 opacity-90 italic">|∠APB|</span>
+        </div>
+
+        <div class="angle-card bg-amber-500 p-5 rounded-2xl text-white shadow-lg">
+            <span class="block text-xs font-bold uppercase tracking-wider opacity-80">Kąt środkowy</span>
+            <div class="flex items-baseline gap-1">
+                <span class="text-4xl font-black" id="val-aob">0</span>
+                <span class="text-xl">°</span>
+            </div>
+            <span class="text-sm mt-1 opacity-90 italic">|∠AOB| = 2 · |∠CAB|</span>
+        </div>
+    </div>
+
+    <!-- Obszar roboczy -->
+    <div class="relative flex justify-center bg-white rounded-2xl p-4 shadow-inner border border-slate-200">
+        <canvas id="geometryCanvas" width="800" height="450"></canvas>
+    </div>
+
+    <!-- Stopka z teorią -->
+    <div class="bg-slate-800 p-6 rounded-2xl text-slate-200 shadow-xl">
+        <div class="flex items-start gap-4">
+            <div class="bg-slate-700 p-3 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white mb-2">Jak to działa?</h3>
+                <p class="text-sm leading-relaxed opacity-80">
+                    Prosta na dole jest <strong>styczną</strong> do okręgu w punkcie <strong>A</strong>. Niezależnie od tego, gdzie przetoczysz koło, kąt między tą prostą a cięciwą <span class="text-purple-400 font-mono">AB</span> zawsze będzie równy kątowi wpisanemu <span class="text-blue-400 font-mono">APB</span>. Zauważ, że dopóki nie zmienisz rozpiętości cięciwy, toczenie koła nie zmienia miar kątów!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('geometryCanvas');
+    const ctx = canvas.getContext('2d');
+    const valCab = document.getElementById('val-cab');
+    const valApb = document.getElementById('val-apb');
+    const valAob = document.getElementById('val-aob');
+
+    // Konfiguracja
+    const groundY = 380;
+    const radius = 130;
+    
+    // Stan aplikacji
+    let state = {
+        circleX: 400,
+        // Kąty B i P są przechowywane jako relatywne do orientacji koła (offsety kątowe)
+        angleB: -Math.PI / 3, // Pozycja B względem środka
+        angleP: Math.PI * 1.2, // Pozycja P względem środka
+        isDragging: null
+    };
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        const pos = getMousePos(e);
+        
+        // Sprawdź punkt O (środek)
+        const distO = Math.sqrt((pos.x - state.circleX)**2 + (pos.y - (groundY - radius))**2);
+        if (distO < 30) {
+            state.isDragging = 'O';
+            return;
+        }
+
+        // Sprawdź B i P
+        const center = { x: state.circleX, y: groundY - radius };
+        const rotation = (state.circleX - 400) / radius; // Rotacja wynikająca z toczenia
+
+        const checkPoint = (angle, key) => {
+            const px = center.x + radius * Math.cos(angle + rotation);
+            const py = center.y + radius * Math.sin(angle + rotation);
+            const d = Math.sqrt((pos.x - px)**2 + (pos.y - py)**2);
+            if (d < 25) state.isDragging = key;
+        };
+
+        checkPoint(state.angleB, 'B');
+        if (!state.isDragging) checkPoint(state.angleP, 'P');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!state.isDragging) return;
+        const pos = getMousePos(e);
+        const center = { x: state.circleX, y: groundY - radius };
+        const rotation = (state.circleX - 400) / radius;
+
+        if (state.isDragging === 'O') {
+            state.circleX = Math.max(radius, Math.min(canvas.width - radius, pos.x));
+        } else if (state.isDragging === 'B') {
+            state.angleB = Math.atan2(pos.y - center.y, pos.x - center.x) - rotation;
+        } else if (state.isDragging === 'P') {
+            state.angleP = Math.atan2(pos.y - center.y, pos.x - center.x) - rotation;
+        }
+        draw();
+    });
+
+    window.addEventListener('mouseup', () => state.isDragging = null);
+
+    // Touch support
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); /* trigger mousedown logic */ }, {passive: false});
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const centerX = state.circleX;
+        const centerY = groundY - radius;
+        const rotation = (state.circleX - 400) / radius;
+
+        // 1. Rysuj "Ziemię" (Styczną)
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        ctx.lineTo(canvas.width, groundY);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // 2. Rysuj Okrąg
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // 3. Wyznaczanie punktów A, B, P
+        // A jest zawsze punktem styku (na samym dole)
+        const pA = { x: centerX, y: groundY };
+        const pB = { 
+            x: centerX + radius * Math.cos(state.angleB + rotation), 
+            y: centerY + radius * Math.sin(state.angleB + rotation) 
+        };
+        const pP = { 
+            x: centerX + radius * Math.cos(state.angleP + rotation), 
+            y: centerY + radius * Math.sin(state.angleP + rotation) 
+        };
+
+        // --- OBLICZENIA (Kąty) ---
+        
+        // Kąt środkowy (kąt między wektorami OA i OB)
+        // Wektor OA jest zawsze pionowo w dół (PI/2)
+        let alphaA = Math.PI / 2;
+        let alphaB = state.angleB + rotation;
+        let diffCentral = Math.abs(alphaA - alphaB);
+        if (diffCentral > Math.PI) diffCentral = 2 * Math.PI - diffCentral;
+        
+        const angleAOB_deg = Math.round(diffCentral * 180 / Math.PI);
+        const angleCAB_deg = Math.round(angleAOB_deg / 2); // Z twierdzenia
+        const angleAPB_deg = angleCAB_deg;
+
+        // Aktualizacja UI (tylko liczby całkowite)
+        valCab.innerText = angleCAB_deg;
+        valApb.innerText = angleAPB_deg;
+        valAob.innerText = angleAOB_deg;
+
+        // --- RYSOWANIE GEOMETRII ---
+
+        // Cięciwa AB i Trójkąt APB
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(pP.x, pP.y);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.05)';
+        ctx.fill();
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Cięciwa AB (mocniejsza)
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.strokeStyle = '#a855f7';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Promienie (kąt środkowy)
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(centerX, centerY);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Łuki kątów
+        const drawArc = (p, start, end, r, color) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r, start, end);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        };
+
+        // Łuk kąta wpisanego P
+        const angP1 = Math.atan2(pA.y - pP.y, pA.x - pP.x);
+        const angP2 = Math.atan2(pB.y - pP.y, pB.x - pP.x);
+        drawArc(pP, Math.min(angP1, angP2), Math.max(angP1, angP2), 35, '#3b82f6');
+
+        // Łuk kąta styczna-cięciwa A
+        const angA_chord = Math.atan2(pB.y - pA.y, pB.x - pA.x);
+        const angA_tangent = (pB.x > pA.x) ? 0 : Math.PI; // Pozioma styczna
+        drawArc(pA, Math.min(angA_chord, angA_tangent), Math.max(angA_chord, angA_tangent), 45, '#a855f7');
+
+        // Łuk środkowy O
+        drawArc({x: centerX, y: centerY}, Math.min(alphaA, alphaB), Math.max(alphaA, alphaB), 40, '#f59e0b');
+
+        // Punkty
+        const drawNode = (p, label, color, ring = false) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            if(ring) {
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText(label, p.x + 12, p.y - 12);
+        };
+
+        drawNode({x: centerX, y: centerY}, 'O', '#475569', true);
+        drawNode(pA, 'A', '#a855f7');
+        drawNode(pB, 'B', '#a855f7', true);
+        drawNode(pP, 'P', '#3b82f6', true);
+        
+        // Pomocniczy punkt C na stycznej
+        const pC = { x: pA.x + (pB.x > pA.x ? 100 : -100), y: pA.y };
+        drawNode(pC, 'C', '#94a3b8');
+    }
+
+    draw();
+</script>
+
+</body>
+</html>
