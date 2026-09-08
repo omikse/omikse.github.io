@@ -10,10 +10,10 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=253b69d7";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=253b69d7";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=253b69d7";
-import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=253b69d7";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=8c53e43c";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=8c53e43c";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=8c53e43c";
+import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=8c53e43c";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -147,8 +147,12 @@ function renderBuildStamp() {
   if (!el) {
     el = document.createElement("p");
     el.id = "build-stamp";
-    el.className = "text-center text-[10px] text-slate-300 mt-10 font-mono";
-    document.getElementById("view-menu").appendChild(el);
+    el.className = "text-center text-[10px] text-slate-300 py-6 font-mono";
+    // On <body>, not inside #view-menu: history and the admin panel are
+    // appended to the menu later, so a stamp added at boot would sit in the
+    // middle of the page looking like the footer — which hid both of them
+    // below the fold the first time this shipped.
+    document.body.appendChild(el);
   }
   el.textContent = `build ${BUILD}`;
 }

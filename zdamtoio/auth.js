@@ -12,7 +12,7 @@ import {
   doc, getDoc, setDoc, updateDoc, increment, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-import { auth, db } from "./firebase.js?v=253b69d7";
+import { auth, db } from "./firebase.js?v=8c53e43c";
 
 const root = document.documentElement;
 

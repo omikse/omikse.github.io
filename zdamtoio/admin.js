@@ -24,7 +24,7 @@ import {
   collection, doc, getDoc, getDocs, setDoc, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-import { auth, db } from "./firebase.js?v=253b69d7";
+import { auth, db } from "./firebase.js?v=8c53e43c";
 
 let adminCache = null;
 
