@@ -337,6 +337,14 @@ details[open] summary{margin-bottom:8px}
   .answers button{min-width:60px; padding:10px 7px}
   .answers.ivl button{min-width:104px}
 }
+
+/* ---------- jam ---------- */
+.fb .dot.chordtone{box-shadow:0 0 0 3px var(--blue), 0 1px 3px rgba(0,0,0,.45)}
+#jam-chords{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 10px}
+#jam-chords .pill{font-size:.92rem; padding:4px 12px}
+#jam-chords .pill.on{transform:scale(1.06)}
+#jam-play.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
+#jam-now{min-height:2.6em; font-size:.92rem}
 .hide{display:none !important}
 </style>
 </head>
@@ -364,6 +372,7 @@ details[open] summary{margin-bottom:8px}
     <button role="tab" data-v="play" aria-selected="true">Learn</button>
     <button role="tab" data-v="game" aria-selected="false">Guessing game</button>
     <button role="tab" data-v="chords" aria-selected="false">Chords</button>
+    <button role="tab" data-v="jam" aria-selected="false">Jam</button>
     <button role="tab" data-v="pent" aria-selected="false">Pentatonics</button>
     <button role="tab" data-v="circle" aria-selected="false">Circle of fifths</button>
     <button role="tab" data-v="theory" aria-selected="false">Theory</button>
@@ -588,6 +597,68 @@ details[open] summary{margin-bottom:8px}
         <li>The number on the left is which fret the top of the diagram is.</li>
         <li>Four-note chords often drop the fifth. It is the one note you can lose without changing what the chord is.</li>
       </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= JAM ================= -->
+<section id="v-jam" class="hide">
+  <div class="note" style="margin:18px 0 14px"><b>Play over it.</b> Pick a key and a progression, start the loop,
+  and the neck below shows a scale that fits every chord in it. When a chord is sounding, the notes that belong to
+  <em>that</em> chord get a blue ring — those are the ones worth landing on when the chord changes.</div>
+
+  <div class="bar">
+    <div class="f"><label for="jam-key">Key</label><select id="jam-key"></select></div>
+    <label class="chk"><input type="checkbox" id="jam-minor"> Minor key</label>
+    <div class="f"><label for="jam-prog">Progression</label><select id="jam-prog"></select></div>
+    <div class="f"><label for="jam-scale">Solo with</label><select id="jam-scale"></select></div>
+    <label class="chk"><input type="checkbox" id="jam-target" checked> Ring the chord tones</label>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn primary" id="jam-play" style="padding:11px 18px;font-size:1rem">▶ Play the loop</button>
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:180px">
+        <span class="hint">Tempo</span>
+        <input type="range" id="jam-bpm" min="50" max="160" value="90" step="2" style="flex:1;accent-color:var(--root)">
+        <span class="mono hint" id="jam-bpmv">90</span>
+      </div>
+    </div>
+    <div id="jam-chords"></div>
+    <div id="jam-now"></div>
+  </div>
+
+  <div class="card">
+    <div id="jam-scaleinfo" style="margin-bottom:12px"></div>
+    <div class="fbwrap"><div class="fb" id="fb-jam"></div></div>
+    <div class="legend">
+      <span><i style="background:var(--root)"></i>Root of the scale</span>
+      <span><i style="background:var(--scale)"></i>Scale tone</span>
+      <span><i style="background:transparent;box-shadow:0 0 0 2px var(--blue);border-radius:50%"></i>In the chord playing now</span>
+      <span class="hint">Click a fret to hear it against the track.</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>How to use this</h3>
+      <ul class="tight">
+        <li><b>Start with one box.</b> Don't roam. Pick five frets, stay there, and let the chords move underneath you.</li>
+        <li><b>Play fewer notes than you want to.</b> Two notes placed well beat twelve played fast. Leave silence between phrases — the loop keeps going without you.</li>
+        <li><b>Chase the rings.</b> When the chord changes, aim for a note that just gained a blue ring. Landing on a chord tone is the difference between noodling over a progression and playing with it.</li>
+        <li><b>Sing it first.</b> If you can hum the phrase, your hand will find it. If you can't, you are only moving fingers.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Why one scale covers the whole progression</h3>
+      <p>Every chord in a key is built from the same seven notes, so a scale drawn from those notes cannot land on a
+      wrong one. That is what "in a key" means, and it is why one pentatonic shape survives four chord changes.</p>
+      <p>The chords still differ, though, and that is what the rings are for. C and Am share six of seven notes but
+      point at different homes. Play the same lick over both and the second one leans somewhere else. Following the
+      rings is how you hear that rather than read it.</p>
+      <p class="hint">A twelve-bar blues cheats: its chords are all dominant sevenths, which do not strictly belong to
+      one key at all. The minor pentatonic works over it anyway — that friction between a minor scale and major
+      chords is the blues.</p>
     </div>
   </div>
 </section>
@@ -1157,7 +1228,7 @@ class Fretboard{
    tabs & global controls
    ============================================================ */
 const $ = id => document.getElementById(id);
-const VIEWS = ['play','game','chords','pent','circle','theory'];
+const VIEWS = ['play','game','chords','jam','pent','circle','theory'];
 function showView(v){
   VIEWS.forEach(x=> $('v-'+x).classList.toggle('hide', x!==v));
   [...$('tabs').children].forEach(b=>{
@@ -1166,12 +1237,14 @@ function showView(v){
     if(on && b.scrollIntoView) b.scrollIntoView({block:'nearest', inline:'nearest'});
   });
   if(v==='chords') renderChords();
+  if(v==='jam') renderJam();
   if(v==='pent') renderPent();
   if(v==='game') gameLayout();
   if(v==='circle') renderCircle();
   if(v==='theory') renderTheory();
   if(v==='play') renderPlay();
   plLoop(v==='play');
+  if(v!=='jam' && typeof JAM!=='undefined' && JAM.playing) jamStop();
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) showView(b.dataset.v); });
@@ -1186,7 +1259,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
   $('g-sound').checked = S.sound;
   document.documentElement.dataset.theme = S.theme;
 
-  const relayout = ()=>{ [fbG,fbP,fbW,fbC].forEach(fb=> fb && fb.layout()); redrawAll(); };
+  const relayout = ()=>{ [fbG,fbP,fbW,fbC,fbJ].forEach(fb=> fb && fb.layout()); redrawAll(); };
   tu.onchange = e=>{ S.tuningName=e.target.value; store.set('tuning',S.tuningName); relayout(); game.strings.clear(); gameStrings(); };
   $('g-frets').onchange = e=>{ S.frets=+e.target.value; store.set('frets',S.frets); relayout(); gameLayout(); };
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
@@ -1202,7 +1275,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
     document.documentElement.dataset.theme = S.theme; store.set('theme',S.theme);
   };
 })();
-function redrawAll(){ renderChords(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
+function redrawAll(){ renderChords(); renderJam(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
 
 function fillRoots(sel, val){
   ROOT_CHOICES.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=pretty(r); sel.appendChild(o); });
@@ -2108,8 +2181,9 @@ function pickNear(rootName, qual, prevFret){
   const list = findVoicings(rootName, qual, 12, false);
   if(!list.length) return null;
   if(prevFret==null) return list[0];
-  return list.slice().sort((a,b)=>
-    (Math.abs(a.minFret-prevFret) - Math.abs(b.minFret-prevFret)) || (b.score-a.score))[0];
+  // stay near the last shape, but not at the cost of playing an awkward one
+  const cost = v => Math.abs(v.minFret-prevFret) - v.score*0.34;
+  return list.slice().sort((a,b)=> cost(a)-cost(b))[0];
 }
 function playProgression(steps, bpm){
   stopProgression(); audio();
@@ -2192,6 +2266,164 @@ function progressionsFor(sp, minor){
     const idx=[]; for(let s=0;s<v.pick.length;s++) if(v.pick[s]>=0) idx.push(s);
     idx.forEach((s,i)=> pluck(midiAt(s,v.pick[s]), i*0.26, 1.6, .45));
   };
+})();
+
+const fbJ = new Fretboard('fb-jam', {clickable:true});
+/* ============================================================
+   JAM — a looping backing track with the scale drawn over it
+   ============================================================ */
+const JAM = {
+  key:'A', minor:false, prog:0, bpm:90, playing:false,
+  scale:'minPent', target:true,
+  steps:[], idx:0, nextTime:0, timer:null, cur:-1, voicings:[]
+};
+const JAM_SCALES = ['minPent','majPent','blues','minor','major','dorian','mixolydian','majBlues'];
+
+function jamProgs(){
+  const sp = spellScale(JAM.key, SCALES[JAM.minor?'minor':'major'].iv);
+  return progressionsFor(sp, JAM.minor);
+}
+function jamSuggest(name){
+  if(/blues/i.test(name)) return 'minPent';
+  if(JAM.minor) return 'minPent';
+  if(/ii/.test(name)) return 'major';
+  return 'majPent';
+}
+function jamStop(){
+  JAM.playing = false;
+  if(JAM.timer) clearTimeout(JAM.timer);
+  JAM.timer = null; JAM.cur = -1;
+  $('jam-play').textContent = '▶ Play the loop';
+  $('jam-play').classList.remove('on');
+  renderJam();
+}
+function jamStart(){
+  const ctx = audio(); if(!ctx) return;
+  const progs = jamProgs();
+  const p = progs[Math.min(JAM.prog, progs.length-1)];
+  JAM.steps = p.steps;
+  JAM.voicings = [];
+  let prev = null;
+  JAM.steps.forEach(st=>{
+    const v = pickNear(st.root, st.qual, prev);
+    JAM.voicings.push(v);
+    if(v) prev = v.minFret;
+  });
+  JAM.playing = true; JAM.idx = 0;
+  JAM.nextTime = ctx.currentTime + 0.15;
+  $('jam-play').textContent = '■ Stop';
+  $('jam-play').classList.add('on');
+  jamTick();
+}
+function jamTick(){
+  const ctx = actx; if(!ctx || !JAM.playing) return;
+  const beat = 60/JAM.bpm;
+  while(JAM.nextTime < ctx.currentTime + 0.75){
+    const i = JAM.idx % JAM.steps.length;
+    const st = JAM.steps[i], v = JAM.voicings[i];
+    const t0 = JAM.nextTime;
+    if(v){
+      const idx = []; for(let s=0;s<v.pick.length;s++) if(v.pick[s]>=0) idx.push(s);
+      const bassS = idx[0];
+      for(let bar=0; bar<st.bars; bar++){
+        const b0 = t0 + bar*beat*4;
+        const hit = (at, dir, vol, dur)=>{
+          const order = dir>0 ? idx : idx.slice().reverse();
+          order.forEach((s,k)=> pluck(midiAt(s, v.pick[s]), (at - ctx.currentTime) + k*0.022, dur, vol));
+        };
+        hit(b0,            +1, .34, beat*2.2);
+        hit(b0+beat*1.5,   -1, .16, beat*1.1);
+        hit(b0+beat*2,     +1, .28, beat*1.8);
+        hit(b0+beat*3.5,   -1, .16, beat*1.1);
+        // a bass note under it
+        pluck(midiAt(bassS, v.pick[bassS]) - 12, (b0 - ctx.currentTime), beat*2.4, .30);
+        pluck(midiAt(bassS, v.pick[bassS]) - 12, (b0 + beat*2 - ctx.currentTime), beat*2.0, .24);
+      }
+    }
+    const showAt = t0 - ctx.currentTime;
+    setTimeout(()=>{ if(JAM.playing){ JAM.cur = i; renderJam(); } }, Math.max(0, showAt*1000));
+    JAM.nextTime += beat*4*st.bars;
+    JAM.idx++;
+  }
+  JAM.timer = setTimeout(jamTick, 140);
+}
+
+function renderJam(){
+  const progs = jamProgs();
+  const p = progs[Math.min(JAM.prog, progs.length-1)];
+  const t = tuning();
+  const rootPc = pcOf(JAM.key);
+  const def = SCALES[JAM.scale];
+  const scaleSet = new Set(def.iv.map(i=>(rootPc+i)%12));
+  const spelled = spellScale(JAM.key, def.iv);
+
+  // chord tones of whatever is sounding right now
+  let chordSet = null, curLabel = '';
+  if(JAM.cur>=0 && JAM.steps[JAM.cur]){
+    const st = JAM.steps[JAM.cur];
+    const cpc = pcOf(st.root);
+    chordSet = new Set(SCALES[st.qual].iv.map(i=>(cpc+i)%12));
+    curLabel = st.label;
+  }
+
+  fbJ.clear();
+  for(let s=0;s<t.length;s++) for(let f=0;f<=S.frets;f++){
+    const pc = (t[s]+f)%12, iv = ((pc-rootPc)+12)%12;
+    if(!scaleSet.has(pc)) continue;
+    let cls = iv===0 ? 'root' : 'on';
+    if(JAM.target && chordSet && chordSet.has(pc)) cls += ' chordtone';
+    const idx = def.iv.indexOf(iv);
+    fbJ.set(s, f, cls, spelled && idx>=0 ? pretty(spelled[idx]) : pretty(nameOf(pc, JAM.key)));
+  }
+  fbJ.paint(JAM.key);
+
+  $('jam-chords').innerHTML = JAM.steps.length
+    ? JAM.steps.map((st,i)=> '<span class="pill '+(i===JAM.cur?'on':'')+'">'+pretty(st.label)
+        + (st.bars>1 ? '<span style="opacity:.6"> ×'+st.bars+'</span>' : '') + '</span>').join('')
+    : p.steps.map(st=> '<span class="pill">'+pretty(st.label)+(st.bars>1?'<span style="opacity:.6"> ×'+st.bars+'</span>':'')+'</span>').join('');
+
+  $('jam-now').innerHTML = curLabel
+    ? 'Playing <b>'+pretty(curLabel)+'</b> — the ringed notes are its chord tones. Land on those and you sound like you meant it.'
+    : '<span class="hint">'+p.why+'</span>';
+
+  $('jam-scaleinfo').innerHTML =
+      '<b>'+pretty(JAM.key)+' '+def.n+'</b> — '
+    + def.iv.map(i=>IVL_SHORT[i]).join(' · ')
+    + (SCALE_BLURB[JAM.scale] ? '<br><span class="hint">'+SCALE_BLURB[JAM.scale]+'</span>' : '');
+}
+
+(function initJam(){
+  fillRoots($('jam-key'), JAM.key);
+  JAM_SCALES.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=SCALES[k].n; $('jam-scale').appendChild(o); });
+  $('jam-scale').value = JAM.scale;
+
+  const fillProgs = ()=>{
+    const progs = jamProgs();
+    $('jam-prog').innerHTML = '';
+    progs.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.n; $('jam-prog').appendChild(o); });
+    if(JAM.prog >= progs.length) JAM.prog = 0;
+    $('jam-prog').value = String(JAM.prog);
+  };
+  fillProgs();
+
+  const restartIfPlaying = ()=>{ if(JAM.playing){ jamStop(); jamStart(); } else renderJam(); };
+
+  $('jam-key').onchange = e=>{ JAM.key=e.target.value; fillProgs(); autoScale(); restartIfPlaying(); };
+  $('jam-minor').onchange = e=>{ JAM.minor=e.target.checked; JAM.prog=0; fillProgs(); autoScale(); restartIfPlaying(); };
+  $('jam-prog').onchange = e=>{ JAM.prog=+e.target.value; autoScale(); restartIfPlaying(); };
+  $('jam-scale').onchange = e=>{ JAM.scale=e.target.value; renderJam(); };
+  $('jam-target').onchange = e=>{ JAM.target=e.target.checked; renderJam(); };
+  $('jam-bpm').oninput = e=>{ JAM.bpm=+e.target.value; $('jam-bpmv').textContent=e.target.value; };
+  $('jam-bpm').onchange = ()=>{ if(JAM.playing){ jamStop(); jamStart(); } };
+  $('jam-play').onclick = ()=> JAM.playing ? jamStop() : jamStart();
+
+  function autoScale(){
+    const progs = jamProgs();
+    const p = progs[Math.min(JAM.prog, progs.length-1)];
+    JAM.scale = jamSuggest(p.n);
+    $('jam-scale').value = JAM.scale;
+  }
+  autoScale();
 })();
 
 /* ============================================================
@@ -2601,7 +2833,7 @@ function plLoop(on){
   });
 })();
 
-renderPent(); renderTheory(); renderPlay(); renderChords();
+renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam();
 applyHash();
 ['w-root','w-scale','w-capo','g-tuning','g-frets','g-acc','ch-root','ch-qual'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change', pushHash); });
 $('tabs').addEventListener('click', pushHash);
