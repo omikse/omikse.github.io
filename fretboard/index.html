@@ -306,6 +306,37 @@ details[open] summary{margin-bottom:8px}
 .chordcard .lbl em{font-style:normal; opacity:.75}
 .chordcard svg{display:block}
 #ch-sub .pill{margin-right:3px}
+
+/* ---------- narrow screens: the neck first, the settings behind a tap ---------- */
+.gset{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:flex-end}
+#g-settings{display:none}
+@media(max-width:860px){
+  #g-settings{display:block}
+  .gset{display:none; order:9; width:100%; margin:2px 0 0; padding:11px 0 3px; border-top:1px solid var(--line)}
+  header.setup-open .gset{display:flex}
+  header.setup-open #g-settings{background:var(--raise); border-color:var(--faint)}
+  nav{flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none}
+  nav::-webkit-scrollbar{display:none}
+  nav button{white-space:nowrap; padding:8px 11px}
+  .brand span{display:none}
+  .wrap{padding:0 12px 48px}
+  .hdr{padding:10px 12px 0}
+  .card{padding:13px 14px}
+  .bar{padding:12px; gap:9px 12px}
+  .learn-mid{gap:10px}
+  h2{font-size:1.12rem}
+  .slots{grid-template-columns:1fr}
+  .quick.col button{text-align:center}
+  .fb{min-width:560px}
+  .scope canvas{height:190px}
+}
+@media(max-width:520px){
+  .chgrid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+  .score{gap:14px}
+  .score b{font-size:1.25rem}
+  .answers button{min-width:60px; padding:10px 7px}
+  .answers.ivl button{min-width:104px}
+}
 .hide{display:none !important}
 </style>
 </head>
@@ -314,6 +345,7 @@ details[open] summary{margin-bottom:8px}
 <header>
   <div class="hdr">
     <div class="brand"><b>Fretboard Lab</b><span>learn the neck, not just the shapes</span></div>
+    <div class="gset" id="gset">
     <div class="f"><label for="g-tuning">Tuning</label><select id="g-tuning"></select></div>
     <div class="f"><label for="g-frets">Frets</label><select id="g-frets">
       <option>12</option><option selected>15</option><option>17</option><option>19</option><option>22</option><option>24</option>
@@ -323,6 +355,8 @@ details[open] summary{margin-bottom:8px}
     </select></div>
     <label class="chk"><input type="checkbox" id="g-lefty"> Left-handed</label>
     <label class="chk"><input type="checkbox" id="g-sound" checked> Sound</label>
+    </div>
+    <button class="btn ghost" id="g-settings" aria-expanded="false" aria-controls="gset">Setup</button>
     <button class="btn ghost" id="g-share" title="Copy a link to exactly this setup">Share</button>
     <button class="btn ghost" id="g-theme" title="Toggle theme">◐</button>
   </div>
@@ -1126,7 +1160,11 @@ const $ = id => document.getElementById(id);
 const VIEWS = ['play','game','chords','pent','circle','theory'];
 function showView(v){
   VIEWS.forEach(x=> $('v-'+x).classList.toggle('hide', x!==v));
-  [...$('tabs').children].forEach(b=> b.setAttribute('aria-selected', String(b.dataset.v===v)));
+  [...$('tabs').children].forEach(b=>{
+    const on = b.dataset.v===v;
+    b.setAttribute('aria-selected', String(on));
+    if(on && b.scrollIntoView) b.scrollIntoView({block:'nearest', inline:'nearest'});
+  });
   if(v==='chords') renderChords();
   if(v==='pent') renderPent();
   if(v==='game') gameLayout();
@@ -1154,6 +1192,11 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
   $('g-lefty').onchange = e=>{ S.lefty=e.target.checked; store.set('lefty',S.lefty); relayout(); };
   $('g-sound').onchange = e=>{ S.sound=e.target.checked; store.set('sound',S.sound); if(S.sound) audio(); };
+  $('g-settings').onclick = ()=>{
+    const h = document.querySelector('header');
+    const open = h.classList.toggle('setup-open');
+    $('g-settings').setAttribute('aria-expanded', String(open));
+  };
   $('g-theme').onclick = ()=>{
     S.theme = S.theme==='dark'?'light':'dark';
     document.documentElement.dataset.theme = S.theme; store.set('theme',S.theme);
