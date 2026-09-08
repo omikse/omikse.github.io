@@ -10,10 +10,10 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=48124d24";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=48124d24";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=48124d24";
-import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=48124d24";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=f100896e";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=f100896e";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=f100896e";
+import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=f100896e";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced

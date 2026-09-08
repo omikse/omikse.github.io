@@ -36,14 +36,23 @@ EXCLUDE_FILES = {".gitignore"}
 EXCLUDE_SUFFIXES = {".pyc"}
 
 
-# Files whose URLs get a ?v= stamp, and the places that reference them.
-STAMPED = ("exam.js", "auth.js", "progress.js", "firebase.js", "admin.js",
-           "renderers.js", "exam-styles.css")
+# Every local script and stylesheet gets a ?v= stamp. This is DERIVED, never a
+# hand-written list: grading.js was added after the first version of this file
+# and silently went unstamped, so it imported an unstamped renderers.js (a
+# second copy of the module) and edits to it did not move the hash at all --
+# the precise staleness this function exists to prevent.
+def stamped_files():
+    return sorted(p for p in HERE.glob("*") if p.suffix in (".js", ".css"))
+
 
 # `from "./progress.js"` / `import "./x.js"`, with or without an existing stamp.
-IMPORT_RE = re.compile(r'(from\s+["\']\./(?:[\w.-]+)\.js)(\?v=[0-9a-f]+)?(["\'])')
-# src="exam.js" / href="exam-styles.css" in index.html.
-HTML_RE = re.compile(r'((?:src|href)="(?:' + "|".join(re.escape(f) for f in STAMPED) + r'))(\?v=[0-9a-f]+)?(")')
+IMPORT_RE = re.compile(r'(from\s+["\']\./(?:[\w.-]+)\.(?:js|css))(\?v=[0-9a-f]+)?(["\'])')
+
+
+def html_re(names):
+    """src="exam.js" / href="exam-styles.css" in index.html."""
+    alt = "|".join(re.escape(n) for n in sorted(names, key=len, reverse=True))
+    return re.compile(r'((?:src|href)="(?:' + alt + r'))(\?v=[0-9a-f]+)?(")')
 
 
 def stamp_version(dry_run=False):
@@ -59,11 +68,14 @@ def stamp_version(dry_run=False):
     this folder stays a byte-exact mirror of what is served. It is a content
     hash, so it only changes when the code does.
     """
-    js_css = sorted(p for p in HERE.glob("*") if p.name in STAMPED)
+    js_css = stamped_files()
+    HTML_RE = html_re(p.name for p in js_css)
 
     digest = hashlib.sha256()
     for path in js_css:
         text = io.open(path, encoding="utf-8").read()
+        # Hash the code with stamps stripped, so the version tracks content
+        # rather than chasing its own tail.
         digest.update(IMPORT_RE.sub(r"\1\3", text).encode("utf-8"))
     version = digest.hexdigest()[:8]
 
