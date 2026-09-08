@@ -291,6 +291,20 @@ details[open] summary{margin-bottom:8px}
   font:inherit; padding:11px 15px; border-radius:10px; cursor:pointer}
 .earbox .alt:hover{background:var(--raise)}
 .answers.ivl button{min-width:118px}
+
+/* ---------- chord cards ---------- */
+.chgrid{display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}
+.chordcard{
+  background:var(--panel2); border:1px solid var(--line2); border-radius:11px;
+  padding:8px 8px 6px; cursor:pointer; font:inherit; color:var(--text);
+  display:flex; flex-direction:column; align-items:stretch; gap:2px; transition:border-color .12s, background .12s;
+}
+.chordcard:hover{background:var(--raise); border-color:var(--faint)}
+.chordcard.sel{border-color:var(--root); box-shadow:inset 0 0 0 1px var(--root)}
+.chordcard .lbl{font-size:.7rem; color:var(--muted); text-align:center; font-variant-numeric:tabular-nums}
+.chordcard .lbl em{font-style:normal; opacity:.75}
+.chordcard svg{display:block}
+#ch-sub .pill{margin-right:3px}
 .hide{display:none !important}
 </style>
 </head>
@@ -314,6 +328,7 @@ details[open] summary{margin-bottom:8px}
   <nav id="tabs" role="tablist">
     <button role="tab" data-v="play" aria-selected="true">Learn</button>
     <button role="tab" data-v="game" aria-selected="false">Guessing game</button>
+    <button role="tab" data-v="chords" aria-selected="false">Chords</button>
     <button role="tab" data-v="pent" aria-selected="false">Pentatonics</button>
     <button role="tab" data-v="circle" aria-selected="false">Circle of fifths</button>
     <button role="tab" data-v="theory" aria-selected="false">Theory</button>
@@ -499,6 +514,49 @@ details[open] summary{margin-bottom:8px}
   </div>
 </section>
 
+<!-- ================= CHORDS ================= -->
+<section id="v-chords" class="hide">
+  <div class="bar">
+    <div class="f"><label for="ch-root">Root</label><select id="ch-root"></select></div>
+    <div class="f"><label for="ch-qual">Chord</label><select id="ch-qual"></select></div>
+    <div class="f"><label for="ch-max">Search</label><select id="ch-max"></select></div>
+    <label class="chk"><input type="checkbox" id="ch-inv"> Allow inversions (bass note other than the root)</label>
+  </div>
+
+  <div class="card">
+    <h2 id="ch-title" style="margin-bottom:4px">Chord</h2>
+    <p id="ch-sub" style="margin-bottom:14px"></p>
+    <div class="chgrid" id="ch-grid"></div>
+    <p class="hint" style="margin:12px 0 0">Every shape here was found by searching the neck in this tuning: each one holds
+    all the notes the chord needs, fits under four fingers, and spans no more than four frets. Click one to hear it.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>On the neck</h3>
+      <div class="fbwrap"><div class="fb" id="fb-chord"></div></div>
+      <div class="quick" style="margin-top:10px">
+        <button id="ch-strum">▶ Strum down</button>
+        <button id="ch-strumup">▲ Strum up</button>
+        <button id="ch-arp">♪ One note at a time</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>This shape</h3>
+      <div id="ch-detail"></div>
+      <div class="sep"></div>
+      <h3>Reading the diagram</h3>
+      <ul class="tight">
+        <li><b>×</b> above a string means don't play it; <b>○</b> means play it open.</li>
+        <li>Orange dots are the root — the note the chord is named after. Get that one in the bass and the chord sounds settled.</li>
+        <li>An orange bar is a barre: one finger flattened across several strings.</li>
+        <li>The number on the left is which fret the top of the diagram is.</li>
+        <li>Four-note chords often drop the fifth. It is the one note you can lose without changing what the chord is.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 <!-- ================= PENTATONICS ================= -->
 <section id="v-pent" class="hide">
   <div class="bar">
@@ -567,6 +625,7 @@ details[open] summary{margin-bottom:8px}
         <dl class="kv" id="cof-facts"></dl>
         <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" id="cof-toboard">Show this key on the neck →</button>
+        <button class="btn" id="cof-tochords">Find these chords →</button>
         </div>
       </div>
     </div>
@@ -1053,10 +1112,11 @@ class Fretboard{
    tabs & global controls
    ============================================================ */
 const $ = id => document.getElementById(id);
-const VIEWS = ['play','game','pent','circle','theory'];
+const VIEWS = ['play','game','chords','pent','circle','theory'];
 function showView(v){
   VIEWS.forEach(x=> $('v-'+x).classList.toggle('hide', x!==v));
   [...$('tabs').children].forEach(b=> b.setAttribute('aria-selected', String(b.dataset.v===v)));
+  if(v==='chords') renderChords();
   if(v==='pent') renderPent();
   if(v==='game') gameLayout();
   if(v==='circle') renderCircle();
@@ -1077,7 +1137,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
   $('g-sound').checked = S.sound;
   document.documentElement.dataset.theme = S.theme;
 
-  const relayout = ()=>{ [fbG,fbP,fbW].forEach(fb=> fb && fb.layout()); redrawAll(); };
+  const relayout = ()=>{ [fbG,fbP,fbW,fbC].forEach(fb=> fb && fb.layout()); redrawAll(); };
   tu.onchange = e=>{ S.tuningName=e.target.value; store.set('tuning',S.tuningName); relayout(); game.strings.clear(); gameStrings(); };
   $('g-frets').onchange = e=>{ S.frets=+e.target.value; store.set('frets',S.frets); relayout(); gameLayout(); };
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
@@ -1088,7 +1148,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
     document.documentElement.dataset.theme = S.theme; store.set('theme',S.theme);
   };
 })();
-function redrawAll(){ renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
+function redrawAll(){ renderChords(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
 
 function fillRoots(sel, val){
   ROOT_CHOICES.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=pretty(r); sel.appendChild(o); });
@@ -1658,6 +1718,12 @@ function renderCircle(){
     ['ii–V–I', minor? '—' : [sp[1]+'m',sp[4]+'7',sp[0]+'maj7'].map(pretty).join(' · ')],
     ['12-bar blues', [sp[0]+'7',sp[3]+'7',sp[4]+'7'].map(pretty).join(' · ')],
   ].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+  $('cof-tochords').onclick = ()=>{
+    CH.root = ROOT_CHOICES.indexOf(sp[0])>=0 ? sp[0] : SHARP[pcOf(sp[0])];
+    CH.qual = minor ? 'min' : 'maj'; CH.sel = 0;
+    $('ch-root').value = CH.root; $('ch-qual').value = CH.qual;
+    showView('chords');
+  };
   $('cof-toboard').onclick = ()=>{
     PL.root = ROOT_CHOICES.indexOf(key)>=0 ? key : SHARP[pcOf(key)];
     PL.scale = minor ? 'minor' : 'major';
@@ -1741,6 +1807,235 @@ function renderTheory(){
     `<tr><td><b>${pretty(majSp[i])} ${n}</b></td><td class="n">${d}</td><td>${f}</td><td class="hint">${c}</td></tr>`).join('');
 }
 
+const fbC = new Fretboard('fb-chord', {clickable:true});
+/* ============================================================
+   CHORDS — search the neck for shapes a hand can actually hold
+   ============================================================ */
+const CH = {root:'C', qual:'maj', maxFret:12, inversions:false, sel:0, list:[]};
+const CHORD_KEYS = ['maj','min','dim','aug','sus2','sus4','maj7','dom7','min7','m7b5','dim7','six','min6'];
+const CHORD_SUFFIX = {maj:'', min:'m', dim:'°', aug:'+', sus2:'sus2', sus4:'sus4',
+  maj7:'maj7', dom7:'7', min7:'m7', m7b5:'m7♭5', dim7:'°7', six:'6', min6:'m6'};
+
+function fingersFor(pick){
+  const fretted = [];
+  for(let s=0;s<pick.length;s++) if(pick[s]>0) fretted.push({s, f:pick[s]});
+  if(!fretted.length) return {fingers:0, barre:null, span:0};
+  const minF = Math.min(...fretted.map(x=>x.f));
+  const maxF = Math.max(...fretted.map(x=>x.f));
+  const atMin = fretted.filter(x=>x.f===minF);
+  let barre = null, fingers;
+  if(atMin.length>=2){
+    const lo = Math.min(...atMin.map(x=>x.s)), hi = Math.max(...atMin.map(x=>x.s));
+    // a barre only helps if nothing lower-fretted hides under it
+    const blocked = pick.some((f,s)=> s>lo && s<hi && (f===0 || (f>0 && f<minF)));
+    if(!blocked){
+      barre = {fret:minF, from:lo, to:hi};
+      fingers = 1 + fretted.filter(x=>x.f>minF).length;
+    }
+  }
+  if(fingers===undefined) fingers = fretted.length;
+  return {fingers, barre, span:maxF-minF};
+}
+
+function findVoicings(){
+  const t = tuning(), n = t.length;
+  const def = SCALES[CH.qual], rootPc = pcOf(CH.root);
+  const tones = new Set(def.iv.map(i=>(rootPc+i)%12));
+  const ess = def.iv.filter(iv=> !(def.iv.length>=4 && iv===7)).map(i=>(rootPc+i)%12);
+  const fifthPc = (rootPc+7)%12;
+  const minSound = Math.min(4, n);
+  const top = Math.min(CH.maxFret, S.frets);
+  const seen = new Set(), out = [];
+
+  for(let base=0; base<=Math.max(0, top-3); base++){
+    const cand = [];
+    for(let s=0;s<n;s++){
+      const c = [-1];
+      if(tones.has(t[s]%12)) c.push(0);
+      for(let f=Math.max(base,1); f<=base+3 && f<=S.frets; f++)
+        if(tones.has((t[s]+f)%12)) c.push(f);
+      cand.push(c);
+    }
+    const pick = new Array(n);
+    (function rec(s){
+      if(out.length>3000) return;
+      if(s===n){ const v = judge(pick.slice()); if(v) { const k=v.sig; if(!seen.has(k)){ seen.add(k); out.push(v); } } return; }
+      for(let i=0;i<cand[s].length;i++){ pick[s]=cand[s][i]; rec(s+1); }
+    })(0);
+  }
+
+  function judge(pick){
+    const sounding = [];
+    for(let s=0;s<n;s++) if(pick[s]>=0) sounding.push(s);
+    if(sounding.length < minSound) return null;
+    const pcs = new Set(sounding.map(s=>(t[s]+pick[s])%12));
+    for(const e of ess) if(!pcs.has(e)) return null;
+    const bass = sounding[0];
+    const bassPc = (t[bass]+pick[bass])%12;
+    if(!CH.inversions && bassPc!==rootPc) return null;
+    const {fingers, barre, span} = fingersFor(pick);
+    if(fingers>4 || span>3) return null;
+    let inner = 0;
+    for(let s=sounding[0]; s<sounding[sounding.length-1]; s++) if(pick[s]<0) inner++;
+    if(inner>1) return null;
+    const fretted = pick.filter(f=>f>0);
+    const minFret = fretted.length ? Math.min(...fretted) : 0;
+    if(minFret>=4){
+      // up the neck an open string between two fretted ones is not a shape anyone plays
+      const fr = []; for(let s=0;s<n;s++) if(pick[s]>0) fr.push(s);
+      if(fr.length){
+        const a = Math.min(...fr), b = Math.max(...fr);
+        for(let s=a; s<b; s++) if(pick[s]===0) return null;
+      }
+    }
+    const opens = pick.filter(f=>f===0).length;
+    let sc = sounding.length*3 + opens*2 - fingers*2 - span - inner*5 - minFret*0.3;
+    if(minFret>=5) sc -= opens*3;
+    if(pcs.has(fifthPc)) sc += 2;
+    if(bassPc===rootPc) sc += 6; else sc -= 2;
+    if(barre) sc -= 1.5;
+    if(pcs.size === def.iv.length) sc += 2;
+    return {pick, sig:pick.join(','), fingers, barre, span, minFret, opens, score:sc,
+            bassPc, full:pcs.size===def.iv.length};
+  }
+
+  out.sort((a,b)=> b.score-a.score || a.minFret-b.minFret);
+  // a shape that is another shape with strings muted is not a new shape
+  const covered = (v,k)=> v.pick.every((f,s)=> f===k.pick[s] || f===-1);
+  const byPos = {}, kept = [];
+  for(const v of out){
+    if(kept.some(k=> covered(v,k))) continue;
+    const band = Math.floor(v.minFret/3);
+    if((byPos[band]||0) >= 3) continue;
+    byPos[band] = (byPos[band]||0)+1;
+    kept.push(v);
+    if(kept.length >= 12) break;
+  }
+  return kept.length ? kept : out.slice(0,12);
+}
+
+function chordSVG(v){
+  const t = tuning(), n = t.length;
+  const fretted = v.pick.filter(f=>f>0);
+  const lo = fretted.length ? Math.min(...fretted) : 1;
+  const base = fretted.length && (lo>1 || v.span>0 && lo>1) ? Math.max(1, lo) : 1;
+  const rows = 4;
+  const W = 15*(n-1), H = 22*rows;
+  const padL = 12, padT = 20;
+  let g = '';
+  // strings
+  for(let s=0;s<n;s++){
+    const x = padL + 15*s;
+    g += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+H}" stroke="var(--line2)" stroke-width="1"/>`;
+  }
+  // frets
+  for(let r=0;r<=rows;r++){
+    const y = padT + 22*r;
+    const thick = (r===0 && base===1) ? 3.5 : 1;
+    g += `<line x1="${padL}" y1="${y}" x2="${padL+W}" y2="${y}" stroke="${r===0&&base===1?'var(--text)':'var(--line2)'}" stroke-width="${thick}"/>`;
+  }
+  if(base>1) g += `<text x="${padL-5}" y="${padT+15}" font-size="10" fill="var(--muted)" text-anchor="end">${base}</text>`;
+  // barre
+  if(v.barre && v.barre.fret>=base && v.barre.fret<base+rows){
+    const y = padT + 22*(v.barre.fret-base) + 11;
+    const x1 = padL + 15*v.barre.to, x2 = padL + 15*v.barre.from;
+    g += `<rect x="${Math.min(x1,x2)-5}" y="${y-5.5}" width="${Math.abs(x2-x1)+10}" height="11" rx="5.5" fill="var(--root)" opacity=".9"/>`;
+  }
+  for(let s=0;s<n;s++){
+    const x = padL + 15*s, f = v.pick[s];
+    if(f<0){
+      g += `<text x="${x}" y="${padT-6}" font-size="10" fill="var(--muted)" text-anchor="middle">×</text>`;
+    } else if(f===0){
+      g += `<circle cx="${x}" cy="${padT-10}" r="4" fill="none" stroke="var(--muted)" stroke-width="1.3"/>`;
+    } else if(f>=base && f<base+rows){
+      const y = padT + 22*(f-base) + 11;
+      const isRoot = (t[s]+f)%12 === pcOf(CH.root);
+      g += `<circle cx="${x}" cy="${y}" r="6.4" fill="${isRoot?'var(--root)':'var(--text)'}"/>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${padL*2+W} ${padT+H+10}" width="100%" role="img">${g}</svg>`;
+}
+
+function strum(v, down){
+  audio();
+  const idx = [];
+  for(let s=0;s<v.pick.length;s++) if(v.pick[s]>=0) idx.push(s);
+  if(!down) idx.reverse();
+  idx.forEach((s,i)=> pluck(midiAt(s, v.pick[s]), i*0.035, 2.6, .42));
+}
+
+function chordName(){ return pretty(CH.root) + CHORD_SUFFIX[CH.qual]; }
+
+function renderChords(){
+  CH.list = findVoicings();
+  if(CH.sel >= CH.list.length) CH.sel = 0;
+  const def = SCALES[CH.qual], rootPc = pcOf(CH.root);
+  const spelled = def.iv.map(i=> pretty(nameOf((rootPc+i)%12, CH.root)));
+
+  $('ch-title').textContent = chordName();
+  $('ch-sub').innerHTML = def.n + ' &nbsp;·&nbsp; ' + spelled.map((x,i)=>
+     '<span class="pill '+(i===0?'on':'')+'">'+x+'<span style="opacity:.6;font-size:.85em"> '+IVL_SHORT[def.iv[i]]+'</span></span>').join(' ');
+
+  if(!CH.list.length){
+    $('ch-grid').innerHTML = '<p class="hint">No shape in this tuning fits under four fingers inside '+Math.min(CH.maxFret,S.frets)+' frets. Try allowing inversions, or widen the fret range.</p>';
+    fbC.clear().paint(CH.root); $('ch-detail').innerHTML=''; return;
+  }
+
+  $('ch-grid').innerHTML = CH.list.map((v,i)=>{
+    const open = v.opens>0 && v.minFret<=3;
+    const tag = open ? 'open shape' : (v.barre ? 'barre' : 'movable');
+    return '<button class="chordcard'+(i===CH.sel?' sel':'')+'" data-i="'+i+'">'
+      + chordSVG(v)
+      + '<span class="lbl">'+(v.minFret? ('fret '+v.minFret) : 'open')
+      + ' · <em>'+tag+'</em></span></button>';
+  }).join('');
+
+  const v = CH.list[CH.sel], t = tuning();
+  fbC.clear();
+  for(let s=0;s<t.length;s++){
+    const f = v.pick[s];
+    if(f<0) continue;
+    const pc = (t[s]+f)%12, iv = ((pc-rootPc)+12)%12;
+    fbC.set(s, f, iv===0 ? 'root' : 'on', pretty(nameOf(pc, CH.root)) );
+  }
+  fbC.paint(CH.root);
+
+  const names = [];
+  for(let s=0;s<t.length;s++) names.push(v.pick[s]<0 ? '×' : String(v.pick[s]));
+  $('ch-detail').innerHTML =
+      '<dl class="kv">'
+    + '<dt>Shape</dt><dd class="mono">'+names.join('  ')+'</dd>'
+    + '<dt>Fingers</dt><dd>'+(v.fingers||'none — all open')+(v.barre? ', barring fret '+v.barre.fret : '')+'</dd>'
+    + '<dt>Stretch</dt><dd>'+(v.span? (v.span+1)+' frets' : 'one fret')+'</dd>'
+    + '<dt>Bass note</dt><dd>'+pretty(nameOf(v.bassPc, CH.root))+(v.bassPc===rootPc? ' — root position' : ' — an inversion')+'</dd>'
+    + '<dt>Notes</dt><dd>'+(v.full? 'complete' : 'the fifth is left out, which is normal')+'</dd>'
+    + '</dl>';
+}
+
+(function initChords(){
+  fillRoots($('ch-root'), CH.root);
+  CHORD_KEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=SCALES[k].n; $('ch-qual').appendChild(o); });
+  $('ch-qual').value = CH.qual;
+  for(let i=5;i<=17;i+=(i<12?7:5)){ }
+  [5,9,12,15,17].forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent='to fret '+v; $('ch-max').appendChild(o); });
+  $('ch-max').value = '12';
+  $('ch-root').onchange = e=>{ CH.root=e.target.value; CH.sel=0; renderChords(); };
+  $('ch-qual').onchange = e=>{ CH.qual=e.target.value; CH.sel=0; renderChords(); };
+  $('ch-max').onchange = e=>{ CH.maxFret=+e.target.value; CH.sel=0; renderChords(); };
+  $('ch-inv').onchange = e=>{ CH.inversions=e.target.checked; CH.sel=0; renderChords(); };
+  $('ch-grid').onclick = e=>{
+    const b = e.target.closest('.chordcard'); if(!b) return;
+    CH.sel = +b.dataset.i; renderChords(); strum(CH.list[CH.sel], true);
+  };
+  $('ch-strum').onclick = ()=> CH.list[CH.sel] && strum(CH.list[CH.sel], true);
+  $('ch-strumup').onclick = ()=> CH.list[CH.sel] && strum(CH.list[CH.sel], false);
+  $('ch-arp').onclick = ()=>{
+    const v = CH.list[CH.sel]; if(!v) return; audio();
+    const idx=[]; for(let s=0;s<v.pick.length;s++) if(v.pick[s]>=0) idx.push(s);
+    idx.forEach((s,i)=> pluck(midiAt(s,v.pick[s]), i*0.26, 1.6, .45));
+  };
+})();
+
 /* ============================================================
    shareable state in the URL
    ============================================================ */
@@ -1751,6 +2046,7 @@ function stateToHash(){
   p.set('r', PL.root); p.set('s', PL.scale);
   if(PL.capo) p.set('c', String(PL.capo));
   if(PL.labels!=='name') p.set('l', PL.labels);
+  if(CH.root!=='C' || CH.qual!=='maj') { p.set('cr', CH.root); p.set('cq', CH.qual); }
   const ti = TUNE_KEYS.indexOf(S.tuningName);
   if(ti>0) p.set('t', String(ti));
   if(S.frets!==15) p.set('f', String(S.frets));
@@ -1775,6 +2071,8 @@ function applyHash(){
     if(p.has('r')){ PL.root = p.get('r'); $('w-root').value = PL.root; }
     if(p.has('s') && SCALES[p.get('s')]){ PL.scale = p.get('s'); $('w-scale').value = PL.scale; }
     if(p.has('c')){ PL.capo = Math.max(0, Math.min(12, +p.get('c'))); $('w-capo').value = String(PL.capo); }
+    if(p.has('cr')){ CH.root = p.get('cr'); $('ch-root').value = CH.root; }
+    if(p.has('cq') && SCALES[p.get('cq')]){ CH.qual = p.get('cq'); $('ch-qual').value = CH.qual; }
     if(p.has('l')){
       PL.labels = p.get('l');
       [...$('w-labels').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.l===PL.labels)));
@@ -2145,9 +2443,9 @@ function plLoop(on){
   });
 })();
 
-renderPent(); renderTheory(); renderPlay();
+renderPent(); renderTheory(); renderPlay(); renderChords();
 applyHash();
-['w-root','w-scale','w-capo','g-tuning','g-frets','g-acc'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change', pushHash); });
+['w-root','w-scale','w-capo','g-tuning','g-frets','g-acc','ch-root','ch-qual'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change', pushHash); });
 $('tabs').addEventListener('click', pushHash);
 $('w-labels').addEventListener('click', pushHash);
 </script>
