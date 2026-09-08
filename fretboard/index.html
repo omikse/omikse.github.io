@@ -193,6 +193,52 @@ ul.tight li{margin:.25em 0}
 details{border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:10px; background:var(--panel)}
 details summary{cursor:pointer; font-weight:600}
 details[open] summary{margin-bottom:8px}
+/* ---------- capo ---------- */
+.fb .capolayer{position:absolute; inset:0; display:grid; grid-template-columns:var(--tpl); pointer-events:none; z-index:3}
+.fb .capolayer div{position:relative}
+.fb .capolayer div.capoon::before{
+  content:""; position:absolute; top:-2px; bottom:-2px; inset-inline-start:1px; width:11px;
+  background:linear-gradient(90deg,#11161c,#39424d 55%,#161c23);
+  border-radius:5px; box-shadow:0 0 0 1px rgba(0,0,0,.55), 2px 0 7px rgba(0,0,0,.5);
+}
+.fb .dot.mute{background:rgba(120,130,140,.14); color:transparent; border-color:transparent}
+.fb .dot.picked{box-shadow:0 0 0 3px var(--blue), 0 1px 3px rgba(0,0,0,.5)}
+.fb .dot.pickedB{box-shadow:0 0 0 3px var(--root), 0 1px 3px rgba(0,0,0,.5)}
+
+/* ---------- sound playground ---------- */
+.scope{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px 12px 6px}
+.scope canvas{display:block; width:100%; height:230px}
+.scope canvas.small{height:132px}
+.scope h3{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 6px}
+.slots{display:grid; gap:10px; grid-template-columns:1fr 1fr}
+@media(max-width:640px){.slots{grid-template-columns:1fr}}
+.slot{border:1px solid var(--line2); border-radius:11px; padding:10px 12px; background:var(--panel2); position:relative}
+.slot.a{border-color:color-mix(in srgb,var(--blue) 55%, var(--line2))}
+.slot.b{border-color:color-mix(in srgb,var(--root) 55%, var(--line2))}
+.slot .tag{font-size:.64rem; text-transform:uppercase; letter-spacing:.1em; font-weight:700}
+.slot.a .tag{color:var(--blue)} .slot.b .tag{color:var(--root)}
+.slot .big{font-size:1.7rem; font-weight:700; letter-spacing:-.02em; line-height:1.15; margin:2px 0 2px}
+.slot .big small{font-size:.55em; color:var(--muted); font-weight:600}
+.slot .num{font-variant-numeric:tabular-nums; font-size:.84rem; color:var(--muted)}
+.slot .num b{color:var(--text); font-weight:650}
+.slot .none{color:var(--faint); font-size:.86rem; padding:8px 0}
+.ratio{background:var(--panel2); border:1px solid var(--line2); border-radius:11px; padding:12px 14px; margin-top:10px}
+.ratio .lead{font-size:1.05rem; font-weight:600; margin-bottom:4px}
+.ratio .lead em{font-style:normal; color:var(--scale)}
+.quick{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+.quick button{padding:7px 11px; border-radius:8px; border:1px solid var(--line2); background:var(--panel2); color:var(--text); font:inherit; font-size:.85rem; cursor:pointer}
+.quick button:hover{background:var(--raise); border-color:var(--faint)}
+.quick button.hero{background:var(--root); border-color:var(--root); color:var(--root-ink); font-weight:650}
+.harmrow{display:flex; gap:8px; flex-wrap:wrap; font-size:.78rem; color:var(--muted); margin-top:6px}
+.harmrow span b{color:var(--text)}
+.steps{counter-reset:st; display:grid; gap:10px}
+.steps > div{position:relative; padding-left:34px}
+.steps > div::before{
+  counter-increment:st; content:counter(st); position:absolute; left:0; top:0;
+  width:24px; height:24px; border-radius:50%; background:var(--raise); color:var(--text);
+  display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700;
+}
+.steps b{display:block}
 .hide{display:none !important}
 </style>
 </head>
@@ -213,7 +259,8 @@ details[open] summary{margin-bottom:8px}
     <button class="btn ghost" id="g-theme" title="Toggle theme">◐</button>
   </div>
   <nav id="tabs" role="tablist">
-    <button role="tab" data-v="explore" aria-selected="true">Fretboard</button>
+    <button role="tab" data-v="play" aria-selected="true">Sound &amp; waves</button>
+    <button role="tab" data-v="explore" aria-selected="false">Fretboard</button>
     <button role="tab" data-v="game" aria-selected="false">Guessing game</button>
     <button role="tab" data-v="pent" aria-selected="false">Pentatonics</button>
     <button role="tab" data-v="circle" aria-selected="false">Circle of fifths</button>
@@ -223,8 +270,113 @@ details[open] summary{margin-bottom:8px}
 
 <div class="wrap">
 
+<!-- ================= SOUND PLAYGROUND ================= -->
+<section id="v-play">
+  <div class="card" style="border-color:color-mix(in srgb,var(--blue) 30%, var(--line))">
+    <h2 style="margin-bottom:6px">Start here: a note is a wave</h2>
+    <p style="margin-bottom:0">Pluck a string and it swings back and forth. <b>How fast it swings is the pitch.</b>
+    Slow swings sound low, fast swings sound high — that is all a note is. Click anywhere on the neck below and
+    watch the wave. Then play the same string twelve frets higher and count the humps: there will be exactly twice as many.</p>
+  </div>
+
+  <div class="card">
+    <div class="scope">
+      <h3>The wave <span id="pl-winlabel" style="text-transform:none;letter-spacing:0"></span></h3>
+      <canvas id="pl-wave"></canvas>
+    </div>
+
+    <div class="bar" style="margin:12px 0 0">
+      <div class="f"><label>Timbre</label>
+        <div class="seg" id="pl-timbre">
+          <button data-t="string" aria-pressed="true">Guitar string</button>
+          <button data-t="sine" aria-pressed="false">Pure tone</button>
+        </div>
+      </div>
+      <div class="f"><label for="pl-win">Time window</label><select id="pl-win">
+        <option value="5">5 ms</option><option value="10">10 ms</option>
+        <option value="20" selected>20 ms</option><option value="40">40 ms</option>
+      </select></div>
+      <label class="chk"><input type="checkbox" id="pl-live"> Overlay the real signal</label>
+      <label class="chk"><input type="checkbox" id="pl-hold"> Hold the note (pure tone)</label>
+      <label class="chk"><input type="checkbox" id="pl-keep" checked> Keep the previous note to compare</label>
+      <button class="btn ghost" id="pl-clearb">Clear B</button>
+    </div>
+
+    <div class="slots" style="margin-top:14px">
+      <div class="slot a" id="pl-slotA"></div>
+      <div class="slot b" id="pl-slotB"></div>
+    </div>
+
+    <div class="ratio" id="pl-ratio"></div>
+
+    <div class="quick">
+      <button class="hero" data-iv="12">B = an octave up ↑</button>
+      <button data-iv="-12">an octave down ↓</button>
+      <button data-iv="7">a fifth up</button>
+      <button data-iv="5">a fourth up</button>
+      <button data-iv="4">a major third up</button>
+      <button data-iv="1">one fret up</button>
+      <button id="pl-both">▶ Play both together</button>
+      <button id="pl-sweep">▶ Sweep 0 → 12 on one string</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bar" style="margin:0 0 14px">
+      <div class="f"><label for="w-root">Root</label><select id="w-root"></select></div>
+      <div class="f"><label for="w-scale">Scale / chord</label><select id="w-scale"></select></div>
+      <div class="f"><label>Labels</label>
+        <div class="seg" id="w-labels">
+          <button data-l="name" aria-pressed="true">Notes</button>
+          <button data-l="pitch" aria-pressed="false">Pitch</button>
+          <button data-l="deg" aria-pressed="false">Degrees</button>
+          <button data-l="none" aria-pressed="false">Blank</button>
+        </div>
+      </div>
+      <div class="f"><label for="w-capo">Capo</label><select id="w-capo"></select></div>
+      <label class="chk"><input type="checkbox" id="w-ghost" checked> Show non-scale notes</label>
+    </div>
+
+    <div class="fbwrap"><div class="fb" id="fb-play"></div></div>
+    <div class="legend">
+      <span><i style="background:var(--root)"></i>Root</span>
+      <span><i style="background:var(--scale)"></i>Scale tone</span>
+      <span><i style="background:rgba(140,150,160,.35)"></i>Other note</span>
+      <span class="hint" id="w-capotext">Click a fret to load it into A.</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="scope">
+      <h3>What one string is really doing</h3>
+      <canvas id="pl-harm" class="small"></canvas>
+      <div class="harmrow" id="pl-harmrow"></div>
+      <p class="hint" style="margin:8px 0 0">A string never vibrates at just one speed. It swings as a whole, and
+      in halves, and in thirds, all at once — and those extra speeds are what make a guitar sound like a guitar
+      instead of a test tone. Notice where they land: the octave, then a fifth above that, then another octave.
+      The intervals musicians use were not invented. They were found inside a single string.</p>
+    </div>
+    <div class="card">
+      <h3>Four things worth knowing</h3>
+      <div class="steps">
+        <div><b>An octave is a doubling.</b> 110 Hz and 220 Hz are both A. Twelve frets up doubles the frequency,
+        which is why the same shape sounds "the same but higher" and why the 12th fret has two dots.</div>
+        <div><b>One fret is always the same ratio, never the same distance.</b> Each fret multiplies the frequency
+        by 1.0595 (that is the twelfth root of 2). A ratio needs less and less string as you climb, which is
+        exactly why the frets bunch up toward the body.</div>
+        <div><b>Sweet intervals are simple fractions.</b> A fifth is nearly 3:2, a fourth nearly 4:3, an octave
+        exactly 2:1. Play two of them and watch the waves lock into a repeating pattern. Play a tritone —
+        45:32 — and watch the pattern refuse to settle. That mess is the sound of the interval.</div>
+        <div><b>A capo is a movable nut.</b> It does not change what your fingers do; it changes where zero is.
+        Put it on fret 2 and every shape you know sounds two semitones higher — the same song in a new key,
+        with the same chords under your hand.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ================= EXPLORE ================= -->
-<section id="v-explore">
+<section id="v-explore" class="hide">
   <div class="bar">
     <div class="f"><label for="e-root">Root</label><select id="e-root"></select></div>
     <div class="f"><label for="e-scale">Scale / chord</label><select id="e-scale"></select></div>
@@ -648,12 +800,43 @@ const ROOT_CHOICES = ['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab
 /* ============================================================
    audio — Karplus-Strong pluck
    ============================================================ */
-let actx=null;
-function audio(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } } if(actx.state==='suspended') actx.resume(); return actx; }
+let actx=null, master=null, analyser=null;
+function audio(){
+  if(!actx){
+    try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+    master = actx.createGain(); master.gain.value = 1;
+    analyser = actx.createAnalyser(); analyser.fftSize = 4096; analyser.smoothingTimeConstant = .5;
+    master.connect(analyser); analyser.connect(actx.destination);
+  }
+  if(actx.state==='suspended') actx.resume();
+  return actx;
+}
+/* sustained pure tones, one per named slot */
+const voices = {};
+function toneOn(id, freq, vol=.22){
+  const ctx = audio(); if(!ctx) return;
+  toneOff(id, .01);
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type='sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, ctx.currentTime);
+  g.gain.linearRampToValueAtTime(vol, ctx.currentTime+.02);
+  o.connect(g).connect(master); o.start();
+  voices[id] = {o,g};
+}
+function toneOff(id, fade=.08){
+  const v = voices[id]; if(!v || !actx) return;
+  const t = actx.currentTime;
+  v.g.gain.cancelScheduledValues(t);
+  v.g.gain.setValueAtTime(v.g.gain.value, t);
+  v.g.gain.linearRampToValueAtTime(0, t+fade);
+  try{ v.o.stop(t+fade+.02); }catch(e){}
+  delete voices[id];
+}
+function allTonesOff(){ Object.keys(voices).forEach(k=>toneOff(k)); }
 function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 function pluck(midi, when=0, dur=1.4, vol=.5){
   if(!S.sound) return;
-  const ctx = audio(); if(!ctx) return;
+  const ctx = audio(); if(!ctx || !master) return;
   const sr = ctx.sampleRate, f = midiToFreq(midi);
   const N = Math.max(2, Math.round(sr/f)), len = Math.round(sr*dur);
   const buf = ctx.createBuffer(1,len,sr), d = buf.getChannelData(0);
@@ -666,7 +849,7 @@ function pluck(midi, when=0, dur=1.4, vol=.5){
   const t = ctx.currentTime + when;
   g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.005);
   g.gain.setTargetAtTime(0.0001, t+dur*.55, .22);
-  src.connect(lp).connect(g).connect(ctx.destination);
+  src.connect(lp).connect(g).connect(master || ctx.destination);
   src.start(t); src.stop(t+dur+.1);
 }
 /* string 0 = lowest. midi of standard low E = 40 */
@@ -720,6 +903,11 @@ class Fretboard{
     }
     board.appendChild(inlay);
 
+    const capo = document.createElement('div'); capo.className='capolayer';
+    this.capoCells = [];
+    for(let i=0;i<=F+1;i++){ const d=document.createElement('div'); capo.appendChild(d); this.capoCells.push(d); }
+    board.appendChild(capo);
+
     this.cells=[];
     for(let s=n-1;s>=0;s--){
       const row=document.createElement('div'); row.className='row strings';
@@ -732,7 +920,10 @@ class Fretboard{
         const dot=document.createElement('div'); dot.className='dot'; c.appendChild(dot);
         if(this.opts.clickable){
           c.classList.add('click');
-          c.addEventListener('click',()=>{ playPos(s,f); if(this.onCell) this.onCell(s,f); });
+          c.addEventListener('click',()=>{
+            if(this.opts.canPlay && !this.opts.canPlay(s,f)) return;
+            playPos(s,f); if(this.onCell) this.onCell(s,f);
+          });
         }
         row.appendChild(c); this.cells[s][f]=dot;
       }
@@ -741,6 +932,10 @@ class Fretboard{
     el.appendChild(board);
     this.paint();
     function cell(txt){ const c=document.createElement('div'); c.className='cell'; c.textContent=txt; return c; }
+  }
+  setCapo(n){
+    this.capoCells.forEach((d,i)=> d.className = (n>0 && i===n+1) ? 'capoon' : '');
+    return this;
   }
   clear(){ this.marks.clear(); return this; }
   set(s,f,cls,label){ if(s<0||s>=this.strings||f<0||f>this.frets) return this; this.marks.set(this.key(s,f),{cls,label:label==null?'':label}); return this; }
@@ -763,7 +958,7 @@ class Fretboard{
    tabs & global controls
    ============================================================ */
 const $ = id => document.getElementById(id);
-const VIEWS = ['explore','game','pent','circle','theory'];
+const VIEWS = ['play','explore','game','pent','circle','theory'];
 function showView(v){
   VIEWS.forEach(x=> $('v-'+x).classList.toggle('hide', x!==v));
   [...$('tabs').children].forEach(b=> b.setAttribute('aria-selected', String(b.dataset.v===v)));
@@ -772,6 +967,8 @@ function showView(v){
   if(v==='game') gameLayout();
   if(v==='circle') renderCircle();
   if(v==='theory') renderTheory();
+  if(v==='play') renderPlay();
+  plLoop(v==='play');
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) showView(b.dataset.v); });
@@ -786,7 +983,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
   $('g-sound').checked = S.sound;
   document.documentElement.dataset.theme = S.theme;
 
-  const relayout = ()=>{ [fbE,fbG,fbP].forEach(fb=> fb && fb.layout()); redrawAll(); };
+  const relayout = ()=>{ [fbE,fbG,fbP,fbW].forEach(fb=> fb && fb.layout()); redrawAll(); };
   tu.onchange = e=>{ S.tuningName=e.target.value; store.set('tuning',S.tuningName); relayout(); game.strings.clear(); gameStrings(); };
   $('g-frets').onchange = e=>{ S.frets=+e.target.value; store.set('frets',S.frets); relayout(); gameLayout(); };
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
@@ -797,7 +994,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
     document.documentElement.dataset.theme = S.theme; store.set('theme',S.theme);
   };
 })();
-function redrawAll(){ renderExplore(); renderPent(); renderCircle(); renderTheory(); if(game.q) drawQuestion(); }
+function redrawAll(){ renderExplore(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
 
 function fillRoots(sel, val){
   ROOT_CHOICES.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=pretty(r); sel.appendChild(o); });
@@ -1403,7 +1600,337 @@ function renderTheory(){
 /* ============================================================
    boot
    ============================================================ */
-renderExplore(); renderPent(); renderTheory();
+/* ============================================================
+   SOUND PLAYGROUND
+   ============================================================ */
+const PL = {timbre:'string', win:20, live:false, hold:false, keep:true, ghost:true,
+            A:null, B:null, root:'A', scale:'minPent', labels:'name', capo:0, sweeping:false};
+
+const fbW = new Fretboard('fb-play', {clickable:true, canPlay:(s,f)=> f>=PL.capo});
+
+function pitchName(midi){ return pretty(nameOf(((midi%12)+12)%12, PL.root)) + (Math.floor(midi/12)-1); }
+function periodMs(f){ return 1000/f; }
+
+/* harmonic amplitudes of a string plucked about a fifth of the way along */
+const HARM = {
+  sine:  [1],
+  string:Array.from({length:12},(_,i)=> Math.sin((i+1)*Math.PI*0.22)/((i+1)*(i+1)))
+};
+const HARM_NORM = {};
+function harmNorm(t){
+  if(HARM_NORM[t]) return HARM_NORM[t];
+  let max=0;
+  for(let i=0;i<=512;i++){
+    let y=0; HARM[t].forEach((a,k)=> y += a*Math.sin(2*Math.PI*(k+1)*i/512));
+    max=Math.max(max,Math.abs(y));
+  }
+  return HARM_NORM[t] = max||1;
+}
+function waveAt(t, f, timbre){
+  let y=0; HARM[timbre].forEach((a,k)=> y += a*Math.sin(2*Math.PI*(k+1)*f*t));
+  return y/harmNorm(timbre);
+}
+
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function fitCanvas(cv, h){
+  const dpr = Math.min(2, window.devicePixelRatio||1);
+  const w = cv.clientWidth || 600;
+  cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx, w, h};
+}
+
+function drawWave(){
+  const cv = $('pl-wave'); if(!cv || !cv.clientWidth) return;
+  const {ctx, w:W, h:H} = fitCanvas(cv, 230);
+  ctx.clearRect(0,0,W,H);
+  const line = cssVar('--line'), muted = cssVar('--muted'), blue = cssVar('--blue'), rootc = cssVar('--root');
+  const win = PL.win/1000, mid = H/2, amp = H*0.38;
+
+  ctx.lineWidth = 1;
+  for(let ms=0; ms<=PL.win; ms++){
+    const x = Math.round(ms/PL.win*W)+0.5;
+    ctx.strokeStyle = line; ctx.globalAlpha = ms%5===0 ? 1 : 0.45;
+    ctx.beginPath(); ctx.moveTo(x,14); ctx.lineTo(x,H-16); ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  ctx.strokeStyle = line; ctx.beginPath(); ctx.moveTo(0,mid+0.5); ctx.lineTo(W,mid+0.5); ctx.stroke();
+  ctx.fillStyle = muted; ctx.font = '10px ui-monospace,Consolas,monospace';
+  for(let ms=0; ms<=PL.win; ms+=5){
+    const x = ms/PL.win*W;
+    ctx.textAlign = ms===0 ? 'left' : (ms===PL.win ? 'right' : 'center');
+    ctx.fillText(ms+' ms', x, H-4);
+  }
+
+  if(PL.live && analyser && actx){
+    const buf = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buf);
+    let peak=0; for(let i=0;i<buf.length;i++) peak=Math.max(peak,Math.abs(buf[i]));
+    if(peak>0.004){
+      const sr = actx.sampleRate, need = Math.floor(win*sr);
+      let st = 0; const lim = Math.max(0, buf.length-need-1);
+      for(let i=1;i<lim;i++){ if(buf[i-1]<=0 && buf[i]>0){ st=i; break; } }
+      ctx.beginPath();
+      for(let x=0;x<=W;x++){
+        const i = st + Math.floor(x/W*need);
+        const y = mid - (buf[i]||0)/peak*amp;
+        x ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+      }
+      ctx.strokeStyle = muted; ctx.globalAlpha=0.45; ctx.lineWidth=1.5; ctx.stroke(); ctx.globalAlpha=1;
+    }
+  }
+
+  const plot = (slot, color, width)=>{
+    if(!slot) return;
+    const f = midiToFreq(slot.midi);
+    ctx.beginPath();
+    for(let x=0;x<=W;x++){
+      const y = mid - waveAt(x/W*win, f, PL.timbre)*amp;
+      x ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin='round'; ctx.stroke();
+  };
+  plot(PL.B, rootc, 2);
+  plot(PL.A, blue, 2.4);
+
+  if(PL.A){
+    const per = 1/midiToFreq(PL.A.midi);
+    const px = per/win*W;
+    if(px>16 && px<W){
+      ctx.strokeStyle = blue; ctx.globalAlpha=0.75; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(0,18); ctx.lineTo(px,18);
+      ctx.moveTo(0,14); ctx.lineTo(0,22); ctx.moveTo(px,14); ctx.lineTo(px,22); ctx.stroke();
+      ctx.globalAlpha=1; ctx.fillStyle = blue; ctx.textAlign='left'; ctx.font='11px ui-sans-serif,system-ui';
+      if(px>110) ctx.fillText('one cycle - '+(per*1000).toFixed(2)+' ms', 6, 12);
+    }
+  }
+  if(!PL.A && !PL.B){
+    ctx.fillStyle = muted; ctx.textAlign='center'; ctx.font='13px ui-sans-serif,system-ui';
+    ctx.fillText('Click a fret on the neck below', W/2, mid-8);
+  }
+
+  const cyc = sl => sl ? (PL.win/1000*midiToFreq(sl.midi)).toFixed(1) : null;
+  $('pl-winlabel').innerHTML = PL.A
+    ? '· ' + PL.win + ' ms of sound — <b style="color:var(--blue)">A: ' + cyc(PL.A) + ' cycles</b>'
+      + (PL.B ? ' · <b style="color:var(--root)">B: ' + cyc(PL.B) + ' cycles</b>' : '')
+    : '';
+}
+
+function drawHarm(){
+  const cv = $('pl-harm'); if(!cv || !cv.clientWidth) return;
+  const {ctx, w:W, h:H} = fitCanvas(cv, 132);
+  ctx.clearRect(0,0,W,H);
+  const muted = cssVar('--muted'), scalec = cssVar('--scale'), blue = cssVar('--blue');
+  const src = PL.A || PL.B;
+  if(!src){
+    ctx.fillStyle = muted; ctx.textAlign='center'; ctx.font='13px ui-sans-serif,system-ui';
+    ctx.fillText('Play a note to see its harmonics', W/2, H/2);
+    $('pl-harmrow').innerHTML=''; return;
+  }
+  const amps = HARM[PL.timbre], n = PL.timbre==='sine' ? 1 : 10;
+  const f0 = midiToFreq(src.midi);
+  const max = Math.max.apply(null, amps.slice(0,n).map(Math.abs));
+  const bw = W/n, base = H-20;
+  ctx.font='10px ui-monospace,Consolas,monospace'; ctx.textAlign='center';
+  for(let i=0;i<n;i++){
+    const a = Math.abs(amps[i])/max, x = i*bw + bw*0.5, bh = Math.max(2, a*(base-14));
+    ctx.fillStyle = i===0 ? blue : scalec;
+    ctx.globalAlpha = i===0 ? 1 : 0.35 + 0.55*a;
+    ctx.fillRect(x-Math.min(16,bw*0.34), base-bh, Math.min(32,bw*0.68), bh);
+    ctx.globalAlpha = 1; ctx.fillStyle = muted;
+    ctx.fillText(String(i+1), x, base+13);
+  }
+  const rows=[];
+  for(let i=0;i<Math.min(n,6);i++){
+    const semi = Math.round(12*Math.log2(i+1));
+    const what = i===0 ? 'the note itself' : (semi%12===0 ? 'octave' : IVL_NAME[semi%12]);
+    rows.push('<span><b>'+(i+1)+'×</b> '+Math.round(f0*(i+1))+' Hz · '+pitchName(src.midi+semi)+' — '+what+'</span>');
+  }
+  $('pl-harmrow').innerHTML = rows.join('');
+}
+
+const JUST = {0:'1:1',1:'16:15',2:'9:8',3:'6:5',4:'5:4',5:'4:3',6:'45:32',7:'3:2',8:'8:5',9:'5:3',10:'16:9',11:'15:8',12:'2:1'};
+function slotCard(slot, tag){
+  if(!slot) return '<div class="tag">'+tag+'</div><div class="none">— nothing loaded —</div>';
+  const f = midiToFreq(slot.midi), t = tuning();
+  return '<div class="tag">'+tag+'</div>'
+    + '<div class="big">'+pitchName(slot.midi)+' <small>'+f.toFixed(1)+' Hz</small></div>'
+    + '<div class="num">string <b>'+(t.length-slot.s)+'</b> · fret <b>'+slot.f+'</b>'
+    + '&nbsp;·&nbsp; one swing takes <b>'+periodMs(f).toFixed(2)+' ms</b></div>';
+}
+function renderRatio(){
+  const el = $('pl-ratio');
+  if(!PL.A || !PL.B){
+    el.innerHTML = '<span class="hint">Load a second note into B — the quick buttons below do it for you — and both waves are drawn across the same slice of time, so you can compare them directly.</span>';
+    return;
+  }
+  const d = PL.B.midi - PL.A.midi, ad = Math.abs(d);
+  const r = Math.pow(2, d/12);
+  const octs = Math.floor(ad/12), rem = ad%12;
+  let name;
+  if(ad===0) name = 'the same note';
+  else if(rem===0) name = octs===1 ? 'an octave' : octs+' octaves';
+  else if(octs) name = octs+' octave'+(octs>1?'s':'')+' + '+IVL_NAME[rem];
+  else name = (/^[aeiou]/i.test(IVL_NAME[rem]) ? 'an ' : 'a ') + IVL_NAME[rem];
+  const just = ad<=12 ? JUST[ad] : null;
+  const shown = just ? (d>=0 ? just : just.split(':').reverse().join(':')) : null;
+  const dir = d>0 ? 'higher' : d<0 ? 'lower' : '';
+  let lock;
+  if(ad===0) lock = 'Identical waves, drawn on top of each other.';
+  else if([12,7,5,4,3,9,8].indexOf(ad)>=0) lock = 'A simple fraction, so the two waves line up again quickly. That agreement is what we hear as consonance.';
+  else if(ad===6) lock = 'Nearly 45:32 — the waves take an age to line up again, which is exactly why a tritone sounds so restless.';
+  else lock = 'An awkward fraction, so the combined pattern takes a long time to repeat. Held together, it sounds tense.';
+  el.innerHTML = '<div class="lead">B is <em>'+name+'</em> '+dir+(ad?' than A':'')+'</div>'
+    + '<div class="num" style="font-size:.9rem;color:var(--muted)">'
+    + (ad ? ad+' semitone'+(ad>1?'s':'')+' · '+ad+' fret'+(ad>1?'s':'')+' apart · ' : '')
+    + 'B swings <b style="color:var(--text)">'+r.toFixed(3)+'×</b> as fast as A'
+    + (shown ? ' — very nearly <b style="color:var(--text)">'+shown+'</b>' : '')
+    + '</div><p style="margin:8px 0 0;font-size:.9rem">'+lock+'</p>';
+}
+
+function setSlot(which, s, f, opts){
+  opts = opts || {};
+  const midi = midiAt(s,f);
+  if(which==='A' && PL.keep && PL.A) PL.B = PL.A;
+  PL[which] = {s:s, f:f, midi:midi};
+  if(!opts.silent) playSlot(which);
+  renderPlay();
+}
+function playSlot(which){
+  const slot = PL[which]; if(!slot) return;
+  const f = midiToFreq(slot.midi);
+  if(PL.timbre==='sine'){
+    toneOn('pl'+which, f);
+    if(!PL.hold) setTimeout(function(){ toneOff('pl'+which); }, 1500);
+  } else pluck(slot.midi, 0, 2.2, 0.5);
+}
+function renderPlay(){
+  if(typeof fbW==='undefined' || !fbW) return;
+  const t = tuning(), def = SCALES[PL.scale], rootPc = pcOf(PL.root);
+  const spelled = spellScale(PL.root, def.iv);
+  const set = new Set(def.iv.map(i=>(rootPc+i)%12));
+  fbW.clear();
+  for(let s=0;s<t.length;s++) for(let f=0;f<=S.frets;f++){
+    const pc = (t[s]+f)%12, iv = ((pc-rootPc)+12)%12;
+    if(f < PL.capo){ fbW.set(s,f,'mute',''); continue; }
+    let lab = '';
+    if(PL.labels==='pitch') lab = pitchName(midiAt(s,f));
+    else if(PL.labels==='deg') lab = IVL_SHORT[iv];
+    else if(PL.labels==='name') lab = (spelled && set.has(pc)) ? pretty(spelled[def.iv.indexOf(iv)]) : pretty(nameOf(pc, PL.root));
+    if(set.has(pc)) fbW.set(s,f, iv===0?'root':'on', lab);
+    else if(PL.ghost) fbW.set(s,f,'ghost', PL.labels==='none'?'':lab);
+  }
+  if(PL.B && !(PL.A && PL.A.s===PL.B.s && PL.A.f===PL.B.f) && PL.B.f<=S.frets){
+    const m = fbW.marks.get(PL.B.s+':'+PL.B.f);
+    fbW.set(PL.B.s, PL.B.f, (m?m.cls:'ghost')+' pickedB', m?m.label:'');
+  }
+  if(PL.A){
+    const m = fbW.marks.get(PL.A.s+':'+PL.A.f);
+    fbW.set(PL.A.s, PL.A.f, (m?m.cls:'ghost')+' picked', m?m.label:'');
+  }
+  fbW.setCapo(PL.capo).paint(PL.root);
+
+  $('pl-slotA').innerHTML = slotCard(PL.A,'A — blue');
+  $('pl-slotB').innerHTML = slotCard(PL.B,'B — orange');
+  renderRatio(); drawWave(); drawHarm();
+
+  const opens = t.map(function(v){ return pretty(nameOf((v+PL.capo)%12, PL.root)); }).join(' ');
+  $('w-capotext').textContent = PL.capo
+    ? 'Capo on fret '+PL.capo+' — your open strings are now '+opens+', and every shape you play sounds '+PL.capo+' semitone'+(PL.capo>1?'s':'')+' higher.'
+    : 'Click a fret to load it into A.';
+}
+
+let plRafId = null;
+function plLoop(on){
+  if(on && PL.live){
+    if(plRafId==null){ const step=function(){ drawWave(); plRafId=requestAnimationFrame(step); }; plRafId=requestAnimationFrame(step); }
+  } else if(plRafId!=null){ cancelAnimationFrame(plRafId); plRafId=null; }
+}
+
+(function initPlay(){
+  fillRoots($('w-root'), PL.root);
+  const grp={};
+  Object.entries(SCALES).forEach(function(e){ (grp[e[1].grp] = grp[e[1].grp] || []).push(e); });
+  Object.entries(grp).forEach(function(g){
+    const og=document.createElement('optgroup'); og.label=g[0];
+    g[1].forEach(function(e){ const o=document.createElement('option'); o.value=e[0]; o.textContent=e[1].n; og.appendChild(o); });
+    $('w-scale').appendChild(og);
+  });
+  $('w-scale').value = PL.scale;
+  for(let i=0;i<=12;i++){ const o=document.createElement('option'); o.value=i; o.textContent = i ? 'Fret '+i : 'No capo'; $('w-capo').appendChild(o); }
+
+  $('w-root').onchange = function(e){ PL.root=e.target.value; renderPlay(); };
+  $('w-scale').onchange = function(e){ PL.scale=e.target.value; renderPlay(); };
+  $('w-capo').onchange = function(e){
+    PL.capo=+e.target.value;
+    ['A','B'].forEach(function(k){ if(PL[k] && PL[k].f<PL.capo) PL[k]=null; });
+    renderPlay();
+  };
+  $('w-ghost').onchange = function(e){ PL.ghost=e.target.checked; renderPlay(); };
+  $('w-labels').onclick = function(e){
+    const b=e.target.closest('button'); if(!b) return;
+    PL.labels=b.dataset.l;
+    [...e.currentTarget.children].forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+    renderPlay();
+  };
+
+  $('pl-timbre').onclick = function(e){
+    const b=e.target.closest('button'); if(!b) return;
+    PL.timbre=b.dataset.t;
+    [...e.currentTarget.children].forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+    allTonesOff(); renderPlay();
+  };
+  $('pl-win').onchange = function(e){ PL.win=+e.target.value; drawWave(); };
+  $('pl-live').onchange = function(e){ PL.live=e.target.checked; audio(); plLoop(!$('v-play').classList.contains('hide')); drawWave(); };
+  $('pl-hold').onchange = function(e){ PL.hold=e.target.checked; if(!PL.hold) allTonesOff(); };
+  $('pl-keep').onchange = function(e){ PL.keep=e.target.checked; };
+  $('pl-clearb').onclick = function(){ PL.B=null; toneOff('plB'); renderPlay(); };
+
+  document.querySelectorAll('.quick button[data-iv]').forEach(function(b){
+    b.onclick = function(){
+      if(!PL.A) return;
+      const d = +b.dataset.iv, t = tuning();
+      let s = PL.A.s, f = PL.A.f + d;
+      while(f > S.frets && s < t.length-1){ f -= (((t[s+1]-t[s])%12)+12)%12; s++; }
+      while(f < PL.capo && s > 0){ f += (((t[s]-t[s-1])%12)+12)%12; s--; }
+      if(f < PL.capo || f > S.frets || f < 0) PL.B = {s:PL.A.s, f:PL.A.f, midi:PL.A.midi + d};
+      else PL.B = {s:s, f:f, midi: midiAt(s,f)};
+      playSlot('B'); renderPlay();
+    };
+  });
+  $('pl-both').onclick = function(){
+    audio();
+    if(PL.timbre==='sine'){
+      if(PL.A) toneOn('plA', midiToFreq(PL.A.midi));
+      if(PL.B) toneOn('plB', midiToFreq(PL.B.midi));
+      if(!PL.hold) setTimeout(function(){ toneOff('plA'); toneOff('plB'); }, 2000);
+    } else {
+      if(PL.A) pluck(PL.A.midi, 0, 2.4, 0.45);
+      if(PL.B) pluck(PL.B.midi, 0.02, 2.4, 0.45);
+    }
+  };
+  $('pl-sweep').onclick = function(){
+    if(PL.sweeping) return;
+    PL.sweeping = true;
+    const s = PL.A ? PL.A.s : 0, keep = PL.keep;
+    PL.keep = false; PL.B = null;
+    for(let i=0;i<=12;i++) setTimeout(function(){
+      setSlot('A', s, Math.min(S.frets, PL.capo+i));
+      if(i===12){
+        PL.keep = keep; PL.sweeping = false;
+        PL.B = {s:s, f:PL.capo, midi:midiAt(s,PL.capo)};
+        renderPlay();
+      }
+    }, i*340);
+  };
+
+  fbW.onCell = function(s,f){ if(f<PL.capo) return; setSlot('A', s, f, {silent:true}); };
+  window.addEventListener('resize', function(){
+    if(!$('v-play').classList.contains('hide')){ drawWave(); drawHarm(); }
+  });
+})();
+
+renderExplore(); renderPent(); renderTheory(); renderPlay();
 </script>
 </body>
 </html>
