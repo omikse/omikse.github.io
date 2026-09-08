@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Paste this into: Firebase console -> Firestore Database -> Rules -> Publish.
+//
+// Everything is scoped to the signed-in user's own uid. Nobody can read or
+// write anyone else's profile or attempts, and finished attempts are
+// immutable -- an exam history you can rewrite is not a history.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function validProfile() {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+               'uid', 'displayName', 'email', 'photoURL',
+               'createdAt', 'lastLoginAt', 'loginCount', 'attemptCount'
+             ])
+          && d.uid == request.auth.uid;
+    }
+
+    function validAttempt() {
+      let d = request.resource.data;
+      return d.keys().hasAll(['examId', 'answers', 'score', 'maxScore'])
+          && d.examId is string
+          && d.answers is map
+          && d.answers.size() <= 100
+          && d.score is int && d.score >= 0
+          && d.maxScore is int && d.maxScore > 0
+          && d.score <= d.maxScore;
+    }
+
+    match /users/{uid} {
+      allow read:   if isOwner(uid);
+      allow create: if isOwner(uid) && validProfile();
+      allow update: if isOwner(uid) && validProfile();
+      allow delete: if false;
+
+      match /attempts/{attemptId} {
+        allow read:   if isOwner(uid);
+        allow create: if isOwner(uid) && validAttempt();
+        allow update, delete: if false;   // append-only history
+      }
+    }
+
+    // Anything not matched above is denied by default.
+  }
+}

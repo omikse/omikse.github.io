@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo logowania — zdamto.io</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📘</text></svg>">
+</head>
+<body>
+
+<!-- Shown only when firebase-config.js still holds placeholders -->
+<div id="setup-banner" class="banner" hidden>
+  <strong>Firebase nie jest jeszcze skonfigurowany.</strong>
+  Wklej swoją konfigurację do <code>firebase-config.js</code> — instrukcja krok po kroku jest w <code>README.md</code>.
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">📘</span>
+    <div>
+      <div class="brand-name">zdamto.io</div>
+      <div class="brand-sub">demo logowania i historii podejść</div>
+    </div>
+  </div>
+  <div id="auth-slot" class="auth-slot">
+    <button id="signin-top" class="btn btn-google" hidden>
+      <span class="g">G</span> Zaloguj się
+    </button>
+    <div id="user-chip" class="user-chip" hidden>
+      <img id="chip-avatar" alt="" width="28" height="28">
+      <span id="chip-name"></span>
+      <button id="signout" class="btn btn-ghost">Wyloguj</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ SIGNED OUT ============ -->
+  <section id="view-signedout" class="view" hidden>
+    <div class="hero">
+      <h1>Zaloguj się kontem Google</h1>
+      <p class="lede">
+        Demo pokazuje pełną ścieżkę: logowanie Google → zapis profilu w bazie →
+        rozwiązanie krótkiego testu → zapis odpowiedzi → historia podejść.
+        Twoje dane widzisz tylko Ty.
+      </p>
+      <button id="signin-hero" class="btn btn-google btn-lg">
+        <span class="g">G</span> Zaloguj się przez Google
+      </button>
+      <p id="auth-error" class="error" hidden></p>
+    </div>
+
+    <div class="explainer">
+      <h2>Co dokładnie trafia do bazy</h2>
+      <pre class="tree"><code>users/{uid}
+  ├─ displayName, email, photoURL
+  ├─ createdAt, lastLoginAt, loginCount
+  └─ attempts/{attemptId}          <span class="dim">← historia podejść</span>
+       ├─ examId, examTitle
+       ├─ answers: { "1": …, "2": …, "3": … }
+       └─ score, maxScore, finishedAt</code></pre>
+      <p class="note">
+        To uproszczona wersja docelowego modelu — jeden dokument na podejście,
+        odpowiedzi kluczowane numerem zadania, dokładnie jak w prawdziwym arkuszu.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ SIGNED IN ============ -->
+  <section id="view-signedin" class="view" hidden>
+
+    <div class="grid">
+      <!-- Profile -->
+      <article class="card profile-card">
+        <h2>Twój profil</h2>
+        <div class="profile">
+          <img id="p-avatar" class="avatar" alt="" width="64" height="64">
+          <div>
+            <div id="p-name" class="p-name"></div>
+            <div id="p-email" class="p-email"></div>
+          </div>
+        </div>
+        <dl class="kv">
+          <div><dt>UID</dt><dd id="p-uid" class="mono"></dd></div>
+          <div><dt>Konto od</dt><dd id="p-created"></dd></div>
+          <div><dt>Logowań</dt><dd id="p-logins"></dd></div>
+          <div><dt>Podejść</dt><dd id="p-attempts"></dd></div>
+        </dl>
+      </article>
+
+      <!-- Quiz -->
+      <article class="card quiz-card">
+        <div class="card-head">
+          <h2>Mini-arkusz demonstracyjny</h2>
+          <span class="pill" id="quiz-points">3 pkt</span>
+        </div>
+        <form id="quiz"></form>
+        <div class="quiz-actions">
+          <button id="submit-quiz" class="btn btn-primary" type="button">Zapisz podejście</button>
+          <button id="reset-quiz" class="btn btn-ghost" type="button" hidden>Rozwiąż jeszcze raz</button>
+          <span id="quiz-status" class="status"></span>
+        </div>
+      </article>
+    </div>
+
+    <!-- History -->
+    <article class="card history-card">
+      <div class="card-head">
+        <h2>Historia podejść</h2>
+        <button id="refresh-history" class="btn btn-ghost btn-sm">Odśwież</button>
+      </div>
+      <div id="history"><p class="muted">Wczytywanie…</p></div>
+    </article>
+
+  </section>
+
+  <p id="boot-error" class="error boot-error" hidden></p>
+
+</main>
+
+<footer>
+  Demo · Firebase Auth + Cloud Firestore · hostowane na GitHub Pages
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
