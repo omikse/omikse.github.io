@@ -345,6 +345,14 @@ details[open] summary{margin-bottom:8px}
 #jam-chords .pill.on{transform:scale(1.06)}
 #jam-play.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
 #jam-now{min-height:2.6em; font-size:.92rem}
+
+/* ---------- metronome ---------- */
+.beats{display:flex; gap:7px; align-items:center}
+.beats i{width:13px; height:13px; border-radius:50%; background:var(--line2); transition:background .06s, transform .06s}
+.beats i.on{background:var(--scale); transform:scale(1.35)}
+.beats i.on.acc{background:var(--root)}
+#met-play.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
+#met-tap{min-width:104px}
 .hide{display:none !important}
 </style>
 </head>
@@ -623,6 +631,7 @@ details[open] summary{margin-bottom:8px}
         <input type="range" id="jam-bpm" min="50" max="160" value="90" step="2" style="flex:1;accent-color:var(--root)">
         <span class="mono hint" id="jam-bpmv">90</span>
       </div>
+      <label class="chk" style="padding:0"><input type="checkbox" id="jam-count" checked> Count in</label>
     </div>
     <div id="jam-chords"></div>
     <div id="jam-now"></div>
@@ -636,6 +645,26 @@ details[open] summary{margin-bottom:8px}
       <span><i style="background:var(--scale)"></i>Scale tone</span>
       <span><i style="background:transparent;box-shadow:0 0 0 2px var(--blue);border-radius:50%"></i>In the chord playing now</span>
       <span class="hint">Click a fret to hear it against the track.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Metronome</h3>
+    <p class="hint" style="margin-bottom:12px">Runs on the same clock as the loop, so you can have either or both.
+    Playing a scale slowly and exactly in time is worth more than playing it fast and nearly.</p>
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+      <button class="btn primary" id="met-play" style="padding:10px 16px">▶ Click</button>
+      <button class="btn" id="met-tap">Tap tempo</button>
+      <div class="f"><label for="met-sig">Bar</label><select id="met-sig">
+        <option value="4" selected>4 beats</option><option value="3">3 beats</option>
+        <option value="6">6 beats</option><option value="2">2 beats</option>
+      </select></div>
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:170px">
+        <span class="hint">Tempo</span>
+        <input type="range" id="met-bpm" min="40" max="200" value="90" step="1" style="flex:1;accent-color:var(--root)">
+        <span class="mono hint" id="met-bpmv">90</span>
+      </div>
+      <div class="beats" id="met-beats"></div>
     </div>
   </div>
 
@@ -1034,6 +1063,22 @@ function toneOff(id, fade=.08){
   delete voices[id];
 }
 function allTonesOff(){ Object.keys(voices).forEach(k=>toneOff(k)); }
+/* a short wooden tick; accented on beat one */
+function click(when, accent){
+  if(!S.sound) return;
+  const ctx = audio(); if(!ctx || !master) return;
+  const t = ctx.currentTime + Math.max(0, when);
+  const o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+  o.type = 'square';
+  o.frequency.setValueAtTime(accent ? 1600 : 1050, t);
+  o.frequency.exponentialRampToValueAtTime(accent ? 760 : 560, t+0.03);
+  f.type='bandpass'; f.frequency.value = accent ? 1500 : 1000; f.Q.value = 1.2;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(accent ? 0.34 : 0.2, t+0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.055);
+  o.connect(f).connect(g).connect(master);
+  o.start(t); o.stop(t+0.09);
+}
 function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 function pluck(midi, when=0, dur=1.4, vol=.5){
   if(!S.sound) return;
@@ -2310,7 +2355,13 @@ function jamStart(){
     if(v) prev = v.minFret;
   });
   JAM.playing = true; JAM.idx = 0;
-  JAM.nextTime = ctx.currentTime + 0.15;
+  const beat = 60/JAM.bpm;
+  let lead = 0.15;
+  if($('jam-count') && $('jam-count').checked){
+    for(let b=0;b<4;b++) click(lead + b*beat, b===0);
+    lead += beat*4;
+  }
+  JAM.nextTime = ctx.currentTime + lead;
   $('jam-play').textContent = '■ Stop';
   $('jam-play').classList.add('on');
   jamTick();
@@ -2391,6 +2442,69 @@ function renderJam(){
     + def.iv.map(i=>IVL_SHORT[i]).join(' · ')
     + (SCALE_BLURB[JAM.scale] ? '<br><span class="hint">'+SCALE_BLURB[JAM.scale]+'</span>' : '');
 }
+
+/* ---- metronome, sharing the audio clock with the loop ---- */
+const MET = {on:false, bpm:90, beats:4, beat:0, nextTime:0, timer:null, taps:[]};
+function metDots(){
+  const w = $('met-beats'); if(!w) return;
+  if(w.children.length !== MET.beats)
+    w.innerHTML = Array.from({length:MET.beats},()=> '<i></i>').join('');
+  [...w.children].forEach((el,i)=>{
+    el.classList.toggle('on', MET.on && i===MET.beat);
+    el.classList.toggle('acc', i===0);
+  });
+}
+function metStop(){
+  MET.on = false;
+  if(MET.timer) clearTimeout(MET.timer);
+  MET.timer = null;
+  $('met-play').textContent = '▶ Click';
+  $('met-play').classList.remove('on');
+  metDots();
+}
+function metStart(){
+  const ctx = audio(); if(!ctx) return;
+  MET.on = true; MET.beat = 0;
+  MET.nextTime = ctx.currentTime + 0.08;
+  $('met-play').textContent = '■ Stop';
+  $('met-play').classList.add('on');
+  metTick();
+}
+function metTick(){
+  const ctx = actx; if(!ctx || !MET.on) return;
+  const spb = 60/MET.bpm;
+  while(MET.nextTime < ctx.currentTime + 0.6){
+    const b = MET.beat;
+    click(MET.nextTime - ctx.currentTime, b===0);
+    const lead = (MET.nextTime - ctx.currentTime)*1000;
+    setTimeout(()=>{ if(MET.on){ MET.beat = b; metDots(); } }, Math.max(0, lead));
+    MET.beat = (b+1) % MET.beats;
+    MET.nextTime += spb;
+  }
+  MET.timer = setTimeout(metTick, 110);
+}
+
+(function initMetronome(){
+  metDots();
+  $('met-play').onclick = ()=> MET.on ? metStop() : metStart();
+  $('met-sig').onchange = e=>{ MET.beats=+e.target.value; MET.beat=0; metDots(); };
+  $('met-bpm').oninput = e=>{ MET.bpm=+e.target.value; $('met-bpmv').textContent=e.target.value; };
+  $('met-tap').onclick = ()=>{
+    const now = performance.now();
+    MET.taps = MET.taps.filter(t=> now-t < 2500);
+    MET.taps.push(now);
+    if(MET.taps.length>=2){
+      const gaps = [];
+      for(let i=1;i<MET.taps.length;i++) gaps.push(MET.taps[i]-MET.taps[i-1]);
+      const avg = gaps.reduce((a,b)=>a+b,0)/gaps.length;
+      const bpm = Math.max(40, Math.min(200, Math.round(60000/avg)));
+      MET.bpm = bpm; $('met-bpm').value = String(bpm); $('met-bpmv').textContent = String(bpm);
+      $('met-tap').textContent = bpm + ' bpm';
+    } else $('met-tap').textContent = 'keep tapping…';
+    clearTimeout($('met-tap')._r);
+    $('met-tap')._r = setTimeout(()=>{ $('met-tap').textContent='Tap tempo'; MET.taps=[]; }, 2600);
+  };
+})();
 
 (function initJam(){
   fillRoots($('jam-key'), JAM.key);

@@ -8,7 +8,7 @@ no network calls. Open it and it works.
 
 ---
 
-## The five views
+## The seven views
 
 ### Learn
 The default view, and the one meant for someone who has never read a fretboard diagram.
@@ -45,10 +45,51 @@ Four drills, all scored, with per-note accuracy kept in `localStorage`:
 | Find the note | You get a note and a string — click the right fret |
 | Find every octave | One position is shown — click every other place that note lives |
 | Find the interval | A reference note and an interval — click the target, any string |
+| Hear the interval | Two notes play, low then high — name the distance by ear |
+
+The ear mode is the one the diagrams cannot teach. Pick how many intervals are
+in play (three, seven or all twelve); after you answer it shows where the two notes
+were on the neck, so the sound and the shape arrive together. Accuracy per interval
+is tracked in its own panel.
 
 Filter by string, cap the fret range, restrict to naturals, and optionally run a clock.
 The accuracy bars show which note names you are actually slow on, which is more useful than
 the score.
+
+### Chords
+Every shape here was found by searching, not typed in from a chord book. For each
+four-fret window it enumerates one note per string and keeps the combinations that
+contain every note the chord needs — then throws out anything a hand cannot hold:
+more than four fingers, more than a four-fret stretch, a barre crossing a string
+meant to ring open, an open string buried between fretted ones up the neck. What
+survives is scored on fullness, open strings, finger count, stretch and whether
+the root is in the bass, then spread across the neck so you get a choice of
+positions instead of six versions of first position.
+
+It returns what it should: `x32010` for C, `x32000` for Cmaj7, `x3434x` for Cm7♭5,
+the E-shape barre at the eighth fret. Because it is a search, it works in drop D,
+open G, DADGAD, bass and ukulele with no extra data. Diagrams follow the printed
+convention — low string on the left, root dots in orange, barres as bars, position
+number beside the top fret. Click one to strum it; the selected shape appears on a
+full neck with its notes named.
+
+### Jam
+A backing track that loops, with a scale drawn over the whole neck. Pick a key and
+a progression — I–V–vi–IV, ii–V–I, I–vi–IV–V, a twelve-bar blues, or three minor
+ones — set a tempo, and play over it.
+
+The part that teaches: while a chord is sounding, the scale notes that belong to
+*that* chord get a blue ring. Landing on those is the difference between noodling
+over a progression and playing with it, and the ring makes it something you can
+see coming.
+
+The accompaniment picks its shapes with the chord search, weighted to stay near
+the previous shape without playing an awkward one, so I–V–vi–IV in A comes out
+`x02220 · 022100 · 244222 · xx0232` — what a guitarist would actually play.
+Scheduling runs about three quarters of a second ahead of the audio clock, so the
+loop keeps time regardless of what the page is doing. There is a count-in, and a
+metronome with tap tempo and 2/3/4/6 beats to the bar that shares the same clock,
+so you can run either or both.
 
 ### Pentatonics
 All five boxes for minor and major pentatonic, each labelled with the CAGED shape it belongs
@@ -83,6 +124,9 @@ Kept in `localStorage`, applied to every view:
 - **Left-handed** — mirrors the neck; the nut, fret wires and capo all flip with it
 - **Sound** — on/off
 - **Theme** — light and dark
+- **Share** — copies a link that encodes the view, root, scale, capo, labels,
+  chord, tuning, fret count, accidentals and handedness, so you can send someone
+  a setup rather than a list of instructions
 
 ---
 
@@ -106,6 +150,12 @@ can read whatever is actually sounding.
 - `toneOn(id, freq)` / `toneOff(id)` — sustained sine voices for the pure-tone mode.
 
 The context is created on the first note, not on load, so autoplay policy is satisfied.
+
+### Chord search
+`findVoicings(root, quality, maxFret, allowInversions)` returns scored, playable
+shapes; `fingersFor()` works out finger count and whether a barre is possible;
+`pickNear()` chooses between them for smooth movement through a progression. All
+three are shared by the Chords view, the circle's progression player and Jam.
 
 ### `Fretboard` class
 Builds a CSS-grid neck, one instance per view.
@@ -184,7 +234,7 @@ Audio needs a user gesture before it will start, in every browser. Clicking a fr
 
 ## Ideas not built yet
 
-- Chord voicings drawn on the neck from the Theory and Circle views
-- Ear training: hear an interval, name it
-- Shareable links that encode root, scale, tuning and capo
-- A metronome and a practice timer
+- A practice timer that logs what you drilled and for how long
+- Drum patterns under the Jam loop instead of bass and strum alone
+- Recording a phrase and hearing it back transposed to every key
+- Chord shapes for extensions past the thirteenth
