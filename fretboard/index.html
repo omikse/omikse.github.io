@@ -353,6 +353,25 @@ details[open] summary{margin-bottom:8px}
 .beats i.on.acc{background:var(--root)}
 #met-play.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
 #met-tap{min-width:104px}
+
+/* ---------- a note lighting up as it sounds ---------- */
+.fb .dot.lit{
+  transform:scale(1.28); z-index:5;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 60%, transparent), 0 2px 6px rgba(0,0,0,.5);
+}
+@media (prefers-reduced-motion: reduce){ .fb .dot{transition:none} .fb .dot.lit{transform:none} }
+
+/* ---------- knowledge heatmap ---------- */
+.fb .dot.heat{border:0; font-size:.62rem; font-weight:700}
+.fb .dot.h0{background:rgba(150,160,172,.13); color:transparent}
+.fb .dot.h1{background:#c2405f; color:#fff}
+.fb .dot.h2{background:#d98324; color:#231202}
+.fb .dot.h3{background:#b6bf2c; color:#1b1d02}
+.fb .dot.h4{background:#35c2a5; color:#04211b}
+.days{display:flex; gap:5px; margin:8px 0 0}
+.days i{flex:1; height:26px; border-radius:5px; background:var(--panel2); border:1px solid var(--line2);
+  display:flex; align-items:center; justify-content:center; font-size:.6rem; color:var(--faint)}
+.days i.on{background:var(--scale); border-color:var(--scale); color:var(--scale-ink); font-weight:700}
 .hide{display:none !important}
 </style>
 </head>
@@ -535,7 +554,7 @@ details[open] summary{margin-bottom:8px}
     </div>
     <div class="timerbar" id="q-bar" style="visibility:hidden"><i></i></div>
     <div class="sep"></div>
-    <div class="prompt" id="q-prompt">Pick a mode and press <em>Start</em>.</div>
+    <div class="prompt" id="q-prompt" role="status" aria-live="polite">Pick a mode and press <em>Start</em>.</div>
     <div class="earbox hide" id="q-ear">
       <button class="big" id="q-replay">▶ Play it again</button>
       <button class="alt" id="q-together">Play both together</button>
@@ -543,8 +562,25 @@ details[open] summary{margin-bottom:8px}
     </div>
     <div class="fbwrap" style="margin-top:8px"><div class="fb" id="fb-game"></div></div>
     <div class="answers" id="q-answers"></div>
-    <div class="verdict" id="q-verdict"></div>
+    <div class="verdict" id="q-verdict" role="status" aria-live="polite"></div>
     <p class="hint" id="q-help" style="margin-top:10px">Keys <code>1</code>–<code>=</code> answer, <code>Space</code> skips to the next question.</p>
+  </div>
+
+  <div class="card">
+    <h3>Your neck, so far</h3>
+    <p class="hint" style="margin-bottom:12px" id="q-heat-sub"></p>
+    <div class="fbwrap"><div class="fb" id="fb-heat"></div></div>
+    <div class="legend">
+      <span><i style="background:rgba(150,160,172,.2)"></i>never asked</span>
+      <span><i style="background:#c2405f"></i>under half</span>
+      <span><i style="background:#d98324"></i>getting there</span>
+      <span><i style="background:#b6bf2c"></i>most of the time</span>
+      <span><i style="background:#35c2a5"></i>solid</span>
+    </div>
+    <div class="sep"></div>
+    <h3>Days you turned up</h3>
+    <div class="days" id="q-days"></div>
+    <p class="hint" style="margin:8px 0 0" id="q-days-sub"></p>
   </div>
 
   <div class="grid">
@@ -639,7 +675,7 @@ details[open] summary{margin-bottom:8px}
       </select></div>
     </div>
     <div id="jam-chords"></div>
-    <div id="jam-now"></div>
+    <div id="jam-now" role="status" aria-live="polite"></div>
   </div>
 
   <div class="card">
@@ -714,6 +750,7 @@ details[open] summary{margin-bottom:8px}
     </div>
     <label class="chk"><input type="checkbox" id="p-blues"> Add the blue note</label>
     <label class="chk"><input type="checkbox" id="p-rest"> Ghost the other positions</label>
+    <button class="btn ghost" id="p-play" title="Play the shape on screen, low to high and back">▶ Play this shape</button>
   </div>
 
   <div class="card">
@@ -1345,6 +1382,7 @@ function showView(v){
   if(v==='theory') renderTheory();
   if(v==='play') renderPlay();
   plLoop(v==='play');
+  if(typeof stopSequence==='function') stopSequence();
   if(v!=='jam' && typeof JAM!=='undefined' && JAM.playing) jamStop();
   window.scrollTo({top:0,behavior:'instant'});
 }
@@ -1360,7 +1398,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
   $('g-sound').checked = S.sound;
   document.documentElement.dataset.theme = S.theme;
 
-  const relayout = ()=>{ [fbG,fbP,fbW,fbC,fbJ].forEach(fb=> fb && fb.layout()); redrawAll(); };
+  const relayout = ()=>{ [fbG,fbP,fbW,fbC,fbJ,fbH].forEach(fb=> fb && fb.layout()); redrawAll(); };
   tu.onchange = e=>{ S.tuningName=e.target.value; store.set('tuning',S.tuningName); relayout(); game.strings.clear(); gameStrings(); };
   $('g-frets').onchange = e=>{ S.frets=+e.target.value; store.set('frets',S.frets); relayout(); gameLayout(); };
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
@@ -1386,6 +1424,24 @@ function fillRoots(sel, val){
 /* ============================================================
    LEARN — side info panel (what this scale is, where its roots live)
    ============================================================ */
+/* walk a list of [string, fret] positions, sounding and lighting each in turn */
+let seqTimers = [];
+function stopSequence(){ seqTimers.forEach(clearTimeout); seqTimers = []; }
+function playSequence(fb, seq, gap, vol){
+  stopSequence(); audio();
+  gap = gap || 0.30;
+  seq.forEach((pos, i)=>{
+    const st = pos[0], fr = pos[1];
+    pluck(midiAt(st, fr), i*gap, Math.max(0.9, gap*2.4), vol || 0.46);
+    seqTimers.push(setTimeout(()=>{
+      const d = fb.cells[st] && fb.cells[st][fr];
+      if(!d) return;
+      d.classList.add('lit');
+      seqTimers.push(setTimeout(()=> d.classList.remove('lit'), Math.min(gap*1000*0.85, 380)));
+    }, i*gap*1000));
+  });
+}
+
 function renderInfo(){
   const def = SCALES[PL.scale], rootPc = pcOf(PL.root), ivals = def.iv;
   const spelled = spellScale(PL.root, ivals);
@@ -1424,9 +1480,9 @@ function playScaleUp(){
   const def = SCALES[PL.scale], rootPc = pcOf(PL.root), t = tuning();
   const s = PL.A ? PL.A.s : 0;
   let start = PL.capo; while((t[s]+start)%12 !== rootPc) start++;
-  const seq = def.iv.concat([12]).map(i=>start+i).filter(f=> f<=S.frets);
-  audio();
-  seq.forEach((f,i)=> pluck(midiAt(s,f), i*0.32, 1.1, .45));
+  const up = def.iv.concat([12]).map(i=>start+i).filter(f=> f<=S.frets);
+  const seq = up.concat(up.slice(0,-1).reverse()).map(f=>[s,f]);
+  playSequence(fbW, seq, 0.30, 0.46);
 }
 
 /* ============================================================
@@ -1436,9 +1492,12 @@ const game = {
   mode:'name', hi:12, limit:0, naturals:false, earset:'core', strings:new Set(),
   q:null, score:0, streak:0, total:0, correct:0, times:[], t0:0, tick:null, locked:false, found:new Set()
 };
+const fbH = new Fretboard('fb-heat', {clickable:false, rowH:34});
 const fbG = new Fretboard('fb-game', {clickable:true, fretsFn:()=>Math.min(game.hi, S.frets)});
 const stats = store.get('stats', {best:0, byNote:{}});
 stats.byIvl = stats.byIvl || {};
+stats.byPos = stats.byPos || {};
+stats.days = stats.days || {};
 const EAR_SETS = {easy:[12,7,5], core:[12,7,5,4,3,9,8], all:[1,2,3,4,5,6,7,8,9,10,11,12]};
 
 (function initGame(){
@@ -1455,7 +1514,7 @@ const EAR_SETS = {easy:[12,7,5], core:[12,7,5,4,3,9,8], all:[1,2,3,4,5,6,7,8,9,1
   $('q-time').onchange = e=>{ game.limit=+e.target.value; };
   $('q-natural').onchange = e=>{ game.naturals=e.target.checked; };
   $('q-start').onclick = ()=>{ audio(); newQuestion(); };
-  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
+  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; stats.byPos={}; stats.days={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
   fbG.onCell = (s,f)=> onBoardClick(s,f);
   document.addEventListener('keydown', e=>{
     if($('v-game').classList.contains('hide')) return;
@@ -1485,7 +1544,7 @@ function gameStrings(){
     wrap.appendChild(b);
   }
 }
-function gameLayout(){ fbG.layout(); if($('q-strings').children.length!==tuning().length) gameStrings(); if(game.q) drawQuestion(); }
+function gameLayout(){ fbG.layout(); fbH.layout(); renderHeat(); if($('q-strings').children.length!==tuning().length) gameStrings(); if(game.q) drawQuestion(); }
 function updateHelp(){
   const h = {
     name:'A dot appears on the neck — name it. Keys <code>1</code>–<code>=</code> answer, <code>Space</code> for the next question.',
@@ -1713,7 +1772,12 @@ function resolve(ok, msg){
     const nk = SHARP[game.q.pc];
     const rec = stats.byNote[nk] || (stats.byNote[nk]={ok:0,n:0});
     rec.n++; if(ok) rec.ok++;
+    const pk = S.tuningName+'|'+game.q.s+':'+game.q.f;
+    const pr = stats.byPos[pk] || (stats.byPos[pk]={ok:0,n:0});
+    pr.n++; if(ok) pr.ok++;
   }
+  const today = new Date().toISOString().slice(0,10);
+  stats.days[today] = (stats.days[today]||0) + 1;
   store.set('stats',stats);
   flash(msg, ok?'ok':'no');
   updateScore(); renderStats();
@@ -1721,6 +1785,7 @@ function resolve(ok, msg){
   setTimeout(()=>{ if(game.locked) newQuestion(); }, ok?900:1900);
 }
 function renderStats(){
+  renderHeat();
   if(game.mode==='ear') return renderIvlStats();
   $('q-stats-title').textContent = 'Which notes trip you up';
   $('q-stats-sub').textContent = 'Accuracy per note name, across every session on this device.';
@@ -1737,6 +1802,45 @@ function renderStats(){
       <span class="t"><i style="width:${w}%"></i></span>
       <span class="n" style="color:var(--muted)">${r.pct==null?'—':r.pct+'% · '+r.count}</span></div>`;
   }).join('');
+}
+
+function renderHeat(){
+  if(typeof fbH==='undefined' || !fbH) return;
+  const t = tuning();
+  let asked = 0, solid = 0;
+  fbH.clear();
+  for(let s=0;s<t.length;s++) for(let f=0;f<=fbH.frets;f++){
+    const r = stats.byPos[S.tuningName+'|'+s+':'+f];
+    if(!r || !r.n){ fbH.set(s,f,'heat h0',''); continue; }
+    asked++;
+    const pct = r.ok/r.n;
+    const band = pct>=0.9 ? 4 : pct>=0.75 ? 3 : pct>=0.5 ? 2 : 1;
+    if(band===4) solid++;
+    fbH.set(s,f,'heat h'+band, String(Math.round(pct*100)));
+  }
+  fbH.paint();
+  const total = t.length*(fbH.frets+1);
+  $('q-heat-sub').innerHTML = asked
+    ? 'You have been asked about <b>'+asked+'</b> of '+total+' positions in this tuning, and <b>'+solid+'</b> of those are solid. The blanks are the map you have not drawn yet.'
+    : 'Nothing here yet. Play a few rounds of <em>Name the note</em> or <em>Find the note</em> and this fills in.';
+
+  const days = [], now = new Date();
+  let streak = 0, played = 0;
+  for(let i=6;i>=0;i--){
+    const d = new Date(now.getTime() - i*86400000).toISOString().slice(0,10);
+    const on = !!stats.days[d];
+    if(on) played++;
+    days.push('<i class="'+(on?'on':'')+'" title="'+d+(on?' — '+stats.days[d]+' answers':' — nothing')+'">'
+      + ['S','M','T','W','T','F','S'][new Date(d+'T12:00:00').getDay()] + '</i>');
+  }
+  for(let i=0;i<400;i++){
+    const d = new Date(now.getTime() - i*86400000).toISOString().slice(0,10);
+    if(stats.days[d]) streak++; else if(i>0) break;
+  }
+  $('q-days').innerHTML = days.join('');
+  $('q-days-sub').textContent = played
+    ? played + ' of the last 7 days' + (streak>1 ? ' — ' + streak + ' in a row right now. Five minutes a day beats an hour on Sunday.' : '.')
+    : 'Nothing logged this week.';
 }
 
 function renderIvlStats(){
@@ -1763,6 +1867,19 @@ const fbP = new Fretboard('fb-pent');
   $('p-type').onchange=e=>{ S.pType=e.target.value; renderPent(); };
   $('p-blues').onchange=e=>{ S.pBlues=e.target.checked; renderPent(); };
   $('p-rest').onchange=e=>{ S.pRest=e.target.checked; renderPent(); };
+  $('p-play').onclick = ()=>{
+    const asc = [];
+    for(let st=0; st<fbP.strings; st++){
+      const frets = [];
+      for(let f=0; f<=fbP.frets; f++){
+        const m = fbP.marks.get(st+':'+f);
+        if(m && m.cls !== 'ghost') frets.push(f);
+      }
+      frets.sort((a,b)=>a-b).forEach(f=> asc.push([st,f]));
+    }
+    if(!asc.length) return;
+    playSequence(fbP, asc.concat(asc.slice(0,-1).reverse()), 0.24, 0.46);
+  };
   $('p-labels').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
     S.pLabels=b.dataset.l; [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b))); renderPent(); };
   const bx=$('p-boxes');
