@@ -45,6 +45,27 @@ jest historią.
 
 ---
 
+## Stan: już skonfigurowane
+
+Projekt **`zdamto-demo`** działa — poniższe kroki są zrobione, zostawione jako
+instrukcja na wypadek stawiania tego od zera (np. drugi projekt na produkcję).
+
+| Ustawienie | Wartość |
+|---|---|
+| Projekt | `zdamto-demo` (plan Spark, Analytics wyłączone) |
+| Logowanie | Google, nazwa publiczna „zdamto.io demo” |
+| Autoryzowane domeny | `localhost`, `omikse.github.io` |
+| Firestore | `europe-central2` (Warszawa), tryb produkcyjny |
+| Reguły | opublikowane z `firestore.rules` |
+| Aplikacja web | `zdamto-demo-web` |
+
+Konsola: <https://console.firebase.google.com/project/zdamto-demo>
+
+Lokalizacji bazy **nie da się później zmienić** — Warszawa daje najniższe
+opóźnienia dla uczniów w Polsce.
+
+---
+
 ## Konfiguracja Firebase (jednorazowo, ~10 minut, za darmo)
 
 1. **Projekt** — [console.firebase.google.com](https://console.firebase.google.com/)
