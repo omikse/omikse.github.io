@@ -10,12 +10,14 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=8efef110";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=8efef110";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=8efef110";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=48124d24";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=48124d24";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=48124d24";
+import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=48124d24";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
-let examIndex = [];   // exams/index.json
+let examIndex = [];   // exams/index.json — everything the pipeline produced
+let catalog = {};     // catalog/{examId} — what students are allowed to see
 
 /* ------------------------------------------------------------------ *
  * Gemini API key (per student, in localStorage)
@@ -74,7 +76,7 @@ function plural(n, one, few, many) {
   return many;
 }
 
-function renderMenu() {
+function renderMenu(showHidden = false) {
   const grid = document.getElementById("exam-grid");
   grid.innerHTML = "";
 
@@ -84,14 +86,27 @@ function renderMenu() {
     return;
   }
 
-  examIndex.forEach(entry => {
+  // Students see only published exams. An admin sees the hidden ones too, so
+  // they can check a sheet before releasing it — dimmed, so the difference
+  // between what they see and what a student sees is never a guess.
+  const visible = examIndex.filter(e => showHidden || isPublished(catalog, e.id));
+
+  if (!visible.length) {
+    grid.innerHTML = `<p class="text-slate-500 text-sm col-span-full">
+      Brak opublikowanych arkuszy.</p>`;
+    return;
+  }
+
+  visible.forEach(entry => {
     const { level, when } = describeExam(entry.id);
     const extended = level.includes("rozszerzony");
     const colour = extended ? "purple" : "indigo";
 
+    const hidden = !isPublished(catalog, entry.id);
     const card = document.createElement("div");
     card.className = "group bg-white rounded-2xl shadow-sm border border-slate-200 p-6 cursor-pointer "
-      + "hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden flex flex-col h-full";
+      + "hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden flex flex-col h-full"
+      + (hidden ? " opacity-50 ring-1 ring-dashed ring-slate-300" : "");
     card.innerHTML = `
       <div class="absolute -right-6 -top-6 w-24 h-24 bg-${colour}-50 rounded-full group-hover:bg-${colour}-100 transition-colors"></div>
       <div class="relative z-10 flex flex-col h-full">
@@ -554,9 +569,16 @@ async function init() {
   }
   renderMenu();
 
-  // History needs a signed-in user, which arrives after the first auth
-  // callback — later than this function runs.
-  userReady.then(user => { if (user) renderHistory(); });
+  // The catalogue and the admin role both need a signed-in user, which arrives
+  // after the first auth callback — later than this function runs.
+  userReady.then(async user => {
+    if (!user) return;
+    renderHistory();
+    catalog = await loadCatalog();
+    const admin = await isAdmin();
+    renderMenu(admin);
+    await mountAdminPanel(examIndex, catalog, describeExam, () => renderMenu(true));
+  });
 }
 
 init();

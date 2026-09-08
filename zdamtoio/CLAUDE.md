@@ -87,7 +87,11 @@ edits appear to do nothing. Same trap as `tools/pdf-json`.
   them into the console. Nothing publishes them automatically — if you edit that
   file, publish it, or the live rules silently disagree with the repo.
 - Admin is a Firestore document: `admins/{uid}`. No client can create it; add it
-  by hand in the console.
+  by hand in the console. Granted to `9jNK3WKkURYgegsY2rknFBMGnQy1` (Thomas).
+- **Unpublishing an exam hides it, it does not protect it.** The catalogue
+  (`catalog/{examId}`) filters the menu, but every exam JSON is a static file on
+  GitHub Pages and stays fetchable by URL. Only a server could actually refuse
+  the request, and there is none. "Not ready yet" — never "secret".
 
 ## Verify before and after any change
 

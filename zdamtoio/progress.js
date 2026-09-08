@@ -18,7 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
-import { auth, db } from "./firebase.js?v=8efef110";
+import { auth, db } from "./firebase.js?v=48124d24";
 
 const SAVE_DELAY_MS = 2000;
 
