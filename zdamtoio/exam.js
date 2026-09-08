@@ -11,6 +11,7 @@
  */
 
 import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js";
+import { startOrResume, save, flushNow, listAttempts, userReady } from "./progress.js";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json
@@ -101,10 +102,66 @@ function renderMenu() {
 }
 
 function showMenu() {
+  flushNow();                     // leaving the sheet must not drop pending work
   document.getElementById("view-menu").classList.remove("hidden");
   document.getElementById("view-exam").classList.add("hidden");
   document.getElementById("back-btn").classList.add("hidden");
   document.getElementById("logo-container").classList.remove("hidden");
+  renderHistory();
+}
+
+/* ------------------------------------------------------------------ *
+ * History, under the exam cards
+ * ------------------------------------------------------------------ */
+
+function historyBox() {
+  let box = document.getElementById("attempt-history");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "attempt-history";
+    box.className = "mt-12";
+    document.getElementById("view-menu").appendChild(box);
+  }
+  return box;
+}
+
+function formatWhen(ts) {
+  const d = ts?.toDate?.() ?? (typeof ts === "number" ? new Date(ts) : null);
+  return d ? new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium", timeStyle: "short" }).format(d) : "—";
+}
+
+async function renderHistory() {
+  const box = historyBox();
+  const attempts = await listAttempts();
+
+  if (!attempts.length) {
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = `
+    <h3 class="text-lg font-bold text-slate-800 mb-4">Twoje podejścia</h3>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+      ${attempts.map(a => {
+        const { level, when } = describeExam(a.examId);
+        const t = a.totals || {};
+        const answered = Object.keys(a.answers || {}).length;
+        return `
+          <div class="flex items-center gap-4 px-6 py-4">
+            <div class="flex-grow min-w-0">
+              <div class="font-semibold text-slate-800 text-sm">Matura ${esc(when)}</div>
+              <div class="text-xs text-slate-500">${esc(level)} · ${esc(formatWhen(a.updatedAt))}</div>
+            </div>
+            <div class="text-xs text-slate-500 text-right flex-none">
+              <div>${esc(answered)} odpowiedzi</div>
+              <div class="font-semibold text-slate-700">${esc(t.points ?? 0)}/${esc(t.maxPoints ?? 0)} pkt</div>
+            </div>
+          </div>`;
+      }).join("")}
+    </div>
+    <p class="text-xs text-slate-400 mt-3">
+      Punktacja obejmuje tylko zadania już sprawdzone. Otwórz arkusz, aby wrócić do swoich odpowiedzi.
+    </p>`;
 }
 
 function showExam() {
@@ -161,11 +218,57 @@ async function loadExam(examId) {
       }
     }
     exam = { id: entry.id, name, questions };
+
+    // Put any saved work back on the questions BEFORE rendering: every
+    // renderer reads q.user_answer when it draws, so restoring is just an
+    // assignment — no per-type restore logic anywhere.
+    const { answers, grades } = await startOrResume(entry.id, name);
+    let restored = 0;
+    for (const q of questions) {
+      const qid = String(q.id || q.number);
+      if (answers[qid] !== undefined) { q.user_answer = answers[qid]; restored++; }
+      if (grades[qid] !== undefined) q.grade_result = grades[qid];
+    }
+
     renderExam(exam);
+    if (restored) setStatus(`${questions.length} zadań · przywrócono ${restored} zapisanych odpowiedzi.`);
   } catch (err) {
     console.error(err);
     setStatus(`Nie udało się wczytać arkusza: ${err.message}`);
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * Persistence
+ * ------------------------------------------------------------------ */
+
+/* Snapshot the whole exam into the flat maps the attempt document stores. */
+function snapshot() {
+  const answers = {};
+  const grades = {};
+  let points = 0, maxPoints = 0, graded = 0;
+
+  for (const q of exam?.questions || []) {
+    const qid = String(q.id || q.number);
+    if (q.user_answer !== undefined) answers[qid] = q.user_answer;
+    maxPoints += Number(q.scoring?.max_points ?? 0);
+    if (q.grade_result) {
+      grades[qid] = q.grade_result;
+      points += Number(q.grade_result.points ?? 0);
+      graded++;
+    }
+  }
+
+  const total = (exam?.questions || []).length;
+  return { answers, grades, totals: { points, maxPoints, graded, pending: total - graded } };
+}
+
+/* Collect the DOM into the question objects, then queue a save. */
+function persist() {
+  if (!exam) return;
+  collectAll();
+  const { answers, grades, totals } = snapshot();
+  save(answers, grades, totals);
 }
 
 /* ------------------------------------------------------------------ *
@@ -198,6 +301,12 @@ function renderCard(question) {
 
   if (renderer?.mount) renderer.mount(question, card);
 
+  // A grade restored from a previous session should be on screen straight
+  // away, not only after the student clicks Sprawdź again.
+  if (question.grade_result && renderer?.renderResult) {
+    card.querySelector(".q-result").innerHTML = renderer.renderResult(question);
+  }
+
   // Deterministic types only, for now. P-TF and P-CHOICE compare against
   // scoring.correct_answers — exact, instant, free, and never a model
   // (CLAUDE.md rule 3). AI grading for the open types is wired separately.
@@ -208,6 +317,7 @@ function renderCard(question) {
       question.grade_result = renderer.grade(question);
       card.querySelector(".q-result").innerHTML =
         renderer.renderResult ? renderer.renderResult(question) : "";
+      persist();
     });
   }
 
@@ -232,6 +342,12 @@ function renderExam(loadedExam) {
   });
 
   setStatus(`${questions.length} zadań.`);
+
+  // One delegated listener for the whole sheet rather than one per field:
+  // renderers own their markup, and this stays correct whatever they emit.
+  // `input` covers typing and `change` covers radios and selects.
+  host.addEventListener("input", persist);
+  host.addEventListener("change", persist);
 }
 
 /* Read every answer back out of the DOM and into the question objects. */
@@ -269,6 +385,10 @@ async function init() {
     examIndex = [];
   }
   renderMenu();
+
+  // History needs a signed-in user, which arrives after the first auth
+  // callback — later than this function runs.
+  userReady.then(user => { if (user) renderHistory(); });
 }
 
 init();

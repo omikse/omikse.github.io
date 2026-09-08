@@ -1,16 +1,31 @@
 rules_version = '2';
 
-// Paste this into: Firebase console -> Firestore Database -> Rules -> Publish.
+// Paste into: Firebase console -> Firestore Database -> Rules -> Publish.
+// NOTHING publishes this automatically. If you edit this file and do not paste
+// it, the live rules silently disagree with the repo.
 //
-// Everything is scoped to the signed-in user's own uid. Nobody can read or
-// write anyone else's profile or attempts, and finished attempts are
-// immutable -- an exam history you can rewrite is not a history.
+// Shape of the world:
+//   admins/{uid}            existence IS the admin role; console-only
+//   catalog/{examId}        which exams students may see; admin writes
+//   users/{uid}             profile
+//   users/{uid}/attempts/*  one live attempt per exam, plus archived copies
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     function isOwner(uid) {
-      return request.auth != null && request.auth.uid == uid;
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Admin is a document, not a custom claim: claims need the Admin SDK and
+    // therefore a backend, and this app deliberately has none.
+    function isAdmin() {
+      return isSignedIn()
+          && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
     function validProfile() {
@@ -24,25 +39,40 @@ service cloud.firestore {
 
     function validAttempt() {
       let d = request.resource.data;
-      return d.keys().hasAll(['examId', 'answers', 'score', 'maxScore'])
-          && d.examId is string
+      return d.examId is string
           && d.answers is map
-          && d.answers.size() <= 100
-          && d.score is int && d.score >= 0
-          && d.maxScore is int && d.maxScore > 0
-          && d.score <= d.maxScore;
+          && d.grades is map
+          && d.status in ['in_progress', 'submitted'];
+    }
+
+    // A submitted attempt is a record, not a draft. Once frozen it stays frozen
+    // for the student; only an admin can still touch it, to enter a grade.
+    function stillOpen() {
+      return resource.data.status == 'in_progress';
+    }
+
+    match /admins/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;        // granted by hand in the console
+    }
+
+    match /catalog/{examId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /users/{uid} {
-      allow read:   if isOwner(uid);
-      allow create: if isOwner(uid) && validProfile();
-      allow update: if isOwner(uid) && validProfile();
-      allow delete: if false;
+      allow read:           if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid) && validProfile();
+      allow delete:         if false;
 
       match /attempts/{attemptId} {
-        allow read:   if isOwner(uid);
+        allow read:   if isOwner(uid) || isAdmin();
         allow create: if isOwner(uid) && validAttempt();
-        allow update, delete: if false;   // append-only history
+        // Students edit their own work while it is open; admins may grade at
+        // any point, including after submission.
+        allow update: if (isOwner(uid) && validAttempt() && stillOpen()) || isAdmin();
+        allow delete: if false;
       }
     }
 

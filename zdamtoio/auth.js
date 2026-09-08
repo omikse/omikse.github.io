@@ -3,38 +3,21 @@
 // Dokłada się do istniejącej aplikacji i nie zmienia jej wyglądu: dopóki nikt
 // nie jest zalogowany, <main> jest ukryty i widać ekran logowania; po
 // zalogowaniu wszystko wygląda jak wcześniej, plus chip użytkownika w nagłówku.
-//
-// index.html wymagał trzech drobnych zmian: bramki anty-mignięcie w <head>,
-// pustego #auth-slot w nagłówku i tego <script type="module"> na końcu.
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  GoogleAuthProvider, signInWithPopup, signInWithRedirect,
   getRedirectResult, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp,
+  doc, getDoc, setDoc, updateDoc, increment, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-// Publiczne identyfikatory projektu, nie sekrety -- dostępu pilnują reguły
-// Firestore i lista autoryzowanych domen. Ten sam projekt co /zdamto_demo/.
-const firebaseConfig = {
-  apiKey: "AIzaSyBzT-F9c04FgucX-wx2E82WQp6U_ntChSo",
-  authDomain: "zdamto-demo.firebaseapp.com",
-  projectId: "zdamto-demo",
-  storageBucket: "zdamto-demo.firebasestorage.app",
-  messagingSenderId: "165740984586",
-  appId: "1:165740984586:web:7b3231e3b11bf0c49e62f3",
-};
+import { auth, db } from "./firebase.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const root = document.documentElement;
 
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
-
-const root = document.documentElement;
 
 /* ------------------------------------------------------------------ *
  * Ekran logowania -- budowany w JS, żeby nie ruszać index.html
