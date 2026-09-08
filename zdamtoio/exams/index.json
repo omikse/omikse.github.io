@@ -1,0 +1,109 @@
+{
+  "exams": [
+    {
+      "id": "MPOP-P0-100-2305",
+      "name": "Matura z języka polskiego",
+      "parts": [
+        {
+          "id": "MPOP-P1-100-2305",
+          "path": "exams/MPOP-P1-100-2305/MPOP-P1-100-2305.json",
+          "assets": "exams/MPOP-P1-100-2305/assets/"
+        },
+        {
+          "id": "MPOP-P2-100-2305",
+          "path": "exams/MPOP-P2-100-2305/MPOP-P2-100-2305.json",
+          "assets": "exams/MPOP-P2-100-2305/assets/"
+        }
+      ],
+      "kind": "full",
+      "questions": 20,
+      "max_points": 60,
+      "missing_parts": []
+    },
+    {
+      "id": "MPOP-P0-100-2405",
+      "name": "Matura z języka polskiego",
+      "parts": [
+        {
+          "id": "MPOP-P1-100-2405",
+          "path": "exams/MPOP-P1-100-2405/MPOP-P1-100-2405.json",
+          "assets": "exams/MPOP-P1-100-2405/assets/"
+        },
+        {
+          "id": "MPOP-P2-100-2405",
+          "path": "exams/MPOP-P2-100-2405/MPOP-P2-100-2405.json",
+          "assets": "exams/MPOP-P2-100-2405/assets/"
+        }
+      ],
+      "kind": "full",
+      "questions": 18,
+      "max_points": 60,
+      "missing_parts": []
+    },
+    {
+      "id": "MPOP-P0-100-2505",
+      "name": "Matura z języka polskiego",
+      "parts": [
+        {
+          "id": "MPOP-P1-100-2505",
+          "path": "exams/MPOP-P1-100-2505/MPOP-P1-100-2505.json",
+          "assets": "exams/MPOP-P1-100-2505/assets/"
+        },
+        {
+          "id": "MPOP-P2-100-2505",
+          "path": "exams/MPOP-P2-100-2505/MPOP-P2-100-2505.json",
+          "assets": "exams/MPOP-P2-100-2505/assets/"
+        }
+      ],
+      "kind": "full",
+      "questions": 18,
+      "max_points": 60,
+      "missing_parts": []
+    },
+    {
+      "id": "MPOP-R0-100-2305",
+      "name": "Matura z języka polskiego",
+      "parts": [
+        {
+          "id": "MPOP-R0-100-2305",
+          "path": "exams/MPOP-R0-100-2305/MPOP-R0-100-2305.json",
+          "assets": "exams/MPOP-R0-100-2305/assets/"
+        }
+      ],
+      "kind": "essay",
+      "questions": 1,
+      "max_points": 35,
+      "missing_parts": []
+    },
+    {
+      "id": "MPOP-R0-100-2405",
+      "name": "Matura z języka polskiego",
+      "parts": [
+        {
+          "id": "MPOP-R0-100-2405",
+          "path": "exams/MPOP-R0-100-2405/MPOP-R0-100-2405.json",
+          "assets": "exams/MPOP-R0-100-2405/assets/"
+        }
+      ],
+      "kind": "essay",
+      "questions": 1,
+      "max_points": 35,
+      "missing_parts": []
+    },
+    {
+      "id": "MPOP-R0-100-2505",
+      "name": "Matura z języka polskiego",
+      "parts": [
+        {
+          "id": "MPOP-R0-100-2505",
+          "path": "exams/MPOP-R0-100-2505/MPOP-R0-100-2505.json",
+          "assets": "exams/MPOP-R0-100-2505/assets/"
+        }
+      ],
+      "kind": "essay",
+      "questions": 1,
+      "max_points": 35,
+      "missing_parts": []
+    }
+  ]
+}

@@ -1,0 +1,1157 @@
+{
+  "id": "MPOP-P2-100-2505",
+  "name": "Matura z języka polskiego",
+  "questions": [
+    {
+      "id": "MPOP-P2-100-2505-15",
+      "type": "P-ESSAY",
+      "number": "15",
+      "poziom": "PP",
+      "session": "2505",
+      "question": "Wybierz jeden z poniższych tematów i napisz wypracowanie.\n• W wypracowaniu rozważ problem podany w temacie. Przedstaw również swoje zdanie i je uzasadnij.\n• W rozważaniach przedstaw argumenty, odwołując się do utworów literackich oraz do wybranych kontekstów (np. historycznoliterackiego, literackiego, biograficznego, kulturowego, mitologicznego, biblijnego, religijnego, historycznego, filozoficznego, egzystencjalnego, politycznego, społecznego).\n• Jednym z utworów literackich musi być lektura obowiązkowa, wybrana spośród lektur wymienionych na stronach 3 i 4 tego arkusza egzaminacyjnego.\n• Twoja praca powinna liczyć co najmniej 300 wyrazów.",
+      "minimum_word_count": 300,
+      "topics": [
+        {
+          "id": "topic-1",
+          "number": "Temat 1",
+          "title": "Źródło nadziei w czasach trudnych dla człowieka.",
+          "requirements": [
+            "lektury obowiązkowej – wybranej spośród lektur wymienionych na stronach 3 i 4 tego arkusza egzaminacyjnego",
+            "innego utworu literackiego – może to być również utwór poetycki",
+            "wybranych kontekstów."
+          ]
+        },
+        {
+          "id": "topic-2",
+          "number": "Temat 2",
+          "title": "Jak błędna ocena sytuacji wpływa na życie człowieka?",
+          "requirements": [
+            "lektury obowiązkowej – wybranej spośród lektur wymienionych na stronach 3 i 4 tego arkusza egzaminacyjnego",
+            "innego utworu literackiego – może to być również utwór poetycki",
+            "wybranych kontekstów."
+          ]
+        }
+      ],
+      "scoring": {
+        "max_points": 35,
+        "scoring_criteria": {
+          "source_coverage": {
+            "included_sections": [
+              "ogólne zasady oceniania wypracowania",
+              "utwory literackie, w tym lektury",
+              "język, ortografia i interpunkcja",
+              "uszczegółowienia dotyczące tematu 1",
+              "uszczegółowienia dotyczące tematu 2",
+              "instrukcja liczenia błędów",
+              "wyjaśnienia do kryteriów oceniania"
+            ],
+            "missing_or_uncertain_sections": []
+          },
+          "groups": {
+            "3": {
+              "name": "Kompozycja wypowiedzi: struktura, spójność i styl",
+              "max_points": 7
+            },
+            "4": {
+              "name": "Język wypowiedzi",
+              "max_points": 11
+            }
+          },
+          "common": {
+            "general_rules": [
+              {
+                "id": "general-rule-1",
+                "content": "Zdający może zrealizować temat w wybranej przez siebie formie wypowiedzi, np.: rozprawka, szkic krytyczny, przemówienie, list otwarty, artykuł, esej, pod warunkiem że będzie to wypowiedź argumentacyjna."
+              },
+              {
+                "id": "general-rule-2",
+                "content": "Do pełnej realizacji polecenia wystarczy przywołanie dwóch argumentów."
+              },
+              {
+                "id": "general-rule-3",
+                "content": "Przywołanie utworu literackiego w formie streszczenia nie stanowi argumentu."
+              },
+              {
+                "id": "general-rule-4",
+                "content": "W wypracowaniu nie jest wymagane omawianie utworów literackich ani w porządku chronologicznym, ani w porządku przedstawionym w temacie, tj. lektura obowiązkowa, inny utwór literacki, konteksty. Zdający powinien zrealizować temat zgodnie z przyjętą przez siebie koncepcją."
+              },
+              {
+                "id": "general-rule-5",
+                "content": "Funkcjonalność wykorzystania w wypracowaniu utworu literackiego nie oznacza konieczności omówienia przez zdającego wszystkich elementów fabuły, sensów utworu istotnych (z punktu widzenia egzaminatora) ze względu na zagadnienie sformułowane w temacie. Zadaniem egzaminatora jest ocena stworzonej przez zdającego pracy pisemnej. Egzaminator nie może kierować się własnym wyobrażeniem, jak inaczej/lepiej można by taką pracę napisać. W ocenie należy uwzględnić to, co w pracy jest, a nie to, co – zdaniem egzaminatora – mogłoby/powinno w niej być."
+              },
+              {
+                "id": "general-rule-6",
+                "content": "Losy postaci literackiej są uogólnieniem ludzkiego doświadczenia. Dlatego jeżeli problem sformułowany w temacie odnosi się do człowieka, to za trafne uznaje się odwołanie przez zdającego w wypracowaniu również do postaci literackich, które nie są ludźmi. Ta sama zasada dotyczy również tekstów kultury."
+              },
+              {
+                "id": "general-rule-7",
+                "content": "Zdający musi w wypracowaniu wykorzystać dwa konteksty, ale nie musi odwoływać się do dwóch różnych typów kontekstów, np. jeden kontekst jest filozoficzny, drugi – historyczny; mogą być to dwa konteksty z tej samej kategorii."
+              },
+              {
+                "id": "general-rule-8",
+                "content": "Jeżeli wypowiedź jest w całości nieczytelna (w rozumieniu czytelności zapisu), egzaminator oceni ją na 0 punktów."
+              },
+              {
+                "id": "general-rule-9",
+                "content": "Jeżeli wypowiedź nie zawiera w ogóle rozwinięcia (np. zdający napisał tylko wstęp), egzaminator przyzna 0 punktów w każdym kryterium."
+              },
+              {
+                "id": "general-rule-10",
+                "content": "Jeżeli wypowiedź jest napisana niesamodzielnie, np. zawiera fragmenty odtworzone z podręcznika lub innego źródła, w tym internetowego, lub jest przepisana od innego zdającego, wówczas egzamin z języka polskiego, w przypadku takiego zdającego, zostanie unieważniony."
+              },
+              {
+                "id": "general-rule-11",
+                "content": "Jeżeli wypowiedź zawiera fragmenty przepisane z zadania (polecenia, tekstu) zawartego w cz. 1. lub w cz. 2. arkusza egzaminacyjnego bez interpretacji tych fragmentów / komentarza do tych fragmentów, wówczas za wypracowanie zdający otrzyma 0 pkt. Całość pracy tego zdającego nie jest unieważniana."
+              },
+              {
+                "id": "general-rule-12",
+                "content": "Zabronione jest pisanie wypowiedzi obraźliwych, wulgarnych lub propagujących postępowanie niezgodne z prawem. W przypadku takich wypowiedzi zostanie podjęta indywidualna decyzja dotycząca danej pracy, np. nie zostaną przyznane punkty za styl i język lub cała wypowiedź nie będzie podlegała ocenie."
+              }
+            ],
+            "source_rules": [
+              {
+                "id": "source-rule-1",
+                "content": "Za utwór literacki w wypracowaniu nie uznaje się: komiksu, powieści obrazkowej, mangi, scenariusza filmowego, gry komputerowej. Te teksty kultury mogą zostać wykorzystane w wypracowaniu jako kontekst."
+              },
+              {
+                "id": "source-rule-2",
+                "content": "Ani jako utworów literackich, ani jako kontekstów nie traktuje się utworów literackich i tekstów piosenek obcojęzycznych, które nie zostały przetłumaczone na język polski."
+              },
+              {
+                "id": "source-rule-3",
+                "content": "Za lekturę obowiązkową uznaje się odwołanie przez zdającego do każdej księgi biblijnej. Biblia jest utworem literackim, którego znajomość nie obowiązuje w całości, dlatego żaden błąd rzeczowy w odniesieniu do Biblii nie jest błędem kardynalnym."
+              },
+              {
+                "id": "source-rule-4",
+                "content": "Zbiory mitów inne niż Mitologia Jana Parandowskiego nie są uznawane za lekturę obowiązkową – mogą stanowić np. kontekst."
+              }
+            ],
+            "topic_rules": {
+              "topic-1": [
+                {
+                  "id": "topic-1-rule-1",
+                  "content": "Rozumienie pojęć w temacie 1: a) źródło – przyczyna/inspiracja (coś lub ktoś); b) nadzieja – oczekiwanie/życzenie, że spełni się coś pożądanego; c) czasy trudne – okres, gdy dzieje się coś nieprzyjemnego, niełatwego, dramatycznego, wymagającego wysiłku; okres rozumiany w wymiarze jednostkowym/zbiorowym (np. dzieciństwo, młodość, dorosłość, starość, czas podróży, czas bycia z kimś w relacji) albo historycznym (np. epoka, wydarzenie); d) człowiek – każda postać literacka (a w przypadku kontekstów – również np. filmowa), w tym postacie, które nie są ludźmi; jednostka ALBO zbiorowość (grupa ludzi) / bohater zbiorowy / ludzkość (wymiar uniwersalny)."
+                },
+                {
+                  "id": "topic-1-rule-2",
+                  "content": "Zdający może zrealizować temat w dowolny sposób. Jeżeli wypowiedź zdającego jest zgodna z tematem i z warunkami zadania, pracę należy oceniać."
+                },
+                {
+                  "id": "topic-1-rule-3",
+                  "content": "Wypracowanie przynajmniej częściowo dotyczy problemu wskazanego w poleceniu, jeżeli w pracy zdający: a) omówił nadzieję w czasach trudnych dla człowieka ORAZ b) praca zawiera opinię albo uzasadnienie."
+                },
+                {
+                  "id": "topic-1-rule-4",
+                  "content": "Utwór literacki uznaje się za wykorzystany w pełni funkcjonalnie, jeżeli zdający w argumentacji: a) omówił źródło nadziei dla człowieka ORAZ b) określił czasy trudne dla człowieka."
+                },
+                {
+                  "id": "topic-1-rule-5",
+                  "content": "Utwór literacki uznaje się za wykorzystany częściowo funkcjonalnie, jeżeli zdający w argumentacji omówił: a) nadzieję w czasach trudnych dla człowieka ALBO b) źródło nadziei dla człowieka."
+                },
+                {
+                  "id": "topic-1-rule-6",
+                  "content": "Lektura obowiązkowa – dowolna lektura obowiązkowa, wybrana spośród lektur wymienionych na stronach 3 i 4 arkusza, ilustrująca zagadnienie sformułowane w temacie."
+                }
+              ],
+              "topic-2": [
+                {
+                  "id": "topic-2-rule-1",
+                  "content": "Rozumienie pojęć w temacie 2: a) sytuacja – wydarzenie, warunki/okoliczności, stan rzeczy; b) błędna ocena sytuacji – niewłaściwy osąd dotyczący rzeczywistości, fałszywe przekonanie; c) wpływać, np. powodować nabranie określonych cech, wpływać na kogoś, czyjeś zachowanie, postawę, sposób pojmowania czegoś, zmieniać kogoś, czyjeś zachowanie, postawę, sposób pojmowania czegoś; d) jak wpływa – efekt wpływania, sposób/proces wpływania; e) człowiek/osoba – każda postać literacka (a w przypadku kontekstów – również np. filmowa), w tym postacie, które nie są ludźmi; jednostka ALBO zbiorowość (grupa ludzi) / bohater zbiorowy / ludzkość (wymiar uniwersalny)."
+                },
+                {
+                  "id": "topic-2-rule-2",
+                  "content": "Zdający może zrealizować temat w dowolny sposób. Jeżeli wypowiedź zdającego jest zgodna z tematem i z warunkami zadania, pracę należy oceniać."
+                },
+                {
+                  "id": "topic-2-rule-3",
+                  "content": "Wypracowanie przynajmniej częściowo dotyczy problemu wskazanego w poleceniu, jeżeli: a) w pracy zdający odniósł się do błędnej oceny sytuacji ORAZ b) praca zawiera opinię albo uzasadnienie."
+                },
+                {
+                  "id": "topic-2-rule-4",
+                  "content": "Utwór literacki uznaje się za wykorzystany w pełni funkcjonalnie, jeżeli zdający w argumentacji omówił: a) błędną ocenę sytuacji ORAZ b) wpływ błędnej oceny sytuacji na życie człowieka."
+                },
+                {
+                  "id": "topic-2-rule-5",
+                  "content": "Utwór literacki uznaje się za wykorzystany częściowo funkcjonalnie, jeżeli zdający w argumentacji omówił: a) błędną ocenę sytuacji ALBO b) wpływ błędnej oceny sytuacji na życie człowieka."
+                },
+                {
+                  "id": "topic-2-rule-6",
+                  "content": "Lektura obowiązkowa – dowolna lektura obowiązkowa, wybrana spośród lektur wymienionych na stronach 3 i 4 arkusza, ilustrująca zagadnienie sformułowane w temacie."
+                }
+              ]
+            },
+            "gating_rules": [
+              {
+                "id": "gating-rule-1",
+                "condition": {
+                  "field": "1.points",
+                  "operator": "equals",
+                  "value": 0
+                },
+                "effect": {
+                  "action": "set_points",
+                  "target_criteria": [
+                    "2",
+                    "3a",
+                    "3b",
+                    "3c",
+                    "4a",
+                    "4b",
+                    "4c"
+                  ],
+                  "set_zero_for": [],
+                  "value": 0
+                },
+                "description": "Jeżeli wypowiedź uzyska 0 punktów w kryterium 1 (Spełnienie formalnych warunków polecenia), cała praca zostaje oceniona na 0 punktów."
+              },
+              {
+                "id": "gating-rule-2",
+                "condition": {
+                  "field": "user_answer.word_count",
+                  "operator": "less_than",
+                  "value": 300
+                },
+                "effect": {
+                  "action": "evaluate_only",
+                  "target_criteria": [
+                    "1",
+                    "2"
+                  ],
+                  "set_zero_for": [
+                    "3a",
+                    "3b",
+                    "3c",
+                    "4a",
+                    "4b",
+                    "4c"
+                  ],
+                  "value": 0
+                },
+                "description": "Jeżeli wypowiedź zawiera mniej niż 300 wyrazów, jest oceniana wyłącznie w kryteriach: Spełnienie formalnych warunków polecenia oraz Kompetencje literackie i kulturowe. W pozostałych kryteriach egzaminator przyzna 0 punktów."
+              }
+            ],
+            "error_counting_rules": {
+              "factual_errors": [
+                "Błąd rzeczowy to błąd świadczący o nieznajomości lektury obowiązkowej (w zakresie innym niż błąd kardynalny), nieznajomości innego utworu literackiego lub tekstu kultury, nieuprawnionej interpretacji utworu, nieznajomości zagadnień z zakresu teorii i historii literatury bądź języka, braku wiedzy dotyczącej wybranego kontekstu lub niepoprawnym przywołaniu cytatu oznaczonym cudzysłowem.",
+                "Dokładnie ten sam błąd rzeczowy powtórzony kilkakrotnie jest liczony jako jeden błąd.",
+                "Żaden błąd rzeczowy w odniesieniu do Biblii nie jest błędem kardynalnym."
+              ],
+              "cardinal_errors": [
+                "Błąd kardynalny to błąd świadczący o całkowitej nieznajomości lektury obowiązkowej wymienionej w arkuszu egzaminacyjnym (w zakresie fabuły, losów głównych bohaterów lub kluczowych wątków).",
+                "Jeżeli zdający przywoła w wypracowaniu lekturę obowiązkową jako kontekst i popełni błąd kardynalny, to praca zostanie oceniona na 0 punktów."
+              ],
+              "cohesion_errors": [
+                "Błąd w spójności to zaburzenie spójności między zdaniami (oznaczane jako ‿) lub między akapitami (oznaczane jako [).",
+                "Usterka w podziale tekstu w zakresie struktury akapitów jest oznaczana jako str."
+              ],
+              "language_errors": [
+                "Błędy językowe obejmują błędy fleksyjne, składniowe, leksykalne, frazeologiczne, słowotwórcze oraz stylistyczne.",
+                "Nie są błędami językowymi powtórzenia wyrazów pojawiających się w temacie, np.: człowiek, nadzieja, czasy trudne, błędna ocena, wpływać.",
+                "Sformułowanie zwyczajowo uznawane za termin, ale niebędące nim w rozumieniu encyklopedycznym lub w podstawie programowej, traktuje się jako błąd językowy."
+              ],
+              "orthographic_errors": [
+                "Za jeden błąd ortograficzny przyjmuje się kilkukrotne popełnienie przez zdającego błędu w tym samym wyrazie, a także powtarzanie tego samego błędu w zapisie wyrazów należących do tej samej rodziny (np. kturzy, niekturzy).",
+                "Za błąd graficzny uznaje się przestawienie liter w zapisie dwuznaków niebędące błędem językowym oraz nieprawidłowe umieszczanie lub całkowite opuszczanie znaków diakrytycznych, o ile nie prowadzi to do powstania błędu ortograficznego lub językowego."
+              ],
+              "punctuation_errors": [
+                "Jeżeli zdający nie stosuje w wypracowaniu cudzysłowu w zapisie tytułów utworów literackich, pominięcie cudzysłowu traktuje się jako błąd interpunkcyjny.",
+                "Jeżeli zdający w swojej pracy konsekwentnie stosuje błędną interpunkcję w zapisie tytułu tego samego utworu literackiego, egzaminator policzy ten błąd tylko raz."
+              ],
+              "repeated_errors": [
+                "Powtórzony dokładnie ten sam błąd ortograficzny lub językowy liczy się jako jeden błąd.",
+                "Dokładnie ten sam błąd rzeczowy (np. konsekwentne stosowanie błędnego imienia bohaterki/bohatera) powtórzony kilkakrotnie jest liczony jako jeden błąd."
+              ]
+            }
+          },
+          "criteria": {
+            "1": {
+              "id": "1",
+              "number": "1",
+              "name": "Spełnienie formalnych warunków polecenia",
+              "max_points": 1,
+              "error_keys": [
+                "cardinal_errors"
+              ],
+              "rules": [
+                {
+                  "id": "1-rule-1",
+                  "points": 1,
+                  "conditions": [
+                    "W wypracowaniu nie występuje błąd kardynalny.",
+                    "W wypracowaniu jest odwołanie do lektury obowiązkowej wybranej z listy lektur zamieszczonej w arkuszu egzaminacyjnym.",
+                    "Wypracowanie przynajmniej częściowo dotyczy problemu wskazanego w poleceniu.",
+                    "Wypracowanie przynajmniej częściowo jest wypowiedzią argumentacyjną."
+                  ]
+                },
+                {
+                  "id": "1-rule-0",
+                  "points": 0,
+                  "conditions": [
+                    "Wypracowanie nie spełnia któregokolwiek z warunków określonych w kategorii „1 pkt” ALBO wypowiedź jest napisana w formie planu albo w punktach."
+                  ]
+                }
+              ],
+              "zero_reasons": [
+                {
+                  "id": "cardinal_error",
+                  "label": "Błąd kardynalny",
+                  "condition": "W wypracowaniu występuje błąd kardynalny."
+                },
+                {
+                  "id": "missing_required_reading",
+                  "label": "Brak lektury obowiązkowej",
+                  "condition": "W wypracowaniu brak odwołania do lektury obowiązkowej wybranej z listy lektur zamieszczonej w arkuszu egzaminacyjnym."
+                },
+                {
+                  "id": "does_not_address_problem",
+                  "label": "Nie dotyczy problemu",
+                  "condition": "Wypracowanie nie dotyczy przynajmniej częściowo problemu wskazanego w poleceniu."
+                },
+                {
+                  "id": "not_argumentative",
+                  "label": "Nie jest wypowiedzią argumentacyjną",
+                  "condition": "Wypracowanie nie jest przynajmniej częściowo wypowiedzią argumentacyjną."
+                }
+              ],
+              "cardinal_error_rules": [
+                {
+                  "id": "1-cardinal-rule-1",
+                  "content": "Błąd kardynalny to błąd rzeczowy świadczący o całkowicie nieuprawnionej interpretacji lektury obowiązkowej, do której odwołuje się zdający, będącej falsyfikacją tego utworu wynikającą z nieznajomości jego treści w zakresie: a) głównych wątków utworu; b) losów głównych bohaterów, w tym np. łączenie biografii różnych bohaterów."
+                },
+                {
+                  "id": "1-cardinal-rule-2",
+                  "content": "W przypadku lektur obowiązkowych błąd kardynalny może dotyczyć wyłącznie lektur obowiązkowych wskazanych w podstawie programowej jako lektury do omówienia w całości (nie we fragmentach)."
+                }
+              ],
+              "notes": [
+                "Jeżeli w kryterium Spełnienie formalnych warunków polecenia przyznano 0 pkt, we wszystkich pozostałych kryteriach przyznaje się 0 pkt.",
+                "Odwołanie się zdającego do lektury obowiązkowej oznacza, że co najmniej jedno zdanie o tej lekturze ma charakter analityczny, a nie tylko informacyjny (za zdania informacyjne uznaje się również sformułowania będące wyłącznie przepisanymi fragmentami polecenia lub parafrazą polecenia).",
+                "Jeśli jedyna lektura obowiązkowa jest przywołana lakonicznie, bardziej w kontekście / w nawiązaniu do innego utworu literackiego, który zdający szerzej omawia w wypracowaniu, wówczas przywołanie tej lektury traktowane jest jako spełnienie formalnych warunków zadania, ale oceniając KLiK, nie uwzględnia się tej lektury jako kontekst.",
+                "„Problem wskazany w poleceniu” obejmuje: a) zakres merytoryczny zagadnienia, którego omówienie jest wymagane, ORAZ b) opinię zdającego wraz z uzasadnieniem.",
+                "Wypracowanie przynajmniej częściowo dotyczy problemu wskazanego w poleceniu, jeżeli obejmuje co najmniej jeden aspekt zakresu merytorycznego ORAZ opinię albo uzasadnienie.",
+                "Wypracowanie przynajmniej częściowo jest wypowiedzią argumentacyjną, jeżeli zawiera co najmniej jeden akapit argumentacyjny."
+              ]
+            },
+            "2": {
+              "id": "2",
+              "number": "2",
+              "name": "Kompetencje literackie i kulturowe",
+              "max_points": 16,
+              "error_keys": [
+                "factual_errors",
+                "cardinal_errors"
+              ],
+              "rules": [
+                {
+                  "id": "2-rule-16",
+                  "base_points": 16,
+                  "conditions": [
+                    "Dwa utwory wykorzystane w pełni funkcjonalnie.",
+                    "Bogata argumentacja.",
+                    "Funkcjonalne wykorzystanie dwóch kontekstów.",
+                    "Wypowiedź świadczy o erudycji zdającego."
+                  ]
+                },
+                {
+                  "id": "2-rule-15",
+                  "base_points": 15,
+                  "conditions": [
+                    "Dwa utwory wykorzystane w pełni funkcjonalnie.",
+                    "Zadowalająca argumentacja.",
+                    "Co najmniej jeden kontekst wykorzystany funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-14",
+                  "base_points": 14,
+                  "conditions": [
+                    "Dwa utwory wykorzystane w pełni funkcjonalnie.",
+                    "Zadowalająca argumentacja.",
+                    "W pracy kontekst/konteksty wykorzystano częściowo funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-13",
+                  "base_points": 13,
+                  "conditions": [
+                    "Dwa utwory wykorzystane w pełni funkcjonalnie.",
+                    "Powierzchowna argumentacja.",
+                    "W pracy nie wykorzystano funkcjonalnie kontekstów."
+                  ]
+                },
+                {
+                  "id": "2-rule-12",
+                  "base_points": 12,
+                  "conditions": [
+                    "Jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – częściowo funkcjonalnie.",
+                    "Bogata argumentacja.",
+                    "Funkcjonalne wykorzystanie dwóch kontekstów.",
+                    "Wypowiedź świadczy o erudycji zdającego."
+                  ]
+                },
+                {
+                  "id": "2-rule-11",
+                  "base_points": 11,
+                  "conditions": [
+                    "Jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – częściowo funkcjonalnie.",
+                    "Zadowalająca argumentacja.",
+                    "Co najmniej jeden kontekst wykorzystany funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-10",
+                  "base_points": 10,
+                  "conditions": [
+                    "Jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – częściowo funkcjonalnie.",
+                    "Powierzchowna argumentacja.",
+                    "W pracy kontekst/konteksty wykorzystano częściowo funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-9",
+                  "base_points": 9,
+                  "conditions": [
+                    "Jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – częściowo funkcjonalnie.",
+                    "Powierzchowna argumentacja.",
+                    "W pracy nie wykorzystano funkcjonalnie kontekstów."
+                  ]
+                },
+                {
+                  "id": "2-rule-8",
+                  "base_points": 8,
+                  "conditions": [
+                    "Dwa utwory wykorzystane częściowo funkcjonalnie ALBO tylko jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – niefunkcjonalnie.",
+                    "Trafna argumentacja.",
+                    "Funkcjonalne wykorzystanie dwóch kontekstów.",
+                    "Praca zawiera fragmenty erudycyjne."
+                  ]
+                },
+                {
+                  "id": "2-rule-7",
+                  "base_points": 7,
+                  "conditions": [
+                    "Dwa utwory wykorzystane częściowo funkcjonalnie ALBO tylko jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – niefunkcjonalnie.",
+                    "Zadowalająca argumentacja.",
+                    "Co najmniej jeden kontekst wykorzystany funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-6",
+                  "base_points": 6,
+                  "conditions": [
+                    "Dwa utwory wykorzystane częściowo funkcjonalnie ALBO tylko jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – niefunkcjonalnie.",
+                    "Powierzchowna argumentacja.",
+                    "W pracy kontekst/konteksty wykorzystano częściowo funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-5",
+                  "base_points": 5,
+                  "conditions": [
+                    "Dwa utwory wykorzystane częściowo funkcjonalnie ALBO tylko jeden utwór wykorzystany w pełni funkcjonalnie, a drugi – niefunkcjonalnie.",
+                    "Powierzchowna argumentacja.",
+                    "W pracy nie wykorzystano funkcjonalnie kontekstów."
+                  ]
+                },
+                {
+                  "id": "2-rule-4",
+                  "base_points": 4,
+                  "conditions": [
+                    "Tylko jeden utwór wykorzystany częściowo funkcjonalnie.",
+                    "Trafna argumentacja.",
+                    "Funkcjonalne wykorzystanie dwóch kontekstów."
+                  ]
+                },
+                {
+                  "id": "2-rule-3",
+                  "base_points": 3,
+                  "conditions": [
+                    "Tylko jeden utwór wykorzystany częściowo funkcjonalnie.",
+                    "Zadowalająca argumentacja.",
+                    "Co najmniej jeden kontekst wykorzystany funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-2",
+                  "base_points": 2,
+                  "conditions": [
+                    "Tylko jeden utwór wykorzystany częściowo funkcjonalnie.",
+                    "Powierzchowna argumentacja.",
+                    "W pracy kontekst/konteksty wykorzystano częściowo funkcjonalnie."
+                  ]
+                },
+                {
+                  "id": "2-rule-1",
+                  "base_points": 1,
+                  "conditions": [
+                    "Tylko jeden utwór wykorzystany częściowo funkcjonalnie.",
+                    "Powierzchowna argumentacja.",
+                    "W pracy nie wykorzystano funkcjonalnie kontekstów."
+                  ]
+                },
+                {
+                  "id": "2-rule-0",
+                  "base_points": 0,
+                  "conditions": [
+                    "Żaden utwór nie został wykorzystany przynajmniej w części funkcjonalnie."
+                  ]
+                }
+              ],
+              "argumentation_definitions": [
+                {
+                  "id": "argumentation-rich",
+                  "label": "Bogata argumentacja",
+                  "description": "Argumentacja rzeczowa, pogłębiona, poparta trafnymi przykładami i szeroka/wieloaspektowa, uwzględniająca konteksty, stanowiąca – jako całość – wnikliwą analizę problemu sformułowanego w poleceniu."
+                },
+                {
+                  "id": "argumentation-satisfactory",
+                  "label": "Zadowalająca argumentacja",
+                  "description": "Argumentacja udowadniająca tezę/opinię/stanowisko przedstawione przez zdającego za pomocą trafnych argumentów i przykładów."
+                },
+                {
+                  "id": "argumentation-superficial",
+                  "label": "Powierzchowna argumentacja",
+                  "description": "Argumentacja zaledwie sygnalizująca wątki lub uogólniająca problem bez wnikliwej analizy."
+                }
+              ],
+              "functionality_definitions": [
+                {
+                  "id": "fully_functional",
+                  "label": "Wykorzystanie w pełni funkcjonalne",
+                  "description": "Przywołanie takich elementów fabuły (np. wydarzeń, bohaterów, wątków) oraz sensów utworów, które istotnie wspierają tok rozumowania zdającego lub dobrze ilustrują to, o czym zdający pisze."
+                },
+                {
+                  "id": "partially_functional",
+                  "label": "Wykorzystanie częściowo funkcjonalne",
+                  "description": "Wykorzystanie utworu, w którym elementy fabuły lub sensy utworu tylko w części wspierają tok rozumowania zdającego lub częściowo ilustrują rozważany problem."
+                },
+                {
+                  "id": "not_functional",
+                  "label": "Wykorzystanie niefunkcjonalne",
+                  "description": "Sytuacja, w której zdający wyłącznie streszcza utwór lub wybrane jego wątki, ale nie wyciąga żadnego wniosku, nie formułuje żadnej refleksji związanej ze streszczonym utworem."
+                }
+              ],
+              "context_definitions": [
+                {
+                  "id": "context-definition-1",
+                  "content": "Funkcjonalne wykorzystanie kontekstów (np. historycznoliterackiego, teoretycznoliterackiego, literackiego, biograficznego, kulturowego, mitologicznego, biblijnego, religijnego, historycznego, filozoficznego, egzystencjalnego, politycznego, społecznego), które pogłębiają i rozwijają rozważany problem."
+                }
+              ],
+              "factual_error_adjustment": {
+                "enabled": true,
+                "deduction_per_error": 1,
+                "minimum_points": 0,
+                "rules": [
+                  {
+                    "id": "2-factual-rule-1",
+                    "condition": "Za każdy błąd rzeczowy odejmuje się 1 punkt od ogólnej liczby punktów przyznanych za KLiK (od 0 do 16).",
+                    "effect": "Ostateczna liczba punktów po odjęciu punktów za błędy rzeczowe nie może być ujemna (minimum 0 pkt)."
+                  }
+                ]
+              },
+              "notes": [
+                "Jeżeli ostateczna liczba punktów przyznana w kryterium Kompetencje literackie i kulturowe, tj. liczba punktów po odjęciu punktów za błędy rzeczowe (jeżeli wystąpiły w pracy), wynosi 0 pkt, wówczas w pozostałych kryteriach (Kompozycja wypowiedzi oraz Język wypowiedzi) przyznaje się 0 pkt.",
+                "Poprzez wykorzystanie utworu rozumie się wykorzystanie znajomości jego treści oraz odczytanych sensów.",
+                "Jeżeli zdający w wypracowaniu napisze więcej niż o dwóch utworach literackich, do oceny stopnia realizacji kryterium bierze się pod uwagę dwa utwory wykorzystane w sposób najbardziej funkcjonalny, z których jeden musi być lekturą obowiązkową. Pozostałe utwory mogą być traktowane jako kontekst literacki."
+              ]
+            },
+            "3a": {
+              "id": "3a",
+              "number": "3a",
+              "name": "Struktura wypowiedzi",
+              "max_points": 3,
+              "error_keys": [],
+              "rules": [
+                {
+                  "id": "3a-rule-A",
+                  "classification": "A",
+                  "points": 3,
+                  "conditions": [
+                    "Elementy treściowe wypowiedzi w całości lub w przeważającej części pracy są zorganizowane problemowo.",
+                    "Podział wypowiedzi jest poprawny zarówno w skali ogólnej (wstęp, część zasadnicza, zakończenie), jak i w zakresie struktury akapitów; sposób podziału tekstu pomaga w zrozumieniu tez zdającego. Dopuszczalna 1 usterka."
+                  ]
+                },
+                {
+                  "id": "3a-rule-B",
+                  "classification": "B",
+                  "points": 2,
+                  "conditions": [
+                    "Elementy treściowe wypowiedzi w całości lub w przeważającej części pracy są zorganizowane problemowo.",
+                    "Usterki w podziale tekstu w skali ogólnej (wstęp, część zasadnicza, zakończenie) ALBO w zakresie struktury akapitów."
+                  ]
+                },
+                {
+                  "id": "3a-rule-C",
+                  "classification": "C",
+                  "points": 1,
+                  "conditions": [
+                    "Elementy treściowe wypowiedzi w całości lub w przeważającej części pracy są zorganizowane problemowo.",
+                    "Usterki w podziale tekstu w skali ogólnej (wstęp, część zasadnicza, zakończenie) ORAZ w zakresie struktury akapitów."
+                  ]
+                },
+                {
+                  "id": "3a-rule-D",
+                  "classification": "D",
+                  "points": 2,
+                  "conditions": [
+                    "W pracy podjęta jest próba organizacji elementów treściowych wypowiedzi problemowo LUB elementy treściowe wypowiedzi zorganizowane w pracy częściowo problemowo, częściowo wyłącznie pod względem formalnym LUB elementy treściowe wypowiedzi w całości lub w przeważającej części pracy zorganizowane wyłącznie pod względem formalnym, np. wg kolejno omawianych tekstów literackich.",
+                    "Podział wypowiedzi jest poprawny zarówno w skali ogólnej (wstęp, część zasadnicza, zakończenie), jak i w zakresie struktury akapitów; sposób podziału tekstu pomaga w zrozumieniu tez zdającego. Dopuszczalna 1 usterka."
+                  ]
+                },
+                {
+                  "id": "3a-rule-E",
+                  "classification": "E",
+                  "points": 1,
+                  "conditions": [
+                    "W pracy podjęta jest próba organizacji elementów treściowych wypowiedzi problemowo LUB elementy treściowe wypowiedzi zorganizowane w pracy częściowo problemowo, częściowo wyłącznie pod względem formalnym LUB elementy treściowe wypowiedzi w całości lub w przeważającej części pracy zorganizowane wyłącznie pod względem formalnym, np. wg kolejno omawianych tekstów literackich.",
+                    "Usterki w podziale tekstu w skali ogólnej (wstęp, część zasadnicza, zakończenie) ALBO w zakresie struktury akapitów."
+                  ]
+                },
+                {
+                  "id": "3a-rule-F",
+                  "classification": "F",
+                  "points": 0,
+                  "conditions": [
+                    "W pracy podjęta jest próba organizacji elementów treściowych wypowiedzi problemowo LUB elementy treściowe wypowiedzi zorganizowane w pracy częściowo problemowo, częściowo wyłącznie pod względem formalnym LUB elementy treściowe wypowiedzi w całości lub w przeważającej części pracy zorganizowane wyłącznie pod względem formalnym, np. wg kolejno omawianych tekstów literackich.",
+                    "Usterki w podziale tekstu w skali ogólnej (wstęp, część zasadnicza, zakończenie) ORAZ w zakresie struktury akapitów."
+                  ]
+                },
+                {
+                  "id": "3a-rule-G",
+                  "classification": "G",
+                  "points": 0,
+                  "conditions": [
+                    "Elementy treściowe wypowiedzi niezorganizowane; wypowiedź stanowi zbiór w znacznej mierze niezależnych elementów."
+                  ]
+                }
+              ],
+              "notes": [
+                "Sprawdzając wypracowanie zdającego w zakresie struktury wypowiedzi, egzaminator będzie oceniał, czy: kompozycja wypowiedzi jest funkcjonalna, tzn. czy układ wywodu / sposób uporządkowania treści pomaga w zrozumieniu wypowiedzi oraz czy podział wypowiedzi – zarówno w skali ogólnej (wstęp, część zasadnicza, zakończenie), jak i w zakresie struktury akapitów – jest poprawny i funkcjonalny.",
+                "Elementy treściowe wypowiedzi to – najogólniej rzecz ujmując – „bloki”, na które podzielone jest wypracowanie (w najprostszej formie: wstęp – część zasadnicza (rozwinięcie) – zakończenie, ale „część zasadnicza” zazwyczaj jest dzielona na kolejne „bloki”, tj. akapity).",
+                "Elementy treściowe wypowiedzi są zorganizowane problemowo (w toku problemowym), jeżeli każdy z „bloków” w części zasadniczej wypracowania omawia np. jeden aspekt tematu. Omawiając wybrany aspekt, zdający przywołuje argumentację i przykłady z różnych tekstów literackich / kontekstów; czynnikiem organizującym dany „blok” jest właśnie problem („ponadtekstowo”, „międzytekstowo”), a nie dany tekst literacki.",
+                "Możliwa jest sytuacja, w której zorganizowanie problemowe „pokrywa się” ze zorganizowaniem według kolejno omawianych tekstów literackich, jeżeli w pracy widoczny jest zamysł kompozycyjny wskazujący na tematyczne ustrukturyzowanie wypowiedzi, np. kolejny tekst literacki stanowi przykład umożliwiający np. uszczegółowienie wcześniej omawianego zagadnienia.",
+                "Elementy treściowe wypowiedzi są zorganizowane wyłącznie pod względem formalnym (w toku liniowym), jeżeli każdy z „bloków” w części zasadniczej wypracowania dotyczy innego tekstu literackiego / kontekstu, a jedynym identyfikowalnym czynnikiem organizującym taki układ jest po prostu omawianie w następujących po sobie „blokach” zagadnień dotyczących kolejnych tekstów / kontekstów; tekst jest zorganizowany wg tekstów „jeden po drugim” (np. zmiana kolejności akapitów nie wpływa na strukturę tekstu)."
+              ]
+            },
+            "3b": {
+              "id": "3b",
+              "number": "3b",
+              "name": "Spójność wypowiedzi",
+              "max_points": 3,
+              "error_keys": [
+                "cohesion_errors"
+              ],
+              "rules": [
+                {
+                  "id": "3b-rule-1",
+                  "error_count": {
+                    "min": 0,
+                    "max": 2
+                  },
+                  "points": 3,
+                  "conditions": [
+                    "Wypowiedź jest w całości spójna lub występują w niej nie więcej niż 2 zaburzenia w spójności (tj. logice, uporządkowaniu) na poziomie poszczególnych akapitów LUB całej wypowiedzi."
+                  ]
+                },
+                {
+                  "id": "3b-rule-2",
+                  "error_count": {
+                    "min": 3,
+                    "max": 5
+                  },
+                  "points": 2,
+                  "conditions": [
+                    "W wypowiedzi występuje 3–5 zaburzeń w spójności (tj. logice, uporządkowaniu) na poziomie poszczególnych akapitów LUB całej wypowiedzi."
+                  ]
+                },
+                {
+                  "id": "3b-rule-3",
+                  "error_count": {
+                    "min": 6,
+                    "max": 8
+                  },
+                  "points": 1,
+                  "conditions": [
+                    "W wypowiedzi występuje 6–8 zaburzeń w spójności (tj. logice, uporządkowaniu) na poziomie poszczególnych akapitów LUB całej wypowiedzi."
+                  ],
+                  "alternative_conditions": [
+                    "Wstęp pracy jest treściowo niespójny z częścią zasadniczą pracy ALBO z zakończeniem pracy.",
+                    "Zakończenie pracy jest treściowo niespójne z wstępem ALBO częścią zasadniczą pracy."
+                  ]
+                },
+                {
+                  "id": "3b-rule-4",
+                  "error_count": {
+                    "min": 9,
+                    "max": null
+                  },
+                  "points": 0,
+                  "conditions": [
+                    "W wypowiedzi występuje 9 lub więcej zaburzeń w spójności (tj. logice, uporządkowaniu) na poziomie poszczególnych akapitów LUB całej wypowiedzi."
+                  ],
+                  "alternative_conditions": [
+                    "Wstęp pracy jest treściowo niespójny z częścią zasadniczą pracy ORAZ z zakończeniem pracy.",
+                    "Zakończenie pracy jest treściowo niespójne z wstępem ORAZ częścią zasadniczą pracy."
+                  ]
+                }
+              ],
+              "notes": [
+                "Wypowiedź jest spójna, jeżeli elementy, które ją tworzą, stanowią logiczną i uporządkowaną całość.",
+                "Wywód jest uporządkowany, jeśli każdy kolejny akapit wynika z poprzedniego, a np. przestawienie akapitów zaburzyłoby tok rozumowania przyjęty przez zdającego.",
+                "Zaburzenia w spójności mogą wynikać m.in. z: a) błędów logicznych, w tym ze zbyt daleko idących uogólnień, nieuzasadnionych wniosków (np. wnioski w zakończeniu pracy nie wynikają z przeprowadzonego rozumowania), sprzecznych stwierdzeń, b) odstępstw od podporządkowania wywodu myśli przewodniej, np. wypracowanie zawiera niefunkcjonalne fragmenty stanowiące niezwiązane z tematem wątki poboczne, c) zredagowaniu wstępu lub rozwinięcia, lub zakończenia, lub akapitu, które nie pasują logicznie do pozostałej części wypracowania, nie łączą się logicznie z poprzedzającą je częścią / poprzedzającym je akapitem, d) rozwijania jednocześnie więcej niż jednego wątku („zazębiania” się wątków), e) pomijania pośrednich ogniw rozumowania, tzw. skróty myślowe, f) wprowadzenia treści nieistotnych, zbędnych dla pracy, bez związku / pozostających w wątpliwym związku z tematem/wywodem, g) wprowadzania dygresji stosowanych niefunkcjonalnie, h) przerywania toku myślenia zbędnymi zdaniami.",
+                "Błędy w spójności wewnątrz akapitów oznaczają np. nielogiczne połączenia zdań w akapicie oraz brak zastosowania w nim wskaźników zespolenia.",
+                "Błędy w spójności między akapitami oznaczają nielogiczne powiązanie danego akapitu z poprzednim lub poprzednimi akapitami oraz brak zastosowania wskaźników zespolenia między akapitami."
+              ]
+            },
+            "3c": {
+              "id": "3c",
+              "number": "3c",
+              "name": "Styl wypowiedzi",
+              "max_points": 1,
+              "error_keys": [],
+              "rules": [
+                {
+                  "id": "3c-rule-1",
+                  "points": 1,
+                  "conditions": [
+                    "Styl w całości lub w przeważającej części stosowny, tj. adekwatny do odmiany pisanej języka oraz do sytuacji komunikacyjnej (jednorodny albo funkcjonalnie niejednorodny)."
+                  ]
+                },
+                {
+                  "id": "3c-rule-0",
+                  "points": 0,
+                  "conditions": [
+                    "Wypracowanie nie spełnia warunków określonych w kategorii „1 pkt”."
+                  ]
+                }
+              ],
+              "notes": [
+                "Styl wypowiedzi – co do zasady – powinien być: jasny, prosty (nie: zawiły, pretensjonalny), zwięzły, jednolity. Dodatkowo może być żywy, obrazowy.",
+                "Wypracowanie powinno być napisane stylem stosownym do sytuacji komunikacyjnej, jaką jest egzamin maturalny, co oznacza, że nie należy redagować go, stosując słownictwo charakterystyczne dla stylu potocznego w odmianie mówionej. Styl uznaje się za stosowny w przeważającej części, jeżeli jest stosowany w orientacyjnie 2/3 pracy. Styl jest niestosowny do sytuacji komunikacyjnej, jeżeli orientacyjnie ok. 2/3 wypracowania zredagowane jest przy użyciu struktur językowych charakterystycznych dla stylu potocznego w odmianie mówionej.",
+                "Styl wypracowania jest jednorodny, jeśli zdający konsekwentnie posługuje się jednym, wybranym stylem, odpowiednim dla treści i formy wypowiedzi, lub miesza różne style w wypowiedzi, ale jest to uzasadnione i celowe.",
+                "Indywidualne upodobania stylistyczne egzaminatora nie mogą wpływać na ocenę stylu pracy zdającego."
+              ]
+            },
+            "4a": {
+              "id": "4a",
+              "number": "4a",
+              "name": "Zakres i poprawność środków językowych",
+              "max_points": 7,
+              "error_keys": [
+                "language_errors",
+                "repeated_errors"
+              ],
+              "range_definitions": [
+                {
+                  "id": "4a-range-wide",
+                  "value": "wide",
+                  "label": "szeroki zakres środków językowych",
+                  "description": "Szeroki zakres środków językowych, tzn. zróżnicowana składnia, zróżnicowana leksyka, w tym np. bogata frazeologia, precyzyjne słownictwo, umożliwiających pełną i swobodną realizację tematu."
+                },
+                {
+                  "id": "4a-range-satisfactory",
+                  "value": "satisfactory",
+                  "label": "zadowalający zakres środków językowych",
+                  "description": "Zadowalający zakres środków językowych, tzn. składnia i leksyka stosowne/odpowiednie do realizacji tematu."
+                },
+                {
+                  "id": "4a-range-narrow",
+                  "value": "narrow",
+                  "label": "wąski zakres środków językowych",
+                  "description": "Wąski zakres środków językowych, tzn. składnia i leksyka proste/ograniczone, utrudniające realizację tematu."
+                }
+              ],
+              "matrix": [
+                {
+                  "id": "4a-matrix-cell-1",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 0,
+                    "max": 5
+                  },
+                  "classification": "1A",
+                  "points": 7
+                },
+                {
+                  "id": "4a-matrix-cell-2",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 6,
+                    "max": 8
+                  },
+                  "classification": "1B",
+                  "points": 6
+                },
+                {
+                  "id": "4a-matrix-cell-3",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 9,
+                    "max": 11
+                  },
+                  "classification": "1C",
+                  "points": 5
+                },
+                {
+                  "id": "4a-matrix-cell-4",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 12,
+                    "max": 14
+                  },
+                  "classification": "1D",
+                  "points": 4
+                },
+                {
+                  "id": "4a-matrix-cell-5",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 15,
+                    "max": 17
+                  },
+                  "classification": "1E",
+                  "points": 3
+                },
+                {
+                  "id": "4a-matrix-cell-6",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 18,
+                    "max": 21
+                  },
+                  "classification": "1F",
+                  "points": 2
+                },
+                {
+                  "id": "4a-matrix-cell-7",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 22,
+                    "max": 25
+                  },
+                  "classification": "1G",
+                  "points": 1
+                },
+                {
+                  "id": "4a-matrix-cell-8",
+                  "range": "wide",
+                  "error_count": {
+                    "min": 26,
+                    "max": null
+                  },
+                  "classification": "1H",
+                  "points": 0
+                },
+                {
+                  "id": "4a-matrix-cell-9",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 0,
+                    "max": 5
+                  },
+                  "classification": "2A",
+                  "points": 6
+                },
+                {
+                  "id": "4a-matrix-cell-10",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 6,
+                    "max": 8
+                  },
+                  "classification": "2B",
+                  "points": 5
+                },
+                {
+                  "id": "4a-matrix-cell-11",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 9,
+                    "max": 11
+                  },
+                  "classification": "2C",
+                  "points": 4
+                },
+                {
+                  "id": "4a-matrix-cell-12",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 12,
+                    "max": 14
+                  },
+                  "classification": "2D",
+                  "points": 3
+                },
+                {
+                  "id": "4a-matrix-cell-13",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 15,
+                    "max": 17
+                  },
+                  "classification": "2E",
+                  "points": 2
+                },
+                {
+                  "id": "4a-matrix-cell-14",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 18,
+                    "max": 21
+                  },
+                  "classification": "2F",
+                  "points": 1
+                },
+                {
+                  "id": "4a-matrix-cell-15",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 22,
+                    "max": 25
+                  },
+                  "classification": "2G",
+                  "points": 0
+                },
+                {
+                  "id": "4a-matrix-cell-16",
+                  "range": "satisfactory",
+                  "error_count": {
+                    "min": 26,
+                    "max": null
+                  },
+                  "classification": "2H",
+                  "points": 0
+                },
+                {
+                  "id": "4a-matrix-cell-17",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 0,
+                    "max": 5
+                  },
+                  "classification": "3A",
+                  "points": 5
+                },
+                {
+                  "id": "4a-matrix-cell-18",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 6,
+                    "max": 8
+                  },
+                  "classification": "3B",
+                  "points": 4
+                },
+                {
+                  "id": "4a-matrix-cell-19",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 9,
+                    "max": 11
+                  },
+                  "classification": "3C",
+                  "points": 3
+                },
+                {
+                  "id": "4a-matrix-cell-20",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 12,
+                    "max": 14
+                  },
+                  "classification": "3D",
+                  "points": 2
+                },
+                {
+                  "id": "4a-matrix-cell-21",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 15,
+                    "max": 17
+                  },
+                  "classification": "3E",
+                  "points": 1
+                },
+                {
+                  "id": "4a-matrix-cell-22",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 18,
+                    "max": 21
+                  },
+                  "classification": "3F",
+                  "points": 0
+                },
+                {
+                  "id": "4a-matrix-cell-23",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 22,
+                    "max": 25
+                  },
+                  "classification": "3G",
+                  "points": 0
+                },
+                {
+                  "id": "4a-matrix-cell-24",
+                  "range": "narrow",
+                  "error_count": {
+                    "min": 26,
+                    "max": null
+                  },
+                  "classification": "3H",
+                  "points": 0
+                }
+              ],
+              "notes": [
+                "Oceniając język wypowiedzi, egzaminator najpierw oceni zakres użytych środków językowych, a następnie – ich poprawność. Ostateczną liczbę punktów ustali na podstawie oceny obu tych aspektów wypowiedzi, zgodnie z tabelą.",
+                "Nie każde nieprecyzyjne sformułowanie jest niepoprawne językowo (stanowi błąd językowy); może być przejawem nieporadności językowej. Błędem jest nieporadność językowa będąca oczywistym nieuzasadnionym naruszeniem obowiązującej normy językowej.",
+                "Indywidualne upodobania językowe egzaminatora nie mogą wpływać na ocenę poprawności środków językowych w pracy zdającego.",
+                "W wypracowaniu występuje zróżnicowana składnia, jeżeli w pracy zdający wykorzystał poprawnie co najmniej 4 różne struktury składniowe, np.: zdanie pojedyncze, zdanie złożone, zdanie wielokrotnie złożone, równoważnik zdania, imiesłowowy równoważnik zdania, strona bierna, paralelizm składniowy, poprawne wprowadzanie cytatu, zdanie pytające, zdanie wtrącone.",
+                "W wypracowaniu występuje zróżnicowana leksyka, jeżeli w pracy zdający np. stosuje wyrazy/wyrażenia synonimiczne, stosuje bogatą frazeologię, używa precyzyjnego słownictwa, w tym np. terminologii.",
+                "W ocenie zróżnicowania leksyki nie uwzględnia się nieuzasadnionych powtórzeń wyrazów, zwrotów. Nieuzasadnione powtórzenia są uwzględniane w liczbie błędów językowych."
+              ]
+            },
+            "4b": {
+              "id": "4b",
+              "number": "4b",
+              "name": "Poprawność ortograficzna",
+              "max_points": 2,
+              "error_keys": [
+                "orthographic_errors",
+                "repeated_errors"
+              ],
+              "thresholds": {
+                "standard": [
+                  {
+                    "id": "4b-standard-1",
+                    "error_count": {
+                      "min": 0,
+                      "max": 1
+                    },
+                    "points": 2
+                  },
+                  {
+                    "id": "4b-standard-2",
+                    "error_count": {
+                      "min": 2,
+                      "max": 4
+                    },
+                    "points": 1
+                  },
+                  {
+                    "id": "4b-standard-3",
+                    "error_count": {
+                      "min": 5,
+                      "max": null
+                    },
+                    "points": 0
+                  }
+                ],
+                "specific_learning_difficulties": [
+                  {
+                    "id": "4b-sld-1",
+                    "error_count": {
+                      "min": 0,
+                      "max": 4
+                    },
+                    "points": 2
+                  },
+                  {
+                    "id": "4b-sld-2",
+                    "error_count": {
+                      "min": 5,
+                      "max": 8
+                    },
+                    "points": 1
+                  },
+                  {
+                    "id": "4b-sld-3",
+                    "error_count": {
+                      "min": 9,
+                      "max": null
+                    },
+                    "points": 0
+                  }
+                ]
+              },
+              "notes": []
+            },
+            "4c": {
+              "id": "4c",
+              "number": "4c",
+              "name": "Poprawność interpunkcyjna",
+              "max_points": 2,
+              "error_keys": [
+                "punctuation_errors",
+                "repeated_errors"
+              ],
+              "thresholds": {
+                "standard": [
+                  {
+                    "id": "4c-standard-1",
+                    "error_count": {
+                      "min": 0,
+                      "max": 8
+                    },
+                    "points": 2
+                  },
+                  {
+                    "id": "4c-standard-2",
+                    "error_count": {
+                      "min": 9,
+                      "max": 16
+                    },
+                    "points": 1
+                  },
+                  {
+                    "id": "4c-standard-3",
+                    "error_count": {
+                      "min": 17,
+                      "max": null
+                    },
+                    "points": 0
+                  }
+                ],
+                "specific_learning_difficulties": [
+                  {
+                    "id": "4c-sld-1",
+                    "error_count": {
+                      "min": 0,
+                      "max": 15
+                    },
+                    "points": 2
+                  },
+                  {
+                    "id": "4c-sld-2",
+                    "error_count": {
+                      "min": 16,
+                      "max": 30
+                    },
+                    "points": 1
+                  },
+                  {
+                    "id": "4c-sld-3",
+                    "error_count": {
+                      "min": 31,
+                      "max": null
+                    },
+                    "points": 0
+                  }
+                ]
+              },
+              "notes": []
+            }
+          }
+        }
+      },
+      "exam_requirements": {},
+      "user_answer": {
+        "selected_topic_id": "",
+        "content": "",
+        "word_count": 0,
+        "has_specific_learning_difficulties": false
+      }
+    }
+  ]
+}
