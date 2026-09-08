@@ -176,9 +176,10 @@ code,.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size
 .cof text.sm{fill:var(--muted); font-size:11px; font-weight:500}
 .cof text.ink{fill:var(--root-ink)}
 .roman{display:grid; gap:6px; grid-template-columns:repeat(auto-fit,minmax(62px,1fr))}
-.roman div{text-align:center; background:var(--panel2); border:1px solid var(--line2); border-radius:9px; padding:8px 4px}
+.roman div{text-align:center; cursor:pointer; transition:border-color .12s, background .12s; background:var(--panel2); border:1px solid var(--line2); border-radius:9px; padding:8px 4px}
 .roman b{display:block; font-size:1.02rem}
 .roman span{font-size:.68rem; color:var(--muted); letter-spacing:.04em}
+.roman div:hover{background:var(--raise); border-color:var(--faint)}
 .roman div.fn{border-color:var(--scale); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--scale) 40%,transparent)}
 
 /* ---------- boxes / theory ---------- */
@@ -623,7 +624,17 @@ details[open] summary{margin-bottom:8px}
         <div class="roman" id="cof-roman"></div>
         <div class="sep"></div>
         <dl class="kv" id="cof-facts"></dl>
-        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <div class="sep"></div>
+      <h3>Hear the key</h3>
+      <div class="quick" id="cof-prog" style="margin-top:0"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+        <label class="chk" style="padding:0" for="cof-bpm">Tempo</label>
+        <input type="range" id="cof-bpm" min="50" max="150" value="86" step="2" style="flex:1;accent-color:var(--root)">
+        <span class="mono hint" id="cof-bpmv">86</span>
+      </div>
+      <div id="cof-now" style="margin-top:10px;min-height:1.2em"></div>
+
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" id="cof-toboard">Show this key on the neck →</button>
         <button class="btn" id="cof-tochords">Find these chords →</button>
         </div>
@@ -687,7 +698,7 @@ details[open] summary{margin-bottom:8px}
   <div class="card">
     <h3>4 · Chords: stack every other note</h3>
     <p>Take a scale, start on a degree, skip one, take the next, skip one, take the next. Three notes is a triad; a fourth gives you a seventh chord. Do that on each degree of the scale and you get the chords that belong to the key — no other chords needed for most songs.</p>
-    <table><thead><tr><th>Degree</th><th>Chord</th><th>Notes</th><th>Type</th><th>Seventh</th><th>Job in the key</th></tr></thead><tbody id="t-diatonic"></tbody></table>
+    <table><thead><tr><th>Degree</th><th>Chord</th><th>Notes</th><th>Type</th><th>Seventh</th><th>Job in the key</th><th>On the neck</th></tr></thead><tbody id="t-diatonic"></tbody></table>
     <p class="hint" style="margin-top:10px">This is why a song in <span id="t-keyname">C</span> keeps returning to the same handful of chords, and why a stray one feels like a surprise.</p>
   </div>
 
@@ -1639,6 +1650,8 @@ const ROMAN_MAJ = ['I','ii','iii','IV','V','vi','vii°'];
 const ROMAN_MIN = ['i','ii°','III','iv','v','VI','VII'];
 const QUAL_MAJ = ['major','minor','minor','major','major','minor','diminished'];
 const QUAL_MIN = ['minor','diminished','major','minor','minor','major','major'];
+const QUAL_FROM = {major:'maj', minor:'min', diminished:'dim'};
+const SEV_FROM  = {'maj7':'maj7','m7':'min7','7':'dom7','m7\u266d5':'m7b5'};
 const SEV_MAJ = ['maj7','m7','m7','maj7','7','m7','m7♭5'];
 const SEV_MIN = ['m7','m7♭5','maj7','m7','m7','maj7','7'];
 const JOB_MAJ = ['home','pre-dominant','soft substitute for I','the lift','the pull home','the relative minor','unstable, leads to I'];
@@ -1707,8 +1720,22 @@ function renderCircle(){
   const fn = minor? [0,3,4] : [0,3,4];
   $('cof-roman').innerHTML = sp.map((n,i)=>{
     const suffix = qual[i]==='minor'?'m':qual[i]==='diminished'?'°':'';
-    return `<div class="${fn.includes(i)?'fn':''}"><b>${pretty(n)}${suffix}</b><span>${rom[i]}</span></div>`;
+    const rn = ROOT_CHOICES.indexOf(n)>=0 ? n : SHARP[pcOf(n)];
+    return `<div class="${fn.includes(i)?'fn':''}" role="button" tabindex="0" data-root="${rn}" data-qual="${QUAL_FROM[qual[i]]}" title="Find shapes for ${pretty(n)}${suffix}"><b>${pretty(n)}${suffix}</b><span>${rom[i]}</span></div>`;
   }).join('');
+  $('cof-roman').onclick = e=>{ const d=e.target.closest('[data-root]'); if(d) toChord(d.dataset.root, d.dataset.qual); };
+  $('cof-roman').onkeydown = e=>{ if(e.key!=='Enter' && e.key!==' ') return;
+    const d=e.target.closest('[data-root]'); if(d){ e.preventDefault(); toChord(d.dataset.root, d.dataset.qual); } };
+
+  const progs = progressionsFor(sp, minor);
+  $('cof-prog').innerHTML = progs.map((p,i)=>
+    '<button data-p="'+i+'" title="'+p.why+'">\u25b6 '+p.n+'</button>').join('')
+    + '<button class="ghost" id="cof-stop">\u25a0 Stop</button>';
+  $('cof-prog').onclick = e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    if(b.id==='cof-stop') return stopProgression();
+    playProgression(progs[+b.dataset.p].steps, +$('cof-bpm').value);
+  };
   const relKey = minor? cur.maj : cur.min;
   $('cof-facts').innerHTML = [
     ['Relative '+(minor?'major':'minor'), pretty(relKey)+(minor?' major':' minor')],
@@ -1731,6 +1758,7 @@ function renderCircle(){
     showView('play');
   };
 }
+$('cof-bpm').oninput = e=>{ $('cof-bpmv').textContent = e.target.value; };
 $('cof-svg') && renderCircle();
 
 /* ============================================================
@@ -1776,10 +1804,15 @@ function renderTheory(){
   $('t-diatonic').innerHTML = sp.map((n,i)=>{
     const triad=[sp[i], sp[(i+2)%7], sp[(i+4)%7]];
     const suffix = qual[i]==='minor'?'m':qual[i]==='diminished'?'°':'';
+    const rn = ROOT_CHOICES.indexOf(n)>=0 ? n : SHARP[pcOf(n)];
+    const sk = SEV_FROM[sev[i]] || 'maj7';
     return `<tr><td class="n">${rom[i]}</td><td><b>${pretty(n)}${suffix}</b></td>
       <td class="n">${triad.map(pretty).join(' ')}</td><td>${qual[i]}</td>
-      <td class="n">${pretty(n)}${sev[i]}</td><td class="hint">${job[i]}</td></tr>`;
+      <td class="n">${pretty(n)}${sev[i]}</td><td class="hint">${job[i]}</td>
+      <td class="n"><button class="btn ghost" style="padding:3px 8px;font-size:.76rem" data-root="${rn}" data-qual="${QUAL_FROM[qual[i]]}">shapes</button>
+      <button class="btn ghost" style="padding:3px 8px;font-size:.76rem" data-root="${rn}" data-qual="${sk}">7th</button></td></tr>`;
   }).join('');
+  $('t-diatonic').onclick = e=>{ const b=e.target.closest('button[data-root]'); if(b) toChord(b.dataset.root, b.dataset.qual); };
 
   // chord formulas
   $('t-chroot').textContent = pretty(key);
@@ -1837,14 +1870,17 @@ function fingersFor(pick){
   return {fingers, barre, span:maxF-minF};
 }
 
-function findVoicings(){
+function findVoicings(rootName, qualKey, maxF, inv){
+  rootName = rootName || CH.root; qualKey = qualKey || CH.qual;
+  if(maxF===undefined) maxF = CH.maxFret;
+  if(inv===undefined) inv = CH.inversions;
   const t = tuning(), n = t.length;
-  const def = SCALES[CH.qual], rootPc = pcOf(CH.root);
+  const def = SCALES[qualKey], rootPc = pcOf(rootName);
   const tones = new Set(def.iv.map(i=>(rootPc+i)%12));
   const ess = def.iv.filter(iv=> !(def.iv.length>=4 && iv===7)).map(i=>(rootPc+i)%12);
   const fifthPc = (rootPc+7)%12;
   const minSound = Math.min(4, n);
-  const top = Math.min(CH.maxFret, S.frets);
+  const top = Math.min(maxF, S.frets);
   const seen = new Set(), out = [];
 
   for(let base=0; base<=Math.max(0, top-3); base++){
@@ -1872,7 +1908,7 @@ function findVoicings(){
     for(const e of ess) if(!pcs.has(e)) return null;
     const bass = sounding[0];
     const bassPc = (t[bass]+pick[bass])%12;
-    if(!CH.inversions && bassPc!==rootPc) return null;
+    if(!inv && bassPc!==rootPc) return null;
     const {fingers, barre, span} = fingersFor(pick);
     if(fingers>4 || span>3) return null;
     let inner = 0;
@@ -1914,7 +1950,8 @@ function findVoicings(){
   return kept.length ? kept : out.slice(0,12);
 }
 
-function chordSVG(v){
+function chordSVG(v, rootName){
+  rootName = rootName || CH.root;
   const t = tuning(), n = t.length;
   const fretted = v.pick.filter(f=>f>0);
   const lo = fretted.length ? Math.min(...fretted) : 1;
@@ -1949,7 +1986,7 @@ function chordSVG(v){
       g += `<circle cx="${x}" cy="${padT-10}" r="4" fill="none" stroke="var(--muted)" stroke-width="1.3"/>`;
     } else if(f>=base && f<base+rows){
       const y = padT + 22*(f-base) + 11;
-      const isRoot = (t[s]+f)%12 === pcOf(CH.root);
+      const isRoot = (t[s]+f)%12 === pcOf(rootName);
       g += `<circle cx="${x}" cy="${y}" r="6.4" fill="${isRoot?'var(--root)':'var(--text)'}"/>`;
     }
   }
@@ -1966,6 +2003,12 @@ function strum(v, down){
 
 function chordName(){ return pretty(CH.root) + CHORD_SUFFIX[CH.qual]; }
 
+function toChord(rootName, qualKey){
+  CH.root = rootName; CH.qual = qualKey; CH.sel = 0;
+  $('ch-root').value = CH.root; $('ch-qual').value = CH.qual;
+  showView('chords');
+  const v = CH.list[0]; if(v) strum(v, true);
+}
 function renderChords(){
   CH.list = findVoicings();
   if(CH.sel >= CH.list.length) CH.sel = 0;
@@ -2010,6 +2053,78 @@ function renderChords(){
     + '<dt>Bass note</dt><dd>'+pretty(nameOf(v.bassPc, CH.root))+(v.bassPc===rootPc? ' — root position' : ' — an inversion')+'</dd>'
     + '<dt>Notes</dt><dd>'+(v.full? 'complete' : 'the fifth is left out, which is normal')+'</dd>'
     + '</dl>';
+}
+
+/* ---- play a progression with real voicings, moving as little as possible ---- */
+let progTimer = [];
+function stopProgression(){
+  progTimer.forEach(clearTimeout); progTimer = [];
+  $('cof-now') && ($('cof-now').innerHTML = '');
+}
+function pickNear(rootName, qual, prevFret){
+  const list = findVoicings(rootName, qual, 12, false);
+  if(!list.length) return null;
+  if(prevFret==null) return list[0];
+  return list.slice().sort((a,b)=>
+    (Math.abs(a.minFret-prevFret) - Math.abs(b.minFret-prevFret)) || (b.score-a.score))[0];
+}
+function playProgression(steps, bpm){
+  stopProgression(); audio();
+  const beat = 60/bpm, bar = beat*4;
+  let prev = null, when = 0.06;
+  const plan = [];
+  steps.forEach(st=>{
+    const v = pickNear(st.root, st.qual, prev);
+    if(!v) return;
+    prev = v.minFret;
+    plan.push({v, st, when});
+    const idx = []; for(let i=0;i<v.pick.length;i++) if(v.pick[i]>=0) idx.push(i);
+    idx.forEach((sIdx,i)=> pluck(midiAt(sIdx, v.pick[sIdx]), when + i*0.028, bar*st.bars*0.95, .40));
+    if(st.bars>=1){
+      const up = idx.slice().reverse();
+      up.forEach((sIdx,i)=> pluck(midiAt(sIdx, v.pick[sIdx]), when + beat*2 + i*0.022, bar*0.6, .26));
+    }
+    when += bar*st.bars;
+  });
+  plan.forEach((p,i)=>{
+    progTimer.push(setTimeout(()=>{
+      $('cof-now').innerHTML = plan.map((q,j)=>
+        '<span class="pill '+(j===i?'on':'')+'">'+pretty(q.st.label)+'</span>').join(' ')
+        + '<div class="hint" style="margin-top:8px">'+pretty(p.st.label)+' — '
+        + p.v.pick.map(f=> f<0?'\u00d7':f).join(' ') + ((p.v.opens>0 && p.v.minFret<=3) ? ', open position' : (p.v.minFret ? ', around fret '+p.v.minFret : ', open position')) + '</div>';
+    }, p.when*1000));
+  });
+  progTimer.push(setTimeout(()=>{ $('cof-now').innerHTML=''; }, (when+0.9)*1000));
+}
+function progressionsFor(sp, minor){
+  const q = minor ? QUAL_MIN : QUAL_MAJ, rom = minor ? ROMAN_MIN : ROMAN_MAJ;
+  const step = (deg, bars, seventh) => ({
+    root: ROOT_CHOICES.indexOf(sp[deg])>=0 ? sp[deg] : SHARP[pcOf(sp[deg])],
+    qual: seventh || QUAL_FROM[q[deg]],
+    label: pretty(sp[deg]) + (seventh ? ({maj7:'maj7',min7:'m7',dom7:'7',m7b5:'m7\u266d5'}[seventh])
+                                      : (q[deg]==='minor'?'m':q[deg]==='diminished'?'\u00b0':'')),
+    bars: bars
+  });
+  const out = [];
+  if(!minor){
+    out.push({n:'I \u2013 V \u2013 vi \u2013 IV', why:'Half the songs on the radio.',
+              steps:[step(0,1),step(4,1),step(5,1),step(3,1)]});
+    out.push({n:'ii \u2013 V \u2013 I', why:'The sentence jazz is built from.',
+              steps:[step(1,1,'min7'),step(4,1,'dom7'),step(0,2,'maj7')]});
+    out.push({n:'I \u2013 vi \u2013 IV \u2013 V', why:'Doo-wop, and every slow dance of 1958.',
+              steps:[step(0,1),step(5,1),step(3,1),step(4,1)]});
+    out.push({n:'12-bar blues', why:'Three chords, twelve bars, a century of music.',
+              steps:[step(0,4,'dom7'),step(3,2,'dom7'),step(0,2,'dom7'),
+                     step(4,1,'dom7'),step(3,1,'dom7'),step(0,1,'dom7'),step(4,1,'dom7')]});
+  } else {
+    out.push({n:'i \u2013 VI \u2013 III \u2013 VII', why:'The minor loop, from folk to film scores.',
+              steps:[step(0,1),step(5,1),step(2,1),step(6,1)]});
+    out.push({n:'i \u2013 iv \u2013 v', why:'Minor blues, plain and heavy.',
+              steps:[step(0,2),step(3,1),step(4,1)]});
+    out.push({n:'i \u2013 VII \u2013 VI \u2013 V', why:'The Andalusian walk-down.',
+              steps:[step(0,1),step(6,1),step(5,1),step(4,1,'dom7')]});
+  }
+  return out;
 }
 
 (function initChords(){
