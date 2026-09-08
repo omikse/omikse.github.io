@@ -10,8 +10,8 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=64658c8b";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=64658c8b";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json

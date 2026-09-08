@@ -17,7 +17,10 @@ here, because two repos tracking identical files only drift.
 
 import argparse
 import filecmp
+import hashlib
+import io
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -31,6 +34,58 @@ DEST = PAGES / "zdamtoio"
 EXCLUDE_DIRS = {"__pycache__", ".git", ".claude", "node_modules"}
 EXCLUDE_FILES = {".gitignore"}
 EXCLUDE_SUFFIXES = {".pyc"}
+
+
+# Files whose URLs get a ?v= stamp, and the places that reference them.
+STAMPED = ("exam.js", "auth.js", "progress.js", "firebase.js", "admin.js",
+           "renderers.js", "exam-styles.css")
+
+# `from "./progress.js"` / `import "./x.js"`, with or without an existing stamp.
+IMPORT_RE = re.compile(r'(from\s+["\']\./(?:[\w.-]+)\.js)(\?v=[0-9a-f]+)?(["\'])')
+# src="exam.js" / href="exam-styles.css" in index.html.
+HTML_RE = re.compile(r'((?:src|href)="(?:' + "|".join(re.escape(f) for f in STAMPED) + r'))(\?v=[0-9a-f]+)?(")')
+
+
+def stamp_version(dry_run=False):
+    """Give every module URL a content hash, so a deploy is never half-cached.
+
+    GitHub Pages serves assets with a ten-minute max-age and offers no way to
+    change it, so for ten minutes after a push a browser can be running the old
+    exam.js against the new progress.js. That is not theoretical: it silently
+    ate a student's answers once, and cost an hour of chasing a bug that was
+    not in the code.
+
+    The stamp is written into the SOURCE files, not injected on the way out, so
+    this folder stays a byte-exact mirror of what is served. It is a content
+    hash, so it only changes when the code does.
+    """
+    js_css = sorted(p for p in HERE.glob("*") if p.name in STAMPED)
+
+    digest = hashlib.sha256()
+    for path in js_css:
+        text = io.open(path, encoding="utf-8").read()
+        digest.update(IMPORT_RE.sub(r"\1\3", text).encode("utf-8"))
+    version = digest.hexdigest()[:8]
+
+    changed = []
+    for path in js_css:
+        text = io.open(path, encoding="utf-8").read()
+        new = IMPORT_RE.sub(rf"\1?v={version}\3", text)
+        if new != text:
+            if not dry_run:
+                io.open(path, "w", encoding="utf-8", newline="\n").write(new)
+            changed.append(path.name)
+
+    index = HERE / "index.html"
+    if index.is_file():
+        text = io.open(index, encoding="utf-8").read()
+        new = HTML_RE.sub(rf"\1?v={version}\3", text)
+        if new != text:
+            if not dry_run:
+                io.open(index, "w", encoding="utf-8", newline="\n").write(new)
+            changed.append(index.name)
+
+    return version, changed
 
 
 def wanted(path):
@@ -90,6 +145,9 @@ def main():
 
     if not DEST.parent.is_dir():
         sys.exit(f"Pages repo not found at {PAGES}\nSet PAGES_REPO to override.")
+
+    version, stamped = stamp_version(args.dry_run)
+    print(f"  version {version}" + (f" — restamped {', '.join(stamped)}" if stamped else " (unchanged)"))
 
     added, updated, removed = mirror(args.dry_run)
 
