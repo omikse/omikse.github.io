@@ -33,7 +33,13 @@
         .markdown-body table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1rem; font-size: 0.9em; }
         .markdown-body th, .markdown-body td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
         .markdown-body th { background-color: #f8fafc; font-weight: 600; }
+
+        /* Bramka logowania: chowa aplikację, zanim Firebase ustali sesję
+           (auth-unknown) i dopóki nikt nie jest zalogowany (auth-gate). */
+        .auth-unknown main, .auth-unknown #auth-slot { visibility: hidden; }
+        .auth-gate main, .auth-gate #auth-slot { display: none; }
     </style>
+    <script>document.documentElement.classList.add('auth-unknown');</script>
 </head>
 <body class="bg-slate-100 text-slate-800 flex flex-col min-h-screen">
 
@@ -55,8 +61,10 @@
             </div>
         </div>
 
-        <!-- Right Side: API Status -->
+        <!-- Right Side: User + API Status -->
         <div class="flex items-center gap-3">
+             <!-- Chip zalogowanego użytkownika (wypełniany przez auth.js) -->
+             <div id="auth-slot" class="flex items-center"></div>
              <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 text-xs cursor-pointer hover:bg-slate-100 transition" onclick="document.getElementById('config-modal').showModal()">
                 <div id="status-indicator" class="w-2 h-2 rounded-full bg-slate-400"></div>
                 <span class="font-medium text-slate-500" id="status-text">API</span>
@@ -507,6 +515,9 @@
         }
     }
 </script>
+
+<!-- Logowanie Google + profil w Firestore -->
+<script type="module" src="auth.js"></script>
 
 </body>
 </html>
