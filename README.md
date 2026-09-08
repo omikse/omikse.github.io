@@ -1,284 +1,190 @@
 # Fretboard Lab
 
-A single-page interactive tool for learning the guitar fretboard from first principles. Combines **sound waves, music theory, and hands-on practice** into one unified learning environment.
+An interactive guitar fretboard trainer that starts from what a note physically *is* and
+works up to scales, keys and improvisation. One HTML file, no build step, no dependencies,
+no network calls. Open it and it works.
 
-## Features
+**Live:** https://omikse.github.io/fretboard/
 
-### Learn Tab (Unified Sound & Fretboard)
-The entry point for absolute beginners. Combines waveform visualization with the fretboard as the central interactive element.
+---
 
-**Layout:**
-- **Top:** Explanatory card ("Start here: a note is a wave")
-- **Center:** The fretboard (the focal point)
-  - Draggable capo — click and drag to any fret
-  - Mutes everything before it; open strings update live
-  - Visual capo bar with metallic finish
-- **Left panel:** Root, Scale/Chord, Labels, Capo selector
-- **Right panel:** A and B slot info (pitch names, Hz, cycle time)
-- **Wave display:** 20 ms oscilloscope with A/B overlaid
-- **Bottom controls:** Timbre (guitar string / pure tone), window width, overlays, quick interval buttons
+## The five views
 
-**How to Use:**
-1. Click any fret → loads into slot A
-2. B keeps your previous note for comparison (unless you turn off "Keep the previous note")
-3. Click one of the quick buttons (octave up, fifth, fourth, etc.) → B jumps to that interval
-4. Watch the wave: twice as many humps in 20 ms = octave (exactly double frequency)
-5. Drag the capo → all muted frets turn grey, open strings rename, every note shifts
+### Learn
+The default view, and the one meant for someone who has never read a fretboard diagram.
+The neck sits in the middle; everything else is arranged around it.
 
-**Why this layout:**
-The fretboard is the thing you're learning. Waves are supporting evidence. The capo is an interaction, not a menu choice. Everything else radiates around the neck itself.
+- **Click any fret** — it sounds, and it loads into slot **A**. Your previous note slides
+  into slot **B**, so you are always comparing your last two notes.
+- **The wave panel** draws both notes across the same slice of time (5–40 ms). Play a note,
+  then the same note twelve frets up, and B has visibly twice as many humps. That is the
+  whole idea of an octave, shown rather than asserted.
+- **Quick interval buttons** put B an octave, fifth, fourth, major third or one fret above A.
+  The readout names the interval, gives the frequency ratio, and matches it to the nearest
+  simple fraction (3:2 for a fifth, 45:32 for a tritone) with a note on why simple fractions
+  sound settled and awkward ones do not.
+- **Timbre**: *Guitar string* draws the real harmonic stack of a plucked string; *Pure tone*
+  gives a clean sine, which makes "twice as fast" unmistakable. *Overlay the real signal*
+  traces the actual audio leaving your speakers, aligned on a rising zero crossing so it
+  holds still.
+- **The harmonics panel** shows that one string is never doing one thing: it vibrates in
+  halves and thirds at the same time, and those extra speeds land on the octave, the fifth,
+  the next octave. The intervals were found inside a string, not invented.
+- **The capo is a physical object.** It parks by the nut. Drag it onto any fret and it snaps
+  there, mutes everything behind it, plays the note it lands on, and tells you what your
+  open strings have become. Arrow keys move it if you would rather not drag.
+- **Left panel** names the current scale, spells it correctly for the key, gives its formula
+  and character, and lists every root position on every string.
 
-### Guessing Game
-Four modes to drill note recognition:
-- **Name the note:** A fret lights up; pick from 12 buttons
-- **Find the note:** Given a note name and string, click the fret
-- **Find every octave:** One position shown; find all other octaves in range
-- **Find the interval:** Shown a root and an interval name; find the target note
+### Guessing game
+Four drills, all scored, with per-note accuracy kept in `localStorage`:
 
-Settings: filter by string, highest fret, time limit, naturals-only mode.
-Stats persist in localStorage: accuracy per note, streak, best streak, average time.
+| Mode | What it asks |
+|---|---|
+| Name the note | A fret lights up — pick its name from the twelve |
+| Find the note | You get a note and a string — click the right fret |
+| Find every octave | One position is shown — click every other place that note lives |
+| Find the interval | A reference note and an interval — click the target, any string |
+
+Filter by string, cap the fret range, restrict to naturals, and optionally run a clock.
+The accuracy bars show which note names you are actually slow on, which is more useful than
+the score.
 
 ### Pentatonics
-All five boxes, with CAGED shape labels (standard tuning only).
-- Minor and major modes
-- Optional blue note (♭5)
-- Ghost other positions to see where boxes join
-- Full map or single-box zoom
+All five boxes for minor and major pentatonic, each labelled with the CAGED shape it belongs
+to. Show one box, or the whole neck. Optional blue note. "Ghost the other positions" reveals
+where each box overlaps its neighbours — the overlap is the door between them, and that is
+the thing worth practising.
 
-### Circle of Fifths
-Clickable 12-point circle:
-- Sharps clockwise, flats anticlockwise
-- Major/relative minor on inner ring
-- Diatonic triads with Roman numerals
-- Direct link back to the fretboard to explore the key
+Box shapes are a standard-tuning idea. In DADGAD or open G the notes stay correct but the
+box buttons switch off, with a note explaining why.
+
+### Circle of fifths
+A clickable circle. Selecting a key gives its signature and which sharps or flats, the seven
+diatonic chords with Roman numerals, the relative minor, and the ii–V–I, I–V–vi–IV and
+12-bar blues in that key. I, IV and V are highlighted on the circle itself. One button sends
+the key to the neck.
 
 ### Theory
-Reference material:
-- 12 notes, intervals with cultural examples
-- Major scale as the ruler
-- Diatonic harmony (chord per degree)
-- Chord formulas
-- Modes and their color
-- The neck's own logic (octave shapes, anchor frets, CAGED)
+Reference, generated for whichever key you select rather than written out for C: the twelve
+notes, intervals with a song you would recognise for each, the major scale as the ruler,
+diatonic harmony, chord formulas, the modes, and a section on the neck's own logic — the
+G-to-B string shift, octave shapes, anchor frets, CAGED in a paragraph.
 
 ---
 
-## Architecture
+## Global settings
 
-### Audio System
-- **Master bus:** All sounds route through one `master` gain node + `analyser` for real-time signal capture
-- **Sustained tones:** `toneOn()` / `toneOff()` for pure sine waves (used in Learn tab overlays)
-- **Plucked notes:** Karplus-Strong algorithm generates guitar-like decay with harmonics
-- **Frequency mapping:** MIDI numbers → Hz → string/fret lookup
+Kept in `localStorage`, applied to every view:
 
-### Fretboard Component
-```javascript
-const fb = new Fretboard(containerID, opts);
-fb.set(string, fret, class, label);    // Mark a dot
-fb.clear();                            // Clear all marks
-fb.paint(contextRoot);                 // Render and label using the given root note
-fb.setCapo(fretNumber);                // Visually place and mute frets before capo
-fb.onCell = (string, fret) => {};      // Callback when clicked
+- **Tuning** — standard, drop D, half step down, open G, open D, DADGAD, 4-string bass, ukulele
+- **Frets** — 12 to 24
+- **Accidentals** — sharps, flats, or auto (follows the key)
+- **Left-handed** — mirrors the neck; the nut, fret wires and capo all flip with it
+- **Sound** — on/off
+- **Theme** — light and dark
+
+---
+
+## How the code is arranged
+
+One file, `index.html`, about 100 KB: inline CSS, one inline script, no imports.
+
+### Music model
+Notes are pitch classes 0–11. A scale is a list of semitone offsets from the root
+(`[0,2,4,5,7,9,11]` is major). `spellScale()` gives correct letter names for seven-note
+scales, so F major spells B♭ rather than A♯ and E Dorian spells C♯ — one letter per degree,
+never used twice.
+
+### Audio
+Everything routes through one master gain into an `AnalyserNode`, so the live-signal overlay
+can read whatever is actually sounding.
+
+- `pluck(midi)` — Karplus-Strong: a burst of noise in a delay line the length of one period,
+  low-passed and averaged each pass. Sounds like a plucked string because it is built the
+  same way one behaves.
+- `toneOn(id, freq)` / `toneOff(id)` — sustained sine voices for the pure-tone mode.
+
+The context is created on the first note, not on load, so autoplay policy is satisfied.
+
+### `Fretboard` class
+Builds a CSS-grid neck, one instance per view.
+
+```js
+const fb = new Fretboard('fb-play', {
+  clickable: true,
+  capo: true,                       // adds the draggable capo
+  canPlay: (s, f) => f >= PL.capo,  // veto clicks behind the capo
+  capoGet: () => PL.capo,
+  onCapo: f => { /* dropped on fret f */ },
+  onCapoPreview: f => { /* dragging over fret f */ },
+  fretsFn: () => someRange          // per-instance fret count
+});
+
+fb.clear().set(string, fret, cssClass, label).paint(contextRoot);
+fb.setCapo(5);
+fb.onCell = (string, fret) => {};
 ```
 
-**Features:**
-- Per-cell click handler with optional `canPlay(s, f)` veto (capo uses this to block closed frets)
-- Capo layer: divs at each fret position; one marked with `.capoon` class shows the bar
-- Logical borders (`border-inline-end`) flip for left-handed mode
-- Per-cell `dot` divs with classes for state: `root`, `on`, `ghost`, `mute`, `picked`, `pickedB`, `target`, `bad`
+Fret widths follow the real geometry (each fret is 2^(1/12) closer than the last), clamped so
+the high frets stay clickable. Borders use `border-inline-end`, so left-handed mode is one
+`direction: rtl` and everything — nut, fret wires, capo — lands on the correct side.
 
-### Learn Tab (v-play)
-Central data structure:
-```javascript
+The capo is a real positioned element rather than a styled cell, which is what makes it
+draggable: pointer events (mouse and touch alike) move it freely, and on release
+`fretAtX()` finds the fret whose rect contains the pointer and snaps to it.
+
+### Learn view state
+```js
 const PL = {
-  timbre: 'string' | 'sine',          // Harmonic content
-  win: 20,                            // Milliseconds to display
-  live: false,                        // Overlay real speaker output?
-  hold: false,                        // Keep tones sustaining?
-  keep: true,                         // Keep previous note in B?
-  A: {s, f, midi} | null,           // Slot A (blue)
-  B: {s, f, midi} | null,           // Slot B (orange)
-  root: 'A',                         // Scale root
-  scale: 'minPent',                  // Scale key
-  labels: 'name' | 'pitch' | 'deg' | 'none',  // What to show on dots
-  capo: 0,                           // Fret capo starts at
-  sweeping: false                    // Currently running the sweep?
+  timbre:'string'|'sine', win:20, live:false, hold:false, keep:true, ghost:true,
+  A:{s,f,midi}|null, B:{s,f,midi}|null,
+  root:'A', scale:'minPent', labels:'name'|'pitch'|'deg'|'none',
+  capo:0, sweeping:false
 };
 ```
-
-**Rendering flow:**
-1. `setSlot('A', s, f)` → loads note into A, shifts old A to B (if keep=true), plays it
-2. `renderPlay()` → updates fretboard marks, slot cards, ratio line, wave display
-3. `drawWave()` → canvas oscilloscope
-4. `drawHarm()` → harmonic stack bar chart
-5. `plLoop(on)` → RAF loop for live signal overlay
-
-### Draggable Capo
-Currently: static dropdown selector. To make draggable:
-1. Detect mouse down on any capo cell (`.capoon`)
-2. Track mouse position → map to fret number
-3. On mouse up → snap to nearest fret, call `fbW.setCapo(n)`
-4. Visual feedback: capo bar follows cursor during drag
-
-**Implementation sketch:**
-```javascript
-fbW.host.addEventListener('mousedown', (e) => {
-  const cell = e.target.closest('.capoon');
-  if (!cell) return;
-  const start = { x: e.clientX, fret: PL.capo };
-  const onMove = (e) => {
-    const delta = (e.clientX - start.x) / cellWidth;
-    const newFret = Math.max(0, Math.min(S.frets, start.fret + Math.round(delta)));
-    // Update capo visually
-  };
-  document.addEventListener('mousemove', onMove, { once: false });
-  document.addEventListener('mouseup', () => {
-    document.removeEventListener('mousemove', onMove);
-    PL.capo = finalFret;
-    renderPlay();
-  }, { once: true });
-});
-```
-
-### Music Model
-**Pitch class:** 0–11 (C=0, C#=1, ..., B=11)
-**Intervals:** Semitone counts (0=unison, 7=perfect 5th, 12=octave)
-**Scales:** Arrays of intervals from root, e.g. `[0, 2, 4, 5, 7, 9, 11]` for major
-
-**Key naming:** 
-- Sharp keys if the root doesn't contain 'b'
-- Flat keys otherwise
-- Per-key override via `FLAT_KEYS` set
-
-**Spelling:** `spellScale(rootName, intervals)` → array of note names preserving letter identity
-- C major: `['C','D','E','F','G','A','B']`
-- F major: `['F','G','A','B♭','C','D','E']`
+`setSlot()` → `renderPlay()` → repaints the neck, both slot cards, the ratio line, the wave
+and the harmonics.
 
 ---
 
-## Settings & Storage
+## Running it
 
-**Global settings** (localStorage, top header):
-- Tuning (8 choices including alternate tunings and ukulele)
-- Fret range (12–24)
-- Accidental preference (sharps, flats, auto-detect by key)
-- Left-handed mode (flips direction via `direction:rtl`)
-- Sound on/off
+Double-clicking the file works — there are no modules and no fetches. To serve it anyway:
 
-**Learn tab settings** (PL object, auto-saved):
-- Root, scale, labels, capo, timbre, window, overlay, hold, keep
-
-**Game stats** (localStorage, persists across sessions):
-- Accuracy per note (% correct out of N attempts)
-- Streak, best streak, average response time
-
----
-
-## Theming
-
-**Light & dark modes** via CSS custom properties:
-- `:root` sets dark defaults
-- `@media (prefers-color-scheme: dark)` overrides on dark systems
-- `[data-theme="light"]` / `[data-theme="dark"]` for explicit toggle
-
-**Fretboard-specific:**
-- `.fb .board`: wood gradient (maple wood in dark, light wood in light)
-- `.fb .dot`: color-coded by state (root=orange, scale=teal, ghost=faint grey)
-- `.fb .capolayer div.capoon::before`: metallic capo bar
-
----
-
-## Keyboard & Mobile
-
-**Keyboard shortcuts** (in Guessing Game):
-- `1`–`=`: answer buttons (13 options for all 12 notes + space)
-- `Space`: skip to next question
-
-**Touch:** 
-- Fretboard clicks work on mobile
-- Drag-and-drop capo should support touch events (touchstart, touchmove, touchend)
-
-**Responsive:**
-- Fretboard uses relative grid sizing
-- Controls stack on narrow screens
-- Canvas wave display scales to container
-
----
-
-## Known Limitations & Future Work
-
-1. **Capo is not yet draggable.** Currently a dropdown selector; drag interaction is high-priority.
-2. **Pentatonic boxes** assume standard tuning. Other tunings show notes but disable box numbers.
-3. **Adapted VARIANTS** (200 autism, 600 Braille, etc.) are out of scope. Only `100` papers convert.
-4. **No API integration yet.** The game grades locally; future: AI essay grading (on the essay exam papers).
-5. **Responsive tuning selector.** On mobile, the tuning dropdown is hard to read.
-
----
-
-## Development Notes
-
-### File Structure
-- **index.html:** Single-page application, ~100KB
-  - Inline CSS (no external stylesheets)
-  - Inline JavaScript (no build step)
-  - Can be opened locally (double-click) or served over HTTP (strongly recommended for audio context & ES modules)
-
-### Audio Context Management
-- Created on first note play (not on page load, to respect autoplay policies)
-- Suspended on mobile until user interaction
-- Master bus + analyser graph allows real-time capture for overlay visualization
-
-### Why a Single File?
-- No build toolchain
-- No external network calls (except GitHub)
-- Works on any HTTP server, or served locally via `python -m http.server`
-- Easy to version, fork, embed
-
----
-
-## How to Run Locally
-
-### Quick Start (No Installation)
 ```bash
-# Navigate to the folder
-cd "path/to/learning fretboard"
-
-# Start a simple server (Python 3)
 python -m http.server 8000
-
-# Open in browser
-# http://localhost:8000/index.html
 ```
 
-### Why Not `file://`?
-ES modules (used for audio) fail silently under `file://` protocol. Must use HTTP.
+Audio needs a user gesture before it will start, in every browser. Clicking a fret counts.
 
 ---
 
-## Practice Path (Recommended Order)
+## A practice order that works
 
-1. **Learn tab:** Play with the capo. Drag it around. Watch the wave double when you go up an octave. Read the intro card.
-2. **Game, Name the note:** Naturals only, one string (E), frets 0–5. Aim for 95% accuracy.
-3. **Game, Find the note:** Same filter. Click to land on the right fret.
-4. **Game, Find every octave:** Learn the pattern: +2 strings, +2 frets (except G→B: +3 frets).
-5. **Pentatonics, box 1:** All 12 keys, one box at a time. Say the note name out loud as you play.
-6. **Game, Name the note:** All strings, all naturals. Then unlock sharps/flats.
-7. **Theory tab:** Reference as you practice. Intervals, modes, the neck's logic.
-
----
-
-## Credits
-
-Built as a learning tool for absolute-beginner guitarists. Audio synthesis via the Web Audio API. Music theory reference from Berklee and music pedagogy best practices.
+1. Learn view. Drag the capo. Play a note, then the same note twelve frets up, and watch
+   the wave double. Read the four notes under the neck.
+2. Game → *Name the note*, naturals only, low E and A strings, frets to 12. Get to 95%.
+3. Game → *Find every octave*. This is the drill that stops you counting frets.
+4. All six strings, naturals, then unlock the sharps and flats.
+5. Pentatonics → box 1 only, in all twelve keys, saying each note name out loud.
+6. Join two boxes, then three, pivoting on the notes they share.
+7. Improvise for one minute and name every note you land on. Slow, ugly, and the fastest
+   thing on this list.
 
 ---
 
-## Future Ideas
+## Known limits
 
-- [ ] Draggable capo
-- [ ] Touch support for drag capo
-- [ ] Visualize chord voicings on the fretboard
-- [ ] Scale mode explorer (play a mode, hear its color)
-- [ ] Record a lick, play it back transposed to every key
-- [ ] Ear training: match a played interval to its name
-- [ ] MIDI keyboard input (route an external keyboard to the fretboard)
+- Pentatonic box shapes assume standard tuning; other tunings show correct notes but no boxes.
+- The five boxes are drawn for six-string instruments. Bass and ukulele tunings work
+  everywhere else.
+- Practice stats are per browser origin — the copy on the site and a local copy keep
+  separate histories.
+
+## Ideas not built yet
+
+- Chord voicings drawn on the neck from the Theory and Circle views
+- Ear training: hear an interval, name it
+- Shareable links that encode root, scale, tuning and capo
+- A metronome and a practice timer

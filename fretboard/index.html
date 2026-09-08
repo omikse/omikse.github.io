@@ -279,6 +279,18 @@ details[open] summary{margin-bottom:8px}
 }
 .fb .capo:focus-visible{outline:2px solid var(--blue); outline-offset:3px}
 .fb.dragging-capo .cell.click{cursor:grabbing}
+
+/* ---------- ear training ---------- */
+.earbox{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:4px 0 2px}
+.earbox .big{
+  background:var(--blue); border:0; color:#04121f; font:inherit; font-weight:700; font-size:1rem;
+  padding:12px 20px; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:8px;
+}
+.earbox .big:hover{filter:brightness(1.08)}
+.earbox .alt{background:var(--panel2); border:1px solid var(--line2); color:var(--text);
+  font:inherit; padding:11px 15px; border-radius:10px; cursor:pointer}
+.earbox .alt:hover{background:var(--raise)}
+.answers.ivl button{min-width:118px}
 .hide{display:none !important}
 </style>
 </head>
@@ -296,6 +308,7 @@ details[open] summary{margin-bottom:8px}
     </select></div>
     <label class="chk"><input type="checkbox" id="g-lefty"> Left-handed</label>
     <label class="chk"><input type="checkbox" id="g-sound" checked> Sound</label>
+    <button class="btn ghost" id="g-share" title="Copy a link to exactly this setup">Share</button>
     <button class="btn ghost" id="g-theme" title="Toggle theme">◐</button>
   </div>
   <nav id="tabs" role="tablist">
@@ -418,10 +431,20 @@ details[open] summary{margin-bottom:8px}
 <section id="v-game" class="hide">
   <div class="bar">
     <div class="f"><label for="q-mode">Mode</label><select id="q-mode">
-      <option value="name">Name the note</option>
-      <option value="find">Find the note</option>
-      <option value="octaves">Find every octave</option>
-      <option value="interval">Find the interval</option>
+      <optgroup label="Know the neck">
+        <option value="name">Name the note</option>
+        <option value="find">Find the note</option>
+        <option value="octaves">Find every octave</option>
+        <option value="interval">Find the interval</option>
+      </optgroup>
+      <optgroup label="Train your ear">
+        <option value="ear">Hear the interval</option>
+      </optgroup>
+    </select></div>
+    <div class="f hide" id="q-earset-wrap"><label for="q-earset">Intervals</label><select id="q-earset">
+      <option value="easy">Octave, 5th, 4th</option>
+      <option value="core" selected>The common seven</option>
+      <option value="all">All twelve</option>
     </select></div>
     <div class="f"><label for="q-hi">Highest fret</label><select id="q-hi">
       <option>5</option><option selected>12</option><option>15</option><option>17</option><option>22</option>
@@ -446,6 +469,11 @@ details[open] summary{margin-bottom:8px}
     <div class="timerbar" id="q-bar" style="visibility:hidden"><i></i></div>
     <div class="sep"></div>
     <div class="prompt" id="q-prompt">Pick a mode and press <em>Start</em>.</div>
+    <div class="earbox hide" id="q-ear">
+      <button class="big" id="q-replay">▶ Play it again</button>
+      <button class="alt" id="q-together">Play both together</button>
+      <span class="hint">Hear the low note, then the high one. How far apart are they?</span>
+    </div>
     <div class="fbwrap" style="margin-top:8px"><div class="fb" id="fb-game"></div></div>
     <div class="answers" id="q-answers"></div>
     <div class="verdict" id="q-verdict"></div>
@@ -454,8 +482,8 @@ details[open] summary{margin-bottom:8px}
 
   <div class="grid">
     <div class="card">
-      <h3>Which notes trip you up</h3>
-      <p class="hint" style="margin-bottom:12px">Accuracy per note name, across every session on this device.</p>
+      <h3 id="q-stats-title">Which notes trip you up</h3>
+      <p class="hint" style="margin-bottom:12px" id="q-stats-sub">Accuracy per note name, across every session on this device.</p>
       <div class="bars" id="q-stats"></div>
     </div>
     <div class="card">
@@ -1117,20 +1145,29 @@ function playScaleUp(){
    GAME
    ============================================================ */
 const game = {
-  mode:'name', hi:12, limit:0, naturals:false, strings:new Set(),
+  mode:'name', hi:12, limit:0, naturals:false, earset:'core', strings:new Set(),
   q:null, score:0, streak:0, total:0, correct:0, times:[], t0:0, tick:null, locked:false, found:new Set()
 };
 const fbG = new Fretboard('fb-game', {clickable:true, fretsFn:()=>Math.min(game.hi, S.frets)});
 const stats = store.get('stats', {best:0, byNote:{}});
+stats.byIvl = stats.byIvl || {};
+const EAR_SETS = {easy:[12,7,5], core:[12,7,5,4,3,9,8], all:[1,2,3,4,5,6,7,8,9,10,11,12]};
 
 (function initGame(){
   gameStrings();
-  $('q-mode').onchange = e=>{ game.mode=e.target.value; if(game.q) newQuestion(); updateHelp(); };
+  $('q-mode').onchange = e=>{
+    game.mode=e.target.value;
+    $('q-earset-wrap').classList.toggle('hide', game.mode!=='ear');
+    if(game.q) newQuestion(); updateHelp(); renderStats();
+  };
+  $('q-earset').onchange = e=>{ game.earset=e.target.value; if(game.mode==='ear' && game.q) newQuestion(); };
+  $('q-replay').onclick = ()=> playEar(false);
+  $('q-together').onclick = ()=> playEar(true);
   $('q-hi').onchange = e=>{ game.hi=+e.target.value; fbG.layout(); if(game.q) newQuestion(); };
   $('q-time').onchange = e=>{ game.limit=+e.target.value; };
   $('q-natural').onchange = e=>{ game.naturals=e.target.checked; };
   $('q-start').onclick = ()=>{ audio(); newQuestion(); };
-  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
+  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
   fbG.onCell = (s,f)=> onBoardClick(s,f);
   document.addEventListener('keydown', e=>{
     if($('v-game').classList.contains('hide')) return;
@@ -1166,7 +1203,8 @@ function updateHelp(){
     name:'A dot appears on the neck — name it. Keys <code>1</code>–<code>=</code> answer, <code>Space</code> for the next question.',
     find:'You are given a note and a string — click the right fret. <code>Space</code> skips.',
     octaves:'One position is shown. Click every other place that same note appears in range.',
-    interval:'The orange ring is the reference note. Click the note the given interval above it, on any string.'
+    interval:'The orange ring is the reference note. Click the note the given interval above it, on any string.',
+    ear:'Two notes play, low then high. Name the distance between them — then the neck shows you where they were.'
   }[game.mode];
   $('q-help').innerHTML = h;
 }
@@ -1219,10 +1257,22 @@ function newQuestion(){
       if((t[s]+f)%12===p.pc && !(s===p.s && f===p.f)) targets.push(s+':'+f);
     if(!targets.length) return newQuestion();
     game.q = Object.assign({}, p, {targets:new Set(targets)});
-  } else {
+  } else if(game.mode==='interval'){
     const p = randomPos();
     const iv = randOf([2,3,4,5,7,9,10,12].filter(x=>x<=12));
     game.q = Object.assign({}, p, {iv, targetPc:(p.pc+iv)%12});
+  } else {
+    const set = EAR_SETS[game.earset] || EAR_SETS.core;
+    let q = null;
+    for(let tries=0; tries<200 && !q; tries++){
+      const p = randomPos(), iv = randOf(set);
+      const hiMidi = midiAt(p.s,p.f) + iv;
+      let spot = null;
+      for(const ss of game.strings) for(let x=0;x<=Math.min(game.hi,S.frets);x++)
+        if(midiAt(ss,x)===hiMidi){ spot = {s:ss,f:x}; break; }
+      if(spot) q = {s:p.s, f:p.f, pc:p.pc, iv, hi:spot};
+    }
+    game.q = q || {s:0, f:0, pc:t[0]%12, iv:12, hi:{s:0,f:12}};
   }
   game.t0 = performance.now();
   drawQuestion(); startClock();
@@ -1247,16 +1297,60 @@ function drawQuestion(){
     fbG.set(q.s,q.f,'root', pretty(nameOf(q.pc)));
     P.innerHTML = `Click every other <em>${pretty(nameOf(q.pc))}</em> <span class="hint">— ${q.targets.size} to find</span>`;
   }
+  else if(game.mode==='ear'){
+    P.innerHTML = 'Listen — <em>how far apart</em> are the two notes?';
+    $('q-ear').classList.remove('hide');
+    buildIvlButtons();
+    fbG.paint();
+    playEar(false);
+    return;
+  }
   else {
     fbG.set(q.s,q.f,'target','R');
     const ivName = q.iv===12 ? 'octave' : IVL_NAME[q.iv];
     const art = /^[aeiou]/i.test(ivName) ? 'an' : 'a';
     P.innerHTML = `From this note, click ${art} <em>${ivName}</em> above <span class="hint">— any string</span>`;
   }
+  $('q-ear').classList.toggle('hide', game.mode!=='ear');
   fbG.paint();
 }
+function playEar(together){
+  const q = game.q; if(!q) return;
+  audio();
+  const lo = midiAt(q.s,q.f), hi = lo + q.iv;
+  pluck(lo, 0, 2.0, .5);
+  pluck(hi, together ? 0.02 : 0.62, 2.0, .5);
+}
+function buildIvlButtons(){
+  const A = $('q-answers'); A.innerHTML='';
+  const set = (EAR_SETS[game.earset] || EAR_SETS.core).slice().sort((a,b)=>a-b);
+  A.classList.add('ivl');
+  const keys='1234567890-=';
+  set.forEach((iv,i)=>{
+    const b = document.createElement('button');
+    b.innerHTML = (iv===12?'Octave':IVL_NAME[iv].replace(/^./,c=>c.toUpperCase()))
+      + '<small>' + (iv===12 ? '8ve' : IVL_SHORT[iv]) + (keys[i] ? ' · '+keys[i] : '') + '</small>';
+    b.dataset.iv = iv;
+    b.onclick = ()=>{ if(game.locked) return; answerIvl(iv); };
+    A.appendChild(b);
+  });
+}
+function answerIvl(iv){
+  const q = game.q, ok = iv===q.iv;
+  [...$('q-answers').children].forEach(b=>{
+    if(+b.dataset.iv===q.iv) b.classList.add('right');
+    else if(+b.dataset.iv===iv && !ok) b.classList.add('wrong');
+  });
+  const t = tuning();
+  fbG.clear();
+  fbG.set(q.s, q.f, 'root', pretty(nameOf((t[q.s]+q.f)%12)));
+  fbG.set(q.hi.s, q.hi.f, 'blue', pretty(nameOf((t[q.hi.s]+q.hi.f)%12)));
+  fbG.paint();
+  const nm = q.iv===12 ? 'an octave' : (/^[aeiou]/i.test(IVL_NAME[q.iv]) ? 'an ' : 'a ') + IVL_NAME[q.iv];
+  resolve(ok, ok ? ('Yes — ' + nm + '.') : ('It was ' + nm + ', not ' + (iv===12?'an octave':IVL_NAME[iv]) + '.'));
+}
 function buildNoteButtons(cb){
-  const A=$('q-answers');
+  const A=$('q-answers'); A.classList.remove('ivl');
   const pcs = game.naturals ? [0,2,4,5,7,9,11] : [0,1,2,3,4,5,6,7,8,9,10,11];
   const keys='1234567890-=';
   pcs.forEach((pc,i)=>{
@@ -1323,16 +1417,25 @@ function resolve(ok, msg){
   game.total++; if(ok){ game.correct++; game.score+=game.mode==='octaves'?3:1; game.streak++; game.times.push(dt); }
   else game.streak=0;
   if(game.streak>stats.best) stats.best=game.streak;
-  const nk = SHARP[game.q.pc];
-  const rec = stats.byNote[nk] || (stats.byNote[nk]={ok:0,n:0});
-  rec.n++; if(ok) rec.ok++;
+  if(game.mode==='ear'){
+    const ik = String(game.q.iv);
+    const r2 = stats.byIvl[ik] || (stats.byIvl[ik]={ok:0,n:0});
+    r2.n++; if(ok) r2.ok++;
+  } else {
+    const nk = SHARP[game.q.pc];
+    const rec = stats.byNote[nk] || (stats.byNote[nk]={ok:0,n:0});
+    rec.n++; if(ok) rec.ok++;
+  }
   store.set('stats',stats);
   flash(msg, ok?'ok':'no');
   updateScore(); renderStats();
-  if(ok) pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
+  if(ok && game.mode!=='ear') pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
   setTimeout(()=>{ if(game.locked) newQuestion(); }, ok?900:1900);
 }
 function renderStats(){
+  if(game.mode==='ear') return renderIvlStats();
+  $('q-stats-title').textContent = 'Which notes trip you up';
+  $('q-stats-sub').textContent = 'Accuracy per note name, across every session on this device.';
   const rows = SHARP.map(n=>{
     const r = stats.byNote[n] || {ok:0,n:0};
     const pct = r.n? Math.round(r.ok/r.n*100) : null;
@@ -1345,6 +1448,20 @@ function renderStats(){
     return `<div class="b ${weak?'weak':''}"><span>${pretty(r.n)}</span>
       <span class="t"><i style="width:${w}%"></i></span>
       <span class="n" style="color:var(--muted)">${r.pct==null?'—':r.pct+'% · '+r.count}</span></div>`;
+  }).join('');
+}
+
+function renderIvlStats(){
+  $('q-stats-title').textContent = 'Which intervals trip you up';
+  $('q-stats-sub').textContent = 'Accuracy per interval, by ear, across every session on this device.';
+  const all = [1,2,3,4,5,6,7,8,9,10,11,12];
+  $('q-stats').innerHTML = all.map(iv=>{
+    const r = stats.byIvl[String(iv)] || {ok:0,n:0};
+    const pct = r.n ? Math.round(r.ok/r.n*100) : null;
+    const label = iv===12 ? '8ve' : IVL_SHORT[iv%12];
+    return '<div class="b '+(pct!=null && pct<70 && r.n>=3 ? 'weak':'')+'"><span>'+label+'</span>'
+      + '<span class="t"><i style="width:'+(pct==null?0:pct)+'%"></i></span>'
+      + '<span class="n" style="color:var(--muted)">'+(pct==null?'—':pct+'% · '+r.n)+'</span></div>';
   }).join('');
 }
 
@@ -1623,6 +1740,63 @@ function renderTheory(){
   $('t-modes').innerHTML = modes.map(([n,d,f,c],i)=>
     `<tr><td><b>${pretty(majSp[i])} ${n}</b></td><td class="n">${d}</td><td>${f}</td><td class="hint">${c}</td></tr>`).join('');
 }
+
+/* ============================================================
+   shareable state in the URL
+   ============================================================ */
+const TUNE_KEYS = Object.keys(TUNINGS);
+function stateToHash(){
+  const p = new URLSearchParams();
+  p.set('v', VIEWS.find(v=> !$('v-'+v).classList.contains('hide')) || 'play');
+  p.set('r', PL.root); p.set('s', PL.scale);
+  if(PL.capo) p.set('c', String(PL.capo));
+  if(PL.labels!=='name') p.set('l', PL.labels);
+  const ti = TUNE_KEYS.indexOf(S.tuningName);
+  if(ti>0) p.set('t', String(ti));
+  if(S.frets!==15) p.set('f', String(S.frets));
+  if(S.acc!=='auto') p.set('a', S.acc);
+  if(S.lefty) p.set('L','1');
+  return '#'+p.toString();
+}
+let hashLock = false;
+function pushHash(){
+  if(hashLock) return;
+  try{ history.replaceState(null,'',stateToHash()); }catch(e){}
+}
+function applyHash(){
+  const h = location.hash.replace(/^#/,''); if(!h) return false;
+  const p = new URLSearchParams(h);
+  hashLock = true;
+  try{
+    if(p.has('t')){ const k = TUNE_KEYS[+p.get('t')]; if(k){ S.tuningName=k; $('g-tuning').value=k; } }
+    if(p.has('f')){ S.frets = +p.get('f'); $('g-frets').value = String(S.frets); }
+    if(p.has('a')){ S.acc = p.get('a'); $('g-acc').value = S.acc; }
+    if(p.has('L')){ S.lefty = true; $('g-lefty').checked = true; }
+    if(p.has('r')){ PL.root = p.get('r'); $('w-root').value = PL.root; }
+    if(p.has('s') && SCALES[p.get('s')]){ PL.scale = p.get('s'); $('w-scale').value = PL.scale; }
+    if(p.has('c')){ PL.capo = Math.max(0, Math.min(12, +p.get('c'))); $('w-capo').value = String(PL.capo); }
+    if(p.has('l')){
+      PL.labels = p.get('l');
+      [...$('w-labels').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.l===PL.labels)));
+    }
+    [fbG,fbP,fbW].forEach(fb=> fb && fb.layout());
+    const v = p.get('v');
+    showView(VIEWS.indexOf(v)>=0 ? v : 'play');
+  } finally { hashLock = false; }
+  return true;
+}
+$('g-share').onclick = ()=>{
+  const url = location.origin + location.pathname + stateToHash();
+  const done = ok=>{
+    const b = $('g-share'); const old = b.textContent;
+    b.textContent = ok ? '✓ Link copied' : url;
+    setTimeout(()=>{ b.textContent = old; }, ok ? 1600 : 6000);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText)
+    navigator.clipboard.writeText(url).then(()=>done(true), ()=>done(false));
+  else done(false);
+};
+window.addEventListener('hashchange', applyHash);
 
 /* ============================================================
    boot
@@ -1972,6 +2146,10 @@ function plLoop(on){
 })();
 
 renderPent(); renderTheory(); renderPlay();
+applyHash();
+['w-root','w-scale','w-capo','g-tuning','g-frets','g-acc'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change', pushHash); });
+$('tabs').addEventListener('click', pushHash);
+$('w-labels').addEventListener('click', pushHash);
 </script>
 </body>
 </html>
