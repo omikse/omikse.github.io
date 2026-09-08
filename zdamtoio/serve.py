@@ -13,6 +13,11 @@ for production — GitHub Pages serves the real thing.
 import sys
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, test
+from pathlib import Path
+
+# Serve this folder, not the shell's working directory, so `python
+# path/to/serve.py` does the right thing from anywhere.
+ROOT = Path(__file__).resolve().parent
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
@@ -23,4 +28,4 @@ class NoCacheHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-    test(HandlerClass=partial(NoCacheHandler, directory="."), port=port, bind="127.0.0.1")
+    test(HandlerClass=partial(NoCacheHandler, directory=str(ROOT)), port=port, bind="127.0.0.1")
