@@ -61,6 +61,18 @@ function describeExam(id) {
   return { level, when: [month, year].filter(Boolean).join(" ") };
 }
 
+/* Polish plurals take three forms: 1 zadanie, 2-4 zadania, 5+ zadań — and the
+   teens are the exception that takes the last form (12 zadań, not 12 zadania).
+   The rozszerzony sheets hold a single question, so this is not hypothetical. */
+function plural(n, one, few, many) {
+  const num = Number(n) || 0;
+  if (num === 1) return one;
+  const lastTwo = num % 100;
+  const last = num % 10;
+  if (last >= 2 && last <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return few;
+  return many;
+}
+
 function renderMenu() {
   const grid = document.getElementById("exam-grid");
   grid.innerHTML = "";
@@ -83,13 +95,16 @@ function renderMenu() {
       <div class="absolute -right-6 -top-6 w-24 h-24 bg-${colour}-50 rounded-full group-hover:bg-${colour}-100 transition-colors"></div>
       <div class="relative z-10 flex flex-col h-full">
         <div class="flex items-center justify-between mb-4">
-          <span class="bg-${colour}-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Oficjalny</span>
+          <!-- The badge carries the level, not "Oficjalny": every paper here is
+               official, but each year ships both a podstawowy and a rozszerzony
+               sheet, so without this the six cards read as three duplicates. -->
+          <span class="bg-${colour}-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">${extended ? "Rozszerzona" : "Podstawowa"}</span>
           <span class="material-symbols-outlined text-${colour}-300 text-3xl">history_edu</span>
         </div>
         <h3 class="text-lg font-bold text-slate-800 mb-1">Matura ${esc(when)}</h3>
         <p class="text-xs text-slate-500 mb-4">${esc(level)}</p>
         <ul class="text-xs text-slate-500 space-y-1 mb-4 flex-grow">
-          <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> ${esc(entry.questions)} zadań</li>
+          <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> ${esc(entry.questions)} ${plural(entry.questions, "zadanie", "zadania", "zadań")}</li>
           <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">grade</span> ${esc(entry.max_points)} pkt</li>
         </ul>
         <span class="text-${colour}-600 font-semibold text-xs flex items-center gap-1 mt-auto">
@@ -153,7 +168,7 @@ async function renderHistory() {
               <div class="text-xs text-slate-500">${esc(level)} · ${esc(formatWhen(a.updatedAt))}</div>
             </div>
             <div class="text-xs text-slate-500 text-right flex-none">
-              <div>${esc(answered)} odpowiedzi</div>
+              <div>${esc(answered)} ${plural(answered, "odpowiedź", "odpowiedzi", "odpowiedzi")}</div>
               <div class="font-semibold text-slate-700">${esc(t.points ?? 0)}/${esc(t.maxPoints ?? 0)} pkt</div>
             </div>
           </div>`;
@@ -231,7 +246,7 @@ async function loadExam(examId) {
     }
 
     renderExam(exam);
-    if (restored) setStatus(`${questions.length} zadań · przywrócono ${restored} zapisanych odpowiedzi.`);
+    if (restored) setStatus(`${questions.length} ${plural(questions.length, "zadanie", "zadania", "zadań")} · przywrócono ${restored} ${plural(restored, "zapisaną odpowiedź", "zapisane odpowiedzi", "zapisanych odpowiedzi")}.`);
   } catch (err) {
     console.error(err);
     setStatus(`Nie udało się wczytać arkusza: ${err.message}`);
@@ -341,7 +356,7 @@ function renderExam(loadedExam) {
     }
   });
 
-  setStatus(`${questions.length} zadań.`);
+  setStatus(`${questions.length} ${plural(questions.length, "zadanie", "zadania", "zadań")}.`);
 
   // One delegated listener for the whole sheet rather than one per field:
   // renderers own their markup, and this stays correct whatever they emit.

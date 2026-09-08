@@ -49,6 +49,13 @@ edits appear to do nothing. Same trap as `tools/pdf-json`.
    repo. `GEMINI_API_KEY` is a real secret and never goes in a file here.
 7. **Scope is the standard `100` papers only.** Everything else is an *arkusz
    dostosowany*; `sync.py` skips them.
+8. **Exams come from the pipeline, never from hand-written objects.** The
+   original site carried three exams hardcoded into `index.html` in a different,
+   ad-hoc shape (bare `questions[]` with a `rubric` string, essay topics as
+   plain text). They were deleted, deliberately — they cannot be graded by
+   `renderers.js` and were never real CKE data. Do not resurrect them or add an
+   exam by typing it into a file: convert the paper in `tools/pdf-json`, then
+   `python sync.py`.
 
 ## Browser gotchas that already bit us
 
