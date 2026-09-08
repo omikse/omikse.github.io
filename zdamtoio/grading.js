@@ -31,15 +31,42 @@ const ENDPOINT = model =>
  * ------------------------------------------------------------------ */
 
 export class GradingError extends Error {
-  constructor(message, { quota = false, raw = "" } = {}) {
+  constructor(message, { quota = false, raw = "", transient = false } = {}) {
     super(message);
-    this.quota = quota;
+    this.quota = quota;        // 429 — stop, the rest would fail too
+    this.transient = transient; // 5xx / overload — worth one retry
     this.raw = raw;
   }
 }
 
-/** One model call. Returns the raw text; never parses. */
-export async function callGemini(prompt, apiKey) {
+/** Is this worth trying again? Overload is temporary; quota and bad keys are not. */
+function isTransient(status, message = "") {
+  return status === 503 || status === 500
+      || /high demand|overloaded|unavailable|try again later/i.test(message);
+}
+
+/**
+ * One model call, with a single retry for transient overload.
+ *
+ * `gemini-2.5-flash` really does answer "This model is currently experiencing
+ * high demand" now and then — it happened on the very first live call — and a
+ * few seconds later the same request succeeds. Surfacing that to a student as
+ * a failure would be misleading. Quota (429) and a bad key are NOT retried:
+ * they will not fix themselves and each attempt costs.
+ */
+export async function callGemini(prompt, apiKey, { retries = 1 } = {}) {
+  try {
+    return await callOnce(prompt, apiKey);
+  } catch (err) {
+    if (retries > 0 && err instanceof GradingError && err.transient) {
+      await new Promise(r => setTimeout(r, 4000));
+      return callGemini(prompt, apiKey, { retries: retries - 1 });
+    }
+    throw err;
+  }
+}
+
+async function callOnce(prompt, apiKey) {
   if (!apiKey) throw new GradingError("Brak klucza API — otwórz Ustawienia.");
 
   let res;
@@ -50,7 +77,7 @@ export async function callGemini(prompt, apiKey) {
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
     });
   } catch (err) {
-    throw new GradingError("Brak połączenia z API: " + err.message);
+    throw new GradingError("Brak połączenia z API: " + err.message, { transient: true });
   }
 
   const data = await res.json().catch(() => ({}));
@@ -62,8 +89,10 @@ export async function callGemini(prompt, apiKey) {
     throw new GradingError(
       res.status === 429
         ? "Wyczerpany limit API (darmowy plan: 20 zapytań dziennie, 5 na minutę). Spróbuj później."
-        : "Błąd API: " + msg,
-      { quota: res.status === 429 },
+        : isTransient(res.status, msg)
+          ? "Model chwilowo przeciążony. Spróbuj ponownie za chwilę."
+          : "Błąd API: " + msg,
+      { quota: res.status === 429, transient: isTransient(res.status, msg) },
     );
   }
 
