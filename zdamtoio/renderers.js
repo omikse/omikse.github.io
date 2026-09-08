@@ -683,7 +683,11 @@ const PEssay = {
 /* scored table. See P-ESSAY_projekt_oceniania.md §10–11, §19.          */
 /* ------------------------------------------------------------------ */
 
-const ESSAY_CRITERIA = [
+/* Exported because the essay is graded with one API call per criterion, and the
+   caller therefore needs to build those eight prompts individually.
+   `PEssay.buildPrompt` concatenates all eight for the debug panel, which is the
+   wrong shape for actually calling a model. */
+export const ESSAY_CRITERIA = [
   { id: "1", name: "Spełnienie formalnych warunków polecenia" },
   { id: "2", name: "Kompetencje literackie i kulturowe" },
   { id: "3a", name: "Struktura wypowiedzi" },
@@ -748,7 +752,7 @@ function jsonOrNone(v) {
   return empty ? "(brak)" : JSON.stringify(v, null, 2);
 }
 
-function buildEssayCriterionPrompt(q, cid) {
+export function buildEssayCriterionPrompt(q, cid) {
   const sc = q.scoring?.scoring_criteria || {};
   const common = essayCommon(sc);
   const criterionScoring = essayCriterionScoring(sc, cid);

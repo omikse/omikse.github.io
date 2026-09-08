@@ -18,7 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
-import { auth, db } from "./firebase.js?v=64658c8b";
+import { auth, db } from "./firebase.js?v=8efef110";
 
 const SAVE_DELAY_MS = 2000;
 
@@ -57,7 +57,7 @@ function attemptsCol(uid) {
  */
 export async function startOrResume(examId, examName) {
   const user = auth.currentUser || (await userReady);
-  if (!user) return { answers: {}, grades: {} };
+  if (!user) return { answers: {}, grades: {}, essay: null };
 
   flushNow();                       // don't let a previous exam's save land here
   const ref = doc(attemptsCol(user.uid), examId);
@@ -75,11 +75,11 @@ export async function startOrResume(examId, examName) {
       grades: {},
       totals: { points: 0, maxPoints: 0, graded: 0, pending: 0 },
     });
-    return { answers: {}, grades: {} };
+    return { answers: {}, grades: {}, essay: null };
   }
 
   const data = snap.data();
-  return { answers: data.answers || {}, grades: data.grades || {} };
+  return { answers: data.answers || {}, grades: data.grades || {}, essay: data.essay || null };
 }
 
 /* ------------------------------------------------------------------ *
@@ -90,12 +90,12 @@ export async function startOrResume(examId, examName) {
  * Queue a save. Called on every keystroke, so it is debounced — a student
  * typing a wypracowanie would otherwise generate a write per character.
  */
-export function save(answers, grades, totals) {
+export function save(payload) {
   if (!currentAttempt) {
     setState("error", "brak sesji");     // signed out, or the attempt failed to open
     return;
   }
-  pending = { answers, grades, totals };
+  pending = payload;
   setState("dirty");
   clearTimeout(saveTimer);
   saveTimer = setTimeout(flushNow, SAVE_DELAY_MS);
@@ -106,16 +106,14 @@ export async function flushNow() {
   clearTimeout(saveTimer);
   if (!currentAttempt || !pending) return;
 
-  const { answers, grades, totals } = pending;
+  const payload = pending;
   const ref = currentAttempt.ref;
   pending = null;
   setState("saving");
 
   try {
     await updateDoc(ref, {
-      answers,
-      grades,
-      totals,
+      ...payload,
       updatedAt: serverTimestamp(),
     });
     setState("saved", new Date());

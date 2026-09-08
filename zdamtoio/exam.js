@@ -10,8 +10,9 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=64658c8b";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=64658c8b";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=8efef110";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=8efef110";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=8efef110";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json
@@ -264,12 +265,15 @@ async function loadExam(examId) {
     // Put any saved work back on the questions BEFORE rendering: every
     // renderer reads q.user_answer when it draws, so restoring is just an
     // assignment — no per-type restore logic anywhere.
-    const { answers, grades } = await startOrResume(entry.id, name);
+    const { answers, grades, essay } = await startOrResume(entry.id, name);
     let restored = 0;
     for (const q of questions) {
       const qid = String(q.id || q.number);
       if (answers[qid] !== undefined) { q.user_answer = answers[qid]; restored++; }
       if (grades[qid] !== undefined) q.grade_result = grades[qid];
+      if (essay?.ai_grading_history && q.type === "P-ESSAY") {
+        q.essay_grading = essay.ai_grading_history;
+      }
     }
 
     renderExam(exam);
@@ -284,38 +288,109 @@ async function loadExam(examId) {
  * Persistence
  * ------------------------------------------------------------------ */
 
+/* Has the student actually put anything in? Only strings count: the essay
+   carries word_count 0 and a boolean flag even when untouched, and every
+   question ships an empty user_answer skeleton in the source JSON. Without
+   this every attempt looked like all 18 questions were answered. */
+function isAnswered(value) {
+  if (typeof value === "string") return value.trim() !== "";
+  if (Array.isArray(value)) return value.some(isAnswered);
+  if (value && typeof value === "object") {
+    // P-TEXT and P-TABLE-TEXT wrap each blank as
+    // { "input-field-id": "input-field-id-1", "input-field-prefix": "", answer: "" }
+    // — the id is a non-empty string, so counting every value marks an
+    // untouched question as answered. Where there is an `answer` key, it is
+    // the only thing that means anything.
+    if ("answer" in value) return isAnswered(value.answer);
+    // Everything else keys answers directly: { "tf-1": "P" },
+    // { selected_option_id: "A" }, { content: "…" }. Numbers and booleans
+    // (word_count, has_specific_learning_difficulties) never count.
+    return Object.values(value).some(isAnswered);
+  }
+  return false;
+}
+
 /* Snapshot the whole exam into the flat maps the attempt document stores. */
 function snapshot() {
   const answers = {};
   const grades = {};
+  let essay = null;
   let points = 0, maxPoints = 0, graded = 0;
 
   for (const q of exam?.questions || []) {
     const qid = String(q.id || q.number);
-    if (q.user_answer !== undefined) answers[qid] = q.user_answer;
+    if (isAnswered(q.user_answer)) answers[qid] = q.user_answer;
     maxPoints += Number(q.scoring?.max_points ?? 0);
     if (q.grade_result) {
       grades[qid] = q.grade_result;
       points += Number(q.grade_result.points ?? 0);
       graded++;
     }
+    if (q.essay_grading) essay = { ai_grading_history: q.essay_grading };
   }
 
   const total = (exam?.questions || []).length;
-  return { answers, grades, totals: { points, maxPoints, graded, pending: total - graded } };
+  const payload = { answers, grades, totals: { points, maxPoints, graded, pending: total - graded } };
+  if (essay) payload.essay = essay;
+  return payload;
 }
 
 /* Collect the DOM into the question objects, then queue a save. */
 function persist() {
   if (!exam) return;
   collectAll();
-  const { answers, grades, totals } = snapshot();
-  save(answers, grades, totals);
+  save(snapshot());
 }
 
 /* ------------------------------------------------------------------ *
  * Rendering
  * ------------------------------------------------------------------ */
+
+/* Small inline notice inside a question card. */
+function note(text, bad = false) {
+  return `<div class="q-result-box${bad ? " result-error" : ""}">${esc(text)}</div>`;
+}
+
+/* Raw per-criterion values from the essay grading run.
+ *
+ * TEMPORARY. The real display is renderEssayScorecard() in renderers.js, which
+ * needs q.evaluation — the examiner's table produced by the deterministic
+ * aggregator (matrix, thresholds, gating rules). That aggregator is roadmap
+ * item #2 and does not exist, so there is no official score to show and this
+ * says so rather than inventing one. When the aggregator lands, delete this and
+ * call the scorecard. */
+function renderEssayDiagnostics(history = {}) {
+  const raw = history.ai_raw_results || {};
+  const failed = history.failed_criteria || [];
+  const names = {
+    "1": "Spełnienie formalnych warunków polecenia",
+    "2": "Kompetencje literackie i kulturowe",
+    "3a": "Struktura wypowiedzi", "3b": "Spójność wypowiedzi", "3c": "Styl wypowiedzi",
+    "4a": "Zakres i poprawność środków językowych",
+    "4b": "Poprawność ortograficzna", "4c": "Poprawność interpunkcyjna",
+  };
+
+  const rows = Object.keys(names).map(id => {
+    const v = raw[id];
+    const body = v
+      ? esc(Object.entries(v)
+          .filter(([, x]) => typeof x !== "object")
+          .map(([k, x]) => `${k}: ${x}`).join(", ")) || "—"
+      : `<em>${failed.includes(id) ? "nie udało się ocenić" : "brak"}</em>`;
+    return `<tr><td><strong>${esc(id)}</strong></td><td>${esc(names[id])}</td><td>${body}</td></tr>`;
+  }).join("");
+
+  return `
+    <div class="q-result-box result-ai">
+      <div class="result-points">Ocena diagnostyczna — <strong>nie jest to wynik oficjalny</strong></div>
+      <div class="result-expl">
+        Model ocenił każde kryterium osobno. Przeliczenie tych wartości na punkty
+        według tabeli egzaminatora (matryca, progi, reguły zerowania) nie jest
+        jeszcze zaimplementowane, więc suma punktów nie jest tu pokazywana.
+      </div>
+      <table class="essay-raw"><tbody>${rows}</tbody></table>
+    </div>`;
+}
 
 function renderCard(question) {
   const renderer = RENDERERS[question.type];
@@ -328,6 +403,16 @@ function renderCard(question) {
     ? renderer.render(question)
     : `<div class="q-unsupported">Nieobsługiwany typ: ${esc(question.type)}</div>`;
 
+  // Three kinds of question: graded by comparison, graded by one AI call, or
+  // the wypracowanie, which takes eight. The renderer says which.
+  const deterministic = !!renderer?.grade;
+  const isEssay = question.type === "P-ESSAY";
+  const aiGraded = !deterministic && !!renderer?.buildPrompt;
+
+  const buttonLabel = deterministic ? "Sprawdź"
+    : isEssay ? "Oceń wypracowanie (8 zapytań AI)"
+    : "Sprawdź (AI)";
+
   card.innerHTML = `
     <header class="q-header">
       <span class="q-number">Zadanie ${esc(question.number)}</span>
@@ -338,7 +423,7 @@ function renderCard(question) {
     <div class="q-answer">${answerHtml}</div>
     <div class="q-result"></div>
     <footer class="q-actions">
-      ${renderer?.grade ? `<button type="button" data-action="grade">Sprawdź</button>` : ""}
+      ${(deterministic || aiGraded) ? `<button type="button" data-action="grade">${esc(buttonLabel)}</button>` : ""}
     </footer>`;
 
   if (renderer?.mount) renderer.mount(question, card);
@@ -349,17 +434,58 @@ function renderCard(question) {
     card.querySelector(".q-result").innerHTML = renderer.renderResult(question);
   }
 
-  // Deterministic types only, for now. P-TF and P-CHOICE compare against
-  // scoring.correct_answers — exact, instant, free, and never a model
-  // (CLAUDE.md rule 3). AI grading for the open types is wired separately.
   const gradeBtn = card.querySelector('[data-action="grade"]');
-  if (gradeBtn) {
+  const resultBox = card.querySelector(".q-result");
+
+  if (gradeBtn && deterministic) {
+    // P-TF and P-CHOICE compare against scoring.correct_answers — exact,
+    // instant, free, and never a model (CLAUDE.md rule 3).
     gradeBtn.addEventListener("click", () => {
       renderer.collect(question, card);
-      question.grade_result = renderer.grade(question);
-      card.querySelector(".q-result").innerHTML =
-        renderer.renderResult ? renderer.renderResult(question) : "";
+      question.grade_result = { ...renderer.grade(question), source: "auto" };
+      resultBox.innerHTML = renderer.renderResult ? renderer.renderResult(question) : "";
       persist();
+    });
+  }
+
+  if (gradeBtn && aiGraded) {
+    gradeBtn.addEventListener("click", async () => {
+      renderer.collect(question, card);
+
+      if (!isAnswered(question.user_answer)) {
+        resultBox.innerHTML = note("Najpierw odpowiedz na zadanie.");
+        return;
+      }
+
+      gradeBtn.disabled = true;
+      const label = gradeBtn.textContent;
+      try {
+        if (isEssay) {
+          // Eight calls spaced for the 5/min limit, so show movement.
+          resultBox.innerHTML = note("Ocenianie: 0/8 kryteriów…");
+          question.essay_grading = await gradeEssay(question, apiKey, (done, total) => {
+            gradeBtn.textContent = `Ocenianie… ${done}/${total}`;
+            resultBox.innerHTML = note(`Ocenianie: ${done}/${total} kryteriów…`);
+          });
+          resultBox.innerHTML = renderEssayDiagnostics(question.essay_grading);
+        } else {
+          resultBox.innerHTML = note("Ocenianie przez AI…");
+          question.grade_result = await gradeQuestion(question, apiKey);
+          resultBox.innerHTML = renderer.renderResult ? renderer.renderResult(question) : "";
+          if (!question.grade_result.parsed_ok) {
+            resultBox.innerHTML += note("Nie udało się odczytać oceny z odpowiedzi modelu — "
+              + "surowa odpowiedź została zapisana.");
+          }
+        }
+        persist();     // the response is paid for; store it before anything else
+      } catch (err) {
+        // A failed call still cost quota, so say what happened rather than
+        // silently doing nothing.
+        resultBox.innerHTML = note(err instanceof GradingError ? err.message : String(err), true);
+      } finally {
+        gradeBtn.disabled = false;
+        gradeBtn.textContent = label;
+      }
     });
   }
 
