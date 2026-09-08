@@ -632,6 +632,11 @@ details[open] summary{margin-bottom:8px}
         <span class="mono hint" id="jam-bpmv">90</span>
       </div>
       <label class="chk" style="padding:0"><input type="checkbox" id="jam-count" checked> Count in</label>
+      <div class="f"><label for="jam-drums">Drums</label><select id="jam-drums">
+        <option value="straight" selected>Straight</option>
+        <option value="shuffle">Shuffle</option>
+        <option value="none">None</option>
+      </select></div>
     </div>
     <div id="jam-chords"></div>
     <div id="jam-now"></div>
@@ -1063,6 +1068,57 @@ function toneOff(id, fade=.08){
   delete voices[id];
 }
 function allTonesOff(){ Object.keys(voices).forEach(k=>toneOff(k)); }
+/* ---- drums: three synthesised voices, no samples ---- */
+let _noise = null;
+function noiseBuffer(ctx){
+  if(_noise && _noise.sampleRate===ctx.sampleRate) return _noise;
+  const len = Math.floor(ctx.sampleRate*0.5);
+  const b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+  for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+  _noise = b; return b;
+}
+function kick(when, vol){
+  if(!S.sound) return;
+  const ctx = audio(); if(!ctx || !master) return;
+  const t = ctx.currentTime + Math.max(0, when);
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.frequency.setValueAtTime(160, t);
+  o.frequency.exponentialRampToValueAtTime(46, t+0.10);
+  g.gain.setValueAtTime(vol||0.85, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.30);
+  o.connect(g).connect(master); o.start(t); o.stop(t+0.34);
+}
+function snare(when, vol){
+  if(!S.sound) return;
+  const ctx = audio(); if(!ctx || !master) return;
+  const t = ctx.currentTime + Math.max(0, when);
+  const src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx);
+  const bp = ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1900; bp.Q.value=0.7;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(vol||0.34, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+0.17);
+  src.connect(bp).connect(g).connect(master);
+  const o = ctx.createOscillator(), og = ctx.createGain();
+  o.type='triangle'; o.frequency.setValueAtTime(190, t);
+  og.gain.setValueAtTime((vol||0.34)*0.5, t);
+  og.gain.exponentialRampToValueAtTime(0.0001, t+0.09);
+  o.connect(og).connect(master);
+  src.start(t); src.stop(t+0.2); o.start(t); o.stop(t+0.12);
+}
+function hat(when, vol, open){
+  if(!S.sound) return;
+  const ctx = audio(); if(!ctx || !master) return;
+  const t = ctx.currentTime + Math.max(0, when);
+  const dur = open ? 0.16 : 0.045;
+  const src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx);
+  const hp = ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7800;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(vol||0.10, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  src.connect(hp).connect(g).connect(master);
+  src.start(t); src.stop(t+dur+0.02);
+}
+
 /* a short wooden tick; accented on beat one */
 function click(when, accent){
   if(!S.sound) return;
@@ -2319,7 +2375,7 @@ const fbJ = new Fretboard('fb-jam', {clickable:true});
    ============================================================ */
 const JAM = {
   key:'A', minor:false, prog:0, bpm:90, playing:false,
-  scale:'minPent', target:true,
+  scale:'minPent', target:true, drums:'straight',
   steps:[], idx:0, nextTime:0, timer:null, cur:-1, voicings:[]
 };
 const JAM_SCALES = ['minPent','majPent','blues','minor','major','dorian','mixolydian','majBlues'];
@@ -2378,6 +2434,18 @@ function jamTick(){
       const bassS = idx[0];
       for(let bar=0; bar<st.bars; bar++){
         const b0 = t0 + bar*beat*4;
+        if(JAM.drums !== 'none'){
+          const swing = JAM.drums==='shuffle' ? 0.667 : 0.5;
+          const at = x => b0 + beat*x - ctx.currentTime;
+          kick(at(0), 0.85);
+          kick(at(2.5), 0.55);
+          snare(at(1), 0.30); snare(at(3), 0.32);
+          for(let e=0;e<4;e++){
+            hat(at(e), 0.085, false);
+            hat(at(e+swing), JAM.drums==='shuffle' ? 0.055 : 0.06, false);
+          }
+          if(bar===st.bars-1) hat(at(3.5), 0.11, true);
+        }
         const hit = (at, dir, vol, dur)=>{
           const order = dir>0 ? idx : idx.slice().reverse();
           order.forEach((s,k)=> pluck(midiAt(s, v.pick[s]), (at - ctx.currentTime) + k*0.022, dur, vol));
@@ -2530,6 +2598,7 @@ function metTick(){
   $('jam-bpm').oninput = e=>{ JAM.bpm=+e.target.value; $('jam-bpmv').textContent=e.target.value; };
   $('jam-bpm').onchange = ()=>{ if(JAM.playing){ jamStop(); jamStart(); } };
   $('jam-play').onclick = ()=> JAM.playing ? jamStop() : jamStart();
+  $('jam-drums').onchange = e=>{ JAM.drums=e.target.value; };
 
   function autoScale(){
     const progs = jamProgs();
@@ -2587,6 +2656,48 @@ function applyHash(){
   } finally { hashLock = false; }
   return true;
 }
+/* remember the way you had it set up */
+function saveWork(){
+  store.set('work', {
+    pl:{root:PL.root, scale:PL.scale, labels:PL.labels, capo:PL.capo, ghost:PL.ghost, timbre:PL.timbre, win:PL.win},
+    ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions},
+    jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums},
+    met:{bpm:MET.bpm, beats:MET.beats},
+    game:{mode:game.mode, hi:game.hi, naturals:game.naturals, earset:game.earset}
+  });
+}
+function loadWork(){
+  const w = store.get('work', null); if(!w) return;
+  try{
+    if(w.pl){ Object.assign(PL, w.pl);
+      $('w-root').value=PL.root; $('w-scale').value=PL.scale; $('w-capo').value=String(PL.capo);
+      $('w-ghost').checked=PL.ghost; $('pl-win').value=String(PL.win);
+      [...$('w-labels').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.l===PL.labels)));
+      [...$('pl-timbre').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.t===PL.timbre)));
+    }
+    if(w.ch){ Object.assign(CH, w.ch);
+      $('ch-root').value=CH.root; $('ch-qual').value=CH.qual;
+      $('ch-max').value=String(CH.maxFret); $('ch-inv').checked=CH.inversions; }
+    if(w.jam){ Object.assign(JAM, w.jam);
+      $('jam-key').value=JAM.key; $('jam-minor').checked=JAM.minor;
+      $('jam-bpm').value=String(JAM.bpm); $('jam-bpmv').textContent=String(JAM.bpm);
+      $('jam-drums').value=JAM.drums;
+      const progs = jamProgs();
+      $('jam-prog').innerHTML='';
+      progs.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.n; $('jam-prog').appendChild(o); });
+      if(JAM.prog>=progs.length) JAM.prog=0;
+      $('jam-prog').value=String(JAM.prog);
+      $('jam-scale').value=JAM.scale; }
+    if(w.met){ Object.assign(MET, w.met);
+      $('met-bpm').value=String(MET.bpm); $('met-bpmv').textContent=String(MET.bpm);
+      $('met-sig').value=String(MET.beats); metDots(); }
+    if(w.game){ Object.assign(game, w.game);
+      $('q-mode').value=game.mode; $('q-hi').value=String(game.hi);
+      $('q-natural').checked=game.naturals; $('q-earset').value=game.earset;
+      $('q-earset-wrap').classList.toggle('hide', game.mode!=='ear'); }
+  }catch(e){}
+}
+
 $('g-share').onclick = ()=>{
   const url = location.origin + location.pathname + stateToHash();
   const done = ok=>{
@@ -2948,8 +3059,12 @@ function plLoop(on){
 })();
 
 renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam();
+loadWork();
 applyHash();
+redrawAll(); renderPlay();
 ['w-root','w-scale','w-capo','g-tuning','g-frets','g-acc','ch-root','ch-qual'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change', pushHash); });
+document.addEventListener('change', ()=> saveWork());
+window.addEventListener('beforeunload', saveWork);
 $('tabs').addEventListener('click', pushHash);
 $('w-labels').addEventListener('click', pushHash);
 </script>
