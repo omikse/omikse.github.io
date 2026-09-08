@@ -10,10 +10,10 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=f100896e";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=f100896e";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=f100896e";
-import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=f100896e";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=253b69d7";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=253b69d7";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=253b69d7";
+import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=253b69d7";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -130,6 +130,27 @@ function renderMenu(showHidden = false) {
     card.addEventListener("click", () => loadExam(entry.id));
     grid.appendChild(card);
   });
+}
+
+/* Which build is this browser actually running?
+ *
+ * publish.py stamps every module URL with a content hash, so this module's own
+ * URL already carries it — no extra machinery, and it cannot drift from the
+ * truth. It is shown because GitHub Pages caches index.html for ten minutes
+ * (Cache-Control: max-age=600) and offers no way to change that, so a returning
+ * visitor can be running old code with no outward sign. "I don't see the new
+ * feature" has already cost us an hour twice; now the answer is on screen. */
+const BUILD = new URL(import.meta.url).searchParams.get("v") || "dev";
+
+function renderBuildStamp() {
+  let el = document.getElementById("build-stamp");
+  if (!el) {
+    el = document.createElement("p");
+    el.id = "build-stamp";
+    el.className = "text-center text-[10px] text-slate-300 mt-10 font-mono";
+    document.getElementById("view-menu").appendChild(el);
+  }
+  el.textContent = `build ${BUILD}`;
 }
 
 function showMenu() {
@@ -568,6 +589,8 @@ async function init() {
     examIndex = [];
   }
   renderMenu();
+  renderBuildStamp();
+  console.info(`zdamtoio build ${BUILD}`);
 
   // The catalogue and the admin role both need a signed-in user, which arrives
   // after the first auth callback — later than this function runs.
