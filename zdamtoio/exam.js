@@ -11,7 +11,7 @@
  */
 
 import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js";
-import { startOrResume, save, flushNow, listAttempts, userReady } from "./progress.js";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json
@@ -200,9 +200,36 @@ function resolveAssets(question, base) {
   }
 }
 
+let statusText = "";
+
 function setStatus(text) {
-  document.getElementById("exam-status").textContent = text || "";
+  statusText = text || "";
+  paintStatus();
 }
+
+/* The save indicator sits beside the question count. A student needs to know
+   their work is safe before closing the tab, and "it looked fine" is not
+   evidence — an autosave that fails silently already cost us once. */
+let saveBadge = "";
+
+function paintStatus() {
+  const el = document.getElementById("exam-status");
+  if (!el) return;
+  el.innerHTML = esc(statusText) + (saveBadge ? ` <span class="ml-2">${saveBadge}</span>` : "");
+}
+
+onSaveState((state, detail) => {
+  const time = detail instanceof Date
+    ? new Intl.DateTimeFormat("pl-PL", { timeStyle: "short" }).format(detail)
+    : "";
+  saveBadge = {
+    dirty:  `<span class="text-slate-400">niezapisane zmiany…</span>`,
+    saving: `<span class="text-slate-400">zapisywanie…</span>`,
+    saved:  `<span class="text-green-600 font-medium">zapisano ${esc(time)}</span>`,
+    error:  `<span class="text-red-600 font-medium">NIE ZAPISANO (${esc(detail || "")})</span>`,
+  }[state] || "";
+  paintStatus();
+});
 
 /* Load one exam, which may be printed as several booklets. Parts arrive in the
    order the index lists them (Arkusz 1, then the wypracowanie) and their

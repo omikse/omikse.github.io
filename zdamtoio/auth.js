@@ -80,10 +80,20 @@ if (slot) slot.appendChild(chip);
 
 getRedirectResult(auth).catch(showError);
 
+// ?auth=redirect forces the redirect flow instead of a popup. Popups are the
+// better default -- they keep the page state -- but some environments kill them
+// outright (Claude's browser pane does, and strict popup blockers do too), and
+// then there is no way to sign in at all. This makes that case testable.
+const forceRedirect = new URLSearchParams(location.search).get("auth") === "redirect";
+
 signInBtn.addEventListener("click", async () => {
   errorBox.classList.add("hidden");
   signInBtn.disabled = true;
   try {
+    if (forceRedirect) {
+      await signInWithRedirect(auth, provider);
+      return;
+    }
     await signInWithPopup(auth, provider);
   } catch (err) {
     if (err.code === "auth/popup-blocked" || err.code === "auth/operation-not-supported-in-this-environment") {

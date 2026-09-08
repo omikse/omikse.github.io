@@ -26,6 +26,13 @@ let currentAttempt = null;   // { examId, ref }
 let saveTimer = null;
 let pending = null;          // newest unsaved payload
 
+/* Save state, surfaced to the UI. Silent autosave is a trap: a student who
+   cannot see whether their work is safe has to guess, and so does anyone
+   debugging it. States: idle | dirty | saving | saved | error. */
+let onState = () => {};
+export function onSaveState(cb) { onState = cb; }
+function setState(state, detail) { onState(state, detail); }
+
 /* Resolves once Firebase has decided whether anybody is signed in. Without
    this, code that runs before the first auth callback sees a null user and
    wrongly concludes the visitor is anonymous. */
@@ -84,8 +91,12 @@ export async function startOrResume(examId, examName) {
  * typing a wypracowanie would otherwise generate a write per character.
  */
 export function save(answers, grades, totals) {
-  if (!currentAttempt) return;
+  if (!currentAttempt) {
+    setState("error", "brak sesji");     // signed out, or the attempt failed to open
+    return;
+  }
   pending = { answers, grades, totals };
+  setState("dirty");
   clearTimeout(saveTimer);
   saveTimer = setTimeout(flushNow, SAVE_DELAY_MS);
 }
@@ -98,6 +109,7 @@ export async function flushNow() {
   const { answers, grades, totals } = pending;
   const ref = currentAttempt.ref;
   pending = null;
+  setState("saving");
 
   try {
     await updateDoc(ref, {
@@ -106,9 +118,13 @@ export async function flushNow() {
       totals,
       updatedAt: serverTimestamp(),
     });
+    setState("saved", new Date());
   } catch (err) {
-    // Losing a save should never cost the student their work on screen.
+    // Losing a save should never cost the student their work on screen -- but
+    // it must not be silent either. That silence is exactly what hid a failed
+    // save once already.
     console.warn("Nie udało się zapisać postępu:", err.code || err.message);
+    setState("error", err.code || err.message);
   }
 }
 

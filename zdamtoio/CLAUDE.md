@@ -73,6 +73,14 @@ edits appear to do nothing. Same trap as `tools/pdf-json`.
 
 `zdamto-demo` — console: https://console.firebase.google.com/project/zdamto-demo
 
+> ⚠️ **Anonymous sign-in is currently ENABLED, for testing only.** Neither the
+> Google popup nor the redirect flow works inside Claude's browser pane (the
+> popup is killed; the redirect loses its credential to storage partitioning
+> because the app is not on `authDomain`). `signInAnonymously()` is a plain API
+> call and works, which is the only way an agent can exercise the write path.
+> **Turn it off before real students use this** — Authentication → Sign-in
+> method → Anonymous → disable — and delete the leftover anonymous users.
+
 - Auth: Google provider, public name "zdamto.io demo"
 - Authorized domains: `localhost`, `omikse.github.io`
 - Rules live in `firestore.rules` **in this folder** and are published by pasting
