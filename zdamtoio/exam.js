@@ -10,10 +10,11 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=8c53e43c";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=8c53e43c";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=8c53e43c";
-import { isAdmin, loadCatalog, isPublished, mountAdminPanel } from "./admin.js?v=8c53e43c";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=e08e004e";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=e08e004e";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=e08e004e";
+import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
+  from "./admin.js?v=e08e004e";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -159,6 +160,7 @@ function renderBuildStamp() {
 
 function showMenu() {
   flushNow();                     // leaving the sheet must not drop pending work
+  hideAdminView();
   document.getElementById("view-menu").classList.remove("hidden");
   document.getElementById("view-exam").classList.add("hidden");
   document.getElementById("back-btn").classList.add("hidden");
@@ -221,6 +223,7 @@ async function renderHistory() {
 }
 
 function showExam() {
+  hideAdminView();
   document.getElementById("view-menu").classList.add("hidden");
   document.getElementById("view-exam").classList.remove("hidden");
   document.getElementById("back-btn").classList.remove("hidden");
@@ -604,7 +607,10 @@ async function init() {
     catalog = await loadCatalog();
     const admin = await isAdmin();
     renderMenu(admin);
-    await mountAdminPanel(examIndex, catalog, describeExam, () => renderMenu(true));
+    await mountAdminButton({
+      examIndex, catalog, describeExam,
+      onCatalogChange: () => renderMenu(true),
+    });
   });
 }
 

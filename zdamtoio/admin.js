@@ -1,5 +1,5 @@
 /*
- * admin.js — the admin role and the exam catalogue.
+ * admin.js — the admin role, the exam catalogue, and the database view.
  *
  * Admin is a Firestore document, not a custom claim: claims require the Admin
  * SDK and therefore a backend, and this app deliberately has none. Existence of
@@ -22,11 +22,19 @@
 
 import {
   collection, doc, getDoc, getDocs, setDoc, serverTimestamp,
+  query, orderBy, limit,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-import { auth, db } from "./firebase.js?v=8c53e43c";
+import { auth, db } from "./firebase.js?v=e08e004e";
+import { esc } from "./renderers.js?v=e08e004e";
 
 let adminCache = null;
+let ctx = null;          // { examIndex, catalog, describeExam, onCatalogChange }
+let activeTab = "exams";
+
+/* ------------------------------------------------------------------ *
+ * Role
+ * ------------------------------------------------------------------ */
 
 /** Is the signed-in user an admin? Cheap, cached, and safe to call often. */
 export async function isAdmin() {
@@ -42,6 +50,10 @@ export async function isAdmin() {
   }
   return adminCache;
 }
+
+/* ------------------------------------------------------------------ *
+ * Catalogue
+ * ------------------------------------------------------------------ */
 
 /** examId -> { published }. Missing entries mean published. */
 export async function loadCatalog() {
@@ -71,72 +83,134 @@ async function setPublished(examId, published) {
 }
 
 /* ------------------------------------------------------------------ *
- * Panel
+ * Helpers
  * ------------------------------------------------------------------ */
 
-/**
- * Render the admin panel under the exam menu. No-op for everyone else, so it
- * is safe to call unconditionally.
- *
- * `onChange` re-renders the student-facing menu after a toggle.
- */
-export async function mountAdminPanel(examIndex, catalog, describeExam, onChange) {
+const fmt = new Intl.DateTimeFormat("pl-PL", { dateStyle: "short", timeStyle: "short" });
+
+function when(ts) {
+  const d = ts?.toDate?.() ?? (typeof ts === "number" ? new Date(ts) : null);
+  return d ? fmt.format(d) : "—";
+}
+
+/** Answers arrive in whatever shape their question type uses; show them readably. */
+function answerText(value) {
+  if (value == null) return "—";
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    return value.map(v => (v && typeof v === "object" ? v.answer ?? "" : v))
+                .filter(Boolean).join("  |  ") || "—";
+  }
+  if (typeof value === "object") {
+    if (typeof value.content === "string") {                   // wypracowanie
+      const words = value.content.trim().split(/\s+/).filter(Boolean).length;
+      return value.content.trim() ? `${value.content.slice(0, 240)}…  (${words} słów)` : "—";
+    }
+    return Object.entries(value)
+      .filter(([, v]) => typeof v === "string" && v !== "")
+      .map(([k, v]) => `${k}: ${v}`).join(", ") || "—";
+  }
+  return String(value);
+}
+
+/* ------------------------------------------------------------------ *
+ * View
+ * ------------------------------------------------------------------ */
+
+export function showAdminView() {
+  document.getElementById("view-menu").classList.add("hidden");
+  document.getElementById("view-exam").classList.add("hidden");
+  document.getElementById("view-admin").classList.remove("hidden");
+  document.getElementById("back-btn").classList.remove("hidden");
+  document.getElementById("logo-container").classList.add("hidden");
+  renderAdminView();
+}
+
+export function hideAdminView() {
+  document.getElementById("view-admin").classList.add("hidden");
+}
+
+/** Reveal the header button. No-op for everyone else, so call it freely. */
+export async function mountAdminButton(context) {
+  ctx = context;
   if (!(await isAdmin())) return;
 
-  let box = document.getElementById("admin-panel");
-  if (!box) {
-    box = document.createElement("div");
-    box.id = "admin-panel";
-    box.className = "mt-12";
-    document.getElementById("view-menu").appendChild(box);
-  }
+  const btn = document.getElementById("admin-btn");
+  btn.classList.remove("hidden");
+  btn.classList.add("flex");     // Tailwind: .hidden beats .flex, so swap them
+  btn.addEventListener("click", showAdminView);
+}
+
+function renderAdminView() {
+  const root = document.getElementById("view-admin");
+  const tab = (id, label) => `
+    <button data-tab="${id}" class="px-4 py-2 text-sm font-semibold rounded-lg transition-colors
+      ${activeTab === id ? "bg-indigo-600 text-white shadow-sm"
+                         : "text-slate-600 hover:bg-slate-100"}">${label}</button>`;
+
+  root.innerHTML = `
+    <div class="flex items-center gap-2 mb-2 mt-2">
+      <span class="material-symbols-outlined text-indigo-600">admin_panel_settings</span>
+      <h2 class="text-2xl font-bold text-slate-900">Panel administratora</h2>
+    </div>
+    <p class="text-slate-500 mb-6 text-sm">Dane na żywo z Firestore. Zmiany działają natychmiast.</p>
+    <div class="flex gap-2 mb-6">${tab("exams", "Arkusze")}${tab("users", "Użytkownicy")}</div>
+    <div id="admin-body"></div>`;
+
+  root.querySelectorAll("[data-tab]").forEach(b => {
+    b.addEventListener("click", () => { activeTab = b.dataset.tab; renderAdminView(); });
+  });
+
+  if (activeTab === "exams") renderExamsTab();
+  else renderUsersTab();
+}
+
+/* ---- Arkusze ---- */
+
+function renderExamsTab() {
+  const body = document.getElementById("admin-body");
+  const { examIndex, catalog, describeExam } = ctx;
 
   const rows = examIndex.map(entry => {
-    const { level, when } = describeExam(entry.id);
+    const { level, when: label } = describeExam(entry.id);
     const on = isPublished(catalog, entry.id);
     return `
-      <div class="flex items-center gap-4 px-6 py-3" data-exam="${entry.id}">
+      <div class="flex items-center gap-4 px-6 py-3" data-exam="${esc(entry.id)}">
         <div class="flex-grow min-w-0">
-          <div class="font-semibold text-slate-800 text-sm">Matura ${when} — ${level}</div>
-          <div class="text-xs text-slate-400 font-mono">${entry.id}</div>
+          <div class="font-semibold text-slate-800 text-sm">Matura ${esc(label)} — ${esc(level)}</div>
+          <div class="text-xs text-slate-400 font-mono">
+            ${esc(entry.id)} · ${esc(entry.questions)} zad. · ${esc(entry.max_points)} pkt
+          </div>
         </div>
         <span class="text-xs font-medium ${on ? "text-green-600" : "text-slate-400"}" data-state>
-          ${on ? "widoczny" : "ukryty"}
-        </span>
+          ${on ? "widoczny" : "ukryty"}</span>
         <button type="button" data-toggle
           class="text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors
                  ${on ? "border-slate-200 text-slate-600 hover:bg-slate-50"
                       : "border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"}">
-          ${on ? "Ukryj" : "Opublikuj"}
-        </button>
+          ${on ? "Ukryj" : "Opublikuj"}</button>
       </div>`;
   }).join("");
 
-  box.innerHTML = `
-    <div class="flex items-center gap-2 mb-4">
-      <span class="material-symbols-outlined text-slate-400">admin_panel_settings</span>
-      <h3 class="text-lg font-bold text-slate-800">Panel administratora</h3>
-    </div>
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
-      ${rows}
-    </div>
+  body.innerHTML = `
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">${rows}</div>
     <p class="text-xs text-slate-400 mt-3">
-      Arkusz ukryty nie pojawia się uczniom. Nowy arkusz dodany przez
-      <code>sync.py</code> jest domyślnie widoczny.
+      Ukrycie usuwa arkusz z menu uczniów, ale <strong>nie blokuje dostępu</strong> —
+      pliki JSON są statyczne i pozostają osiągalne pod swoim adresem.
+      Nowy arkusz dodany przez <code>sync.py</code> jest domyślnie widoczny.
     </p>`;
 
-  box.querySelectorAll("[data-toggle]").forEach(btn => {
+  body.querySelectorAll("[data-toggle]").forEach(btn => {
     btn.addEventListener("click", async () => {
       const row = btn.closest("[data-exam]");
       const examId = row.dataset.exam;
-      const next = !isPublished(catalog, examId);
-
+      const next = !isPublished(ctx.catalog, examId);
       btn.disabled = true;
       try {
         await setPublished(examId, next);
-        catalog[examId] = { ...(catalog[examId] || {}), published: next };
-        await mountAdminPanel(examIndex, catalog, describeExam, onChange);
-        onChange();
+        ctx.catalog[examId] = { ...(ctx.catalog[examId] || {}), published: next };
+        renderExamsTab();
+        ctx.onCatalogChange();
       } catch (err) {
         row.querySelector("[data-state]").textContent = "błąd zapisu";
         console.warn("Nie udało się zmienić widoczności:", err.code || err.message);
@@ -145,4 +219,123 @@ export async function mountAdminPanel(examIndex, catalog, describeExam, onChange
       }
     });
   });
+}
+
+/* ---- Użytkownicy ---- */
+
+async function renderUsersTab() {
+  const body = document.getElementById("admin-body");
+  body.innerHTML = `<p class="text-slate-500 text-sm">Wczytywanie użytkowników…</p>`;
+
+  let users = [];
+  try {
+    const snap = await getDocs(collection(db, "users"));
+    users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    body.innerHTML = `<p class="text-red-600 text-sm">Nie udało się wczytać: ${esc(err.code || err.message)}</p>`;
+    return;
+  }
+
+  users.sort((a, b) => (b.lastLoginAt?.seconds || 0) - (a.lastLoginAt?.seconds || 0));
+
+  const rows = users.map(u => `
+    <details data-uid="${esc(u.id)}">
+      <summary class="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-slate-50">
+        <img src="${esc(u.photoURL || "")}" alt="" width="28" height="28"
+             class="rounded-full bg-slate-200 flex-none">
+        <div class="flex-grow min-w-0">
+          <div class="font-semibold text-slate-800 text-sm">${esc(u.displayName || "(anonimowy)")}</div>
+          <div class="text-xs text-slate-500">${esc(u.email || "bez adresu e-mail")}</div>
+          <div class="text-[10px] text-slate-300 font-mono">${esc(u.id)}</div>
+        </div>
+        <div class="text-xs text-slate-500 text-right flex-none">
+          <div>logowań: ${esc(u.loginCount ?? 0)}</div>
+          <div>ostatnio: ${esc(when(u.lastLoginAt))}</div>
+        </div>
+      </summary>
+      <div class="px-6 pb-4 attempts text-sm text-slate-400">Rozwiń, aby wczytać podejścia…</div>
+    </details>`).join("");
+
+  body.innerHTML = `
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+      ${rows || `<p class="px-6 py-4 text-slate-500 text-sm">Brak użytkowników.</p>`}
+    </div>
+    <p class="text-xs text-slate-400 mt-3">
+      ${users.length} użytkowników · odczyt bezpośrednio z Firestore.
+    </p>`;
+
+  // Attempts load on expand: querying every user up front would be a lot of
+  // reads for a list most of which nobody opens.
+  body.querySelectorAll("details[data-uid]").forEach(det => {
+    det.addEventListener("toggle", async () => {
+      if (!det.open || det.dataset.loaded) return;
+      det.dataset.loaded = "1";
+      await renderAttempts(det, det.dataset.uid);
+    });
+  });
+}
+
+async function renderAttempts(det, uid) {
+  const box = det.querySelector(".attempts");
+  box.textContent = "Wczytywanie…";
+
+  let attempts = [];
+  try {
+    const snap = await getDocs(query(
+      collection(db, "users", uid, "attempts"), orderBy("updatedAt", "desc"), limit(50)));
+    attempts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (err) {
+    box.innerHTML = `<span class="text-red-600">Błąd: ${esc(err.code || err.message)}</span>`;
+    return;
+  }
+
+  if (!attempts.length) {
+    box.innerHTML = `<span class="text-slate-400">Brak podejść.</span>`;
+    return;
+  }
+
+  box.innerHTML = attempts.map(a => {
+    const t = a.totals || {};
+    const answers = a.answers || {};
+    const grades = a.grades || {};
+    const keys = Object.keys(answers).sort((x, y) => x.localeCompare(y, undefined, { numeric: true }));
+
+    const detail = keys.map(k => {
+      const g = grades[k];
+      const badge = !g
+        ? `<span class="text-slate-300">—</span>`
+        : g.points === null
+          ? `<span class="text-amber-600">bez oceny</span>`
+          : `<span class="${g.correct === false ? "text-red-600" : "text-green-600"} font-semibold">${esc(g.points)}/${esc(g.max_points ?? "?")}</span>
+             <span class="text-slate-300 text-[10px]">${esc(g.source || "")}</span>`;
+      return `
+        <tr class="align-top">
+          <td class="py-1 pr-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+            ${esc(k.split("-").pop())}</td>
+          <td class="py-1 pr-3 text-slate-700">${esc(answerText(answers[k]))}</td>
+          <td class="py-1 text-right whitespace-nowrap">${badge}</td>
+        </tr>`;
+    }).join("");
+
+    const essay = a.essay?.ai_grading_history;
+    const essayNote = essay
+      ? `<div class="mt-2 text-[11px] text-slate-500">
+           Wypracowanie: ${Object.keys(essay.ai_raw_results || {}).length}/8 kryteriów ocenionych
+           — diagnostycznie, bez wyniku oficjalnego
+         </div>`
+      : "";
+
+    return `
+      <div class="border border-slate-100 rounded-xl p-4 mb-2 bg-slate-50/50">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="font-semibold text-slate-700 text-xs font-mono">${esc(a.id)}</span>
+          <span class="text-[11px] text-slate-400">${esc(when(a.updatedAt))}</span>
+          <span class="ml-auto text-xs font-semibold text-slate-700">
+            ${esc(t.points ?? 0)}/${esc(t.maxPoints ?? 0)} pkt</span>
+          <span class="text-[11px] text-slate-400">${esc(keys.length)} odp.</span>
+        </div>
+        <table class="w-full text-xs"><tbody>${detail}</tbody></table>
+        ${essayNote}
+      </div>`;
+  }).join("");
 }
