@@ -245,7 +245,10 @@ diatonic chords with Roman numerals, the relative minor, and the ii–V–I, I�
 the key to the neck.
 
 ### Theory
-Reference, generated for whichever key you select rather than written out for C: the twelve
+Reference, generated for whichever key you select rather than written out for C, and
+clickable rather than only readable — an interval row plays the interval, a mode row
+opens that mode on the neck and plays it, a chord formula opens that chord's shapes,
+and every row of the diatonic table opens its triad or its seventh: the twelve
 notes, intervals with a song you would recognise for each, the major scale as the ruler,
 diatonic harmony, chord formulas, the modes, and a section on the neck's own logic — the
 G-to-B string shift, octave shapes, anchor frets, CAGED in a paragraph.

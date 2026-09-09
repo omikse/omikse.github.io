@@ -555,6 +555,10 @@ body.has-plan{padding-bottom:86px}
 kbd{display:inline-block; padding:2px 7px; border-radius:6px; background:var(--panel2);
   border:1px solid var(--line2); border-bottom-width:2px; font:inherit; font-size:.82em;
   font-family:ui-monospace,Consolas,monospace; color:var(--text)}
+tbody tr.act{cursor:pointer}
+tbody tr.act:hover{background:var(--raise)}
+tbody tr.act td:first-child::after{content:''}
+.rowhint{font-size:.68rem; color:var(--faint); white-space:nowrap}
 .hide{display:none !important}
 </style>
 </head>
@@ -3105,8 +3109,17 @@ function renderTheory(){
   // intervals
   $('t-ivroot').textContent = pretty(key);
   $('t-intervals').innerHTML = IVL_NAME.map((n,i)=>
-    `<tr><td class="n">${i}</td><td>${n} <span class="hint">${IVL_SHORT[i]}</span></td><td class="n">${pretty(nameOf((rpc+i)%12,key))}</td><td class="hint">${IVL_FEEL[i]}</td></tr>`
-  ).join('') + `<tr><td class="n">12</td><td>octave</td><td class="n">${pretty(nameOf(rpc,key))}</td><td class="hint">Somewhere Over the Rainbow</td></tr>`;
+    `<tr class="act" data-iv="${i}"><td class="n">${i}</td><td>${n} <span class="hint">${IVL_SHORT[i]}</span></td><td class="n">${pretty(nameOf((rpc+i)%12,key))}</td><td class="hint">${IVL_FEEL[i]} <span class="rowhint">— click to hear</span></td></tr>`
+  ).join('') + `<tr class="act" data-iv="12"><td class="n">12</td><td>octave</td><td class="n">${pretty(nameOf(rpc,key))}</td><td class="hint">Somewhere Over the Rainbow <span class="rowhint">— click to hear</span></td></tr>`;
+  $('t-intervals').onclick = e=>{
+    const tr = e.target.closest('tr[data-iv]'); if(!tr) return;
+    const iv = +tr.dataset.iv;
+    audio();
+    const base = 52 + rpc;                       // somewhere comfortable on the neck
+    pluck(base, 0, 1.6, .5);
+    pluck(base+iv, 0.5, 1.8, .5);
+    pluck(base, 1.15, 2.2, .38); pluck(base+iv, 1.17, 2.2, .38);
+  };
 
   // major scale row (always shows the major, it is the ruler)
   const maj = spellScale(key, SCALES.major.iv);
@@ -3140,7 +3153,11 @@ function renderTheory(){
     ['m7♭5','1 ♭3 ♭5 ♭7','m7b5'], ['Diminished 7th','1 ♭3 ♭5 ♭♭7','dim7'], ['6th','1 3 5 6','six'],
   ];
   $('t-formulas').innerHTML = forms.map(([n,f,k])=>
-    `<tr><td>${n}</td><td class="mono">${f}</td><td class="n">${SCALES[k].iv.map(i=>pretty(nameOf((rpc+i)%12,key))).join(' ')}</td></tr>`).join('');
+    `<tr class="act" data-qual="${k}"><td>${n}</td><td class="mono">${f}</td><td class="n">${SCALES[k].iv.map(i=>pretty(nameOf((rpc+i)%12,key))).join(' ')} <span class="rowhint">— click for shapes</span></td></tr>`).join('');
+  $('t-formulas').onclick = e=>{
+    const tr = e.target.closest('tr[data-qual]'); if(!tr) return;
+    toChord(ROOT_CHOICES.indexOf(key)>=0 ? key : SHARP[rpc], tr.dataset.qual);
+  };
 
   // modes
   const modes=[
@@ -3153,8 +3170,16 @@ function renderTheory(){
     ['Locrian','7','minor ♭2 ♭5','unstable'],
   ];
   const majSp = maj;
+  const MODE_KEY = ['major','dorian','phrygian','lydian','mixolydian','minor','locrian'];
   $('t-modes').innerHTML = modes.map(([n,d,f,c],i)=>
-    `<tr><td><b>${pretty(majSp[i])} ${n}</b></td><td class="n">${d}</td><td>${f}</td><td class="hint">${c}</td></tr>`).join('');
+    `<tr class="act" data-mode="${MODE_KEY[i]}" data-root="${ROOT_CHOICES.indexOf(majSp[i])>=0 ? majSp[i] : SHARP[pcOf(majSp[i])]}"><td><b>${pretty(majSp[i])} ${n}</b></td><td class="n">${d}</td><td>${f}</td><td class="hint">${c} <span class="rowhint">— click for the neck</span></td></tr>`).join('');
+  $('t-modes').onclick = e=>{
+    const tr = e.target.closest('tr[data-mode]'); if(!tr) return;
+    PL.root = tr.dataset.root; PL.scale = tr.dataset.mode;
+    $('w-root').value = PL.root; $('w-scale').value = PL.scale;
+    showView('play');
+    setTimeout(()=> playScaleUp(), 250);
+  };
 }
 
 const fbC = new Fretboard('fb-chord', {clickable:true});
