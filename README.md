@@ -8,12 +8,27 @@ no network calls. Open it and it works.
 
 ---
 
-## The eight views
+## What is in it
 
 Every neck in the app is keyboard navigable: tab onto it and the arrow keys walk
 string by string and fret by fret, Enter sounds the note, and each square announces
 itself as "String 6, fret 5, A". There is a print stylesheet too, so a neck diagram
 or a set of chord shapes prints without the controls around them.
+
+### A guided session
+The first card in Learn, and the answer to the question that actually stops people
+practising: not "how does this work" but "what should I do today".
+
+Pick ten, twenty or thirty minutes and it builds a session from what your stats say
+you have and have not done — how much of the neck you have been asked about, how
+your ear scores compare to your hands — then walks you through it. Each step sets up
+the view it needs (it opens the tuner, sets the drill filters, starts the chord-change
+drill, starts the jam loop) and a bar along the bottom keeps the clock, names what you
+are doing and why, and moves on by itself.
+
+A beginner with no history gets low strings only and ear training; someone who has
+covered the neck gets all six strings and a pentatonic box instead. The last step is
+always playing over something, because that is the point of the other four.
 
 ### Learn
 The default view, and the one meant for someone who has never read a fretboard diagram.

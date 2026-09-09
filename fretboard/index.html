@@ -464,6 +464,29 @@ details[open] summary{margin-bottom:8px}
 .pips{display:flex; gap:6px}
 .pips i{width:11px; height:11px; border-radius:50%; background:var(--line2)}
 .pips i.on{background:var(--root)}
+
+/* ---------- the guided session bar ---------- */
+body.has-plan{padding-bottom:86px}
+#plan-bar{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  background:var(--panel); border-top:1px solid var(--line2);
+  box-shadow:0 -6px 24px rgba(0,0,0,.28);
+}
+#plan-bar .prog{height:3px; background:var(--line)}
+#plan-bar .prog i{display:block; height:100%; background:var(--root); width:0; transition:width .25s linear}
+#plan-bar .row{max-width:1180px; margin:0 auto; padding:11px 18px 12px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+#plan-bar .txt{flex:1; min-width:200px}
+#plan-bar .txt b{display:block; font-size:1rem; letter-spacing:-.01em}
+#plan-bar .txt span{font-size:.83rem; color:var(--muted)}
+#pb-step{font-size:.66rem; text-transform:uppercase; letter-spacing:.09em; color:var(--faint); font-weight:700}
+#pb-time{font-size:1.6rem; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.02em; min-width:2.6em; text-align:right}
+@media(max-width:640px){
+  body.has-plan{padding-bottom:112px}
+  #plan-bar .row{padding:9px 12px 10px; gap:10px}
+  #plan-bar .txt{min-width:100%; order:-1}
+  #pb-time{font-size:1.3rem}
+}
 .hide{display:none !important}
 </style>
 </head>
@@ -506,6 +529,22 @@ details[open] summary{margin-bottom:8px}
   <div class="note" style="margin:18px 0 14px"><b>A note is a wave.</b> Click any fret — the neck plays it and draws it below.
   Go twelve frets higher on the same string and the wave has exactly twice as many humps. Pick up the capo at the nut and
   drop it anywhere on the neck to move where “zero” is.</div>
+
+  <div class="card" style="margin:18px 0 14px; border-color:color-mix(in srgb,var(--root) 32%, var(--line))">
+    <h3 style="margin-bottom:6px">Not sure what to do today?</h3>
+    <p style="margin-bottom:12px">Pick a length and it will build a session out of what you have and have not
+    practised, then walk you through it a step at a time — tuning, note names, chord changes, ear, and playing over
+    something at the end. It moves you between the views itself and keeps the clock.</p>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div class="f"><label for="pl-mins">Length</label><select id="pl-mins">
+        <option value="10">10 minutes</option>
+        <option value="20" selected>20 minutes</option>
+        <option value="30">30 minutes</option>
+      </select></div>
+      <button class="btn primary" id="pl-go" style="padding:11px 18px">▶ Start a session</button>
+      <span class="hint" id="pl-done"></span>
+    </div>
+  </div>
 
   <details class="card" id="tu-card" style="margin:0 0 14px">
     <summary><b>Tune up first</b> <span class="hint">— an out-of-tune guitar teaches you the wrong notes</span></summary>
@@ -1145,6 +1184,21 @@ details[open] summary{margin-bottom:8px}
   </div>
 </section>
 
+</div>
+
+<div id="plan-bar" class="hide" role="region" aria-label="Practice session">
+  <div class="prog"><i id="pb-fill"></i></div>
+  <div class="row">
+    <div class="txt">
+      <span id="pb-step"></span>
+      <b id="pb-title"></b>
+      <span id="pb-why"></span>
+    </div>
+    <div id="pb-time">0:00</div>
+    <button class="btn" id="pb-pause">Pause</button>
+    <button class="btn" id="pb-next">Next step</button>
+    <button class="btn ghost" id="pb-stop">End</button>
+  </div>
 </div>
 
 <script>
@@ -3507,6 +3561,187 @@ function paintChanger(beatsLeft){
   $('rh-click').onchange = e=>{ RH.click=e.target.checked; };
   $('rh-bpm').oninput = e=>{ RH.bpm=+e.target.value; $('rh-bpmv').textContent=e.target.value; };
   $('rh-clear').onclick = ()=>{ RH.pat = '--------'.split(''); renderRhythm(); };
+})();
+
+/* ============================================================
+   A GUIDED SESSION — the answer to "what should I actually do today"
+   ============================================================ */
+const PLAN = {running:false, steps:[], i:0, endAt:0, tick:null, minutes:20, paused:false, remain:0};
+
+function heatCoverage(){
+  const t = tuning(), total = t.length*(Math.min(12,S.frets)+1);
+  let asked = 0, weak = 0;
+  for(let s=0;s<t.length;s++) for(let f=0;f<=Math.min(12,S.frets);f++){
+    const r = stats.byPos[S.tuningName+'|'+s+':'+f];
+    if(r && r.n){ asked++; if(r.ok/r.n < 0.7) weak++; }
+  }
+  return {frac: total ? asked/total : 0, weak: weak};
+}
+function accOf(bucket){
+  let ok=0, n=0;
+  Object.keys(bucket).forEach(k=>{ ok += bucket[k].ok; n += bucket[k].n; });
+  return n ? {pct:ok/n, n:n} : {pct:null, n:0};
+}
+
+function buildPlan(minutes){
+  const cov = heatCoverage();
+  const ivl = accOf(stats.byIvl), qual = accOf(stats.byQual);
+  const steps = [];
+
+  steps.push({
+    t:'Tune up', m:1,
+    why:'Thirty seconds now saves you learning the wrong sounds for the next twenty minutes.',
+    go:()=>{ showView('play'); const c=$('tu-card'); if(c) c.open = true; }
+  });
+
+  if(cov.frac < 0.35){
+    steps.push({
+      t:'Name the notes — low strings only', m:5,
+      why:'You have seen ' + Math.round(cov.frac*100) + '% of the neck so far. Start where the barre chords and the pentatonic roots live.',
+      go:()=>{
+        showView('game');
+        $('q-mode').value='name'; game.mode='name';
+        $('q-natural').checked = true; game.naturals = true;
+        $('q-focus').checked = true; game.focus = true;
+        game.strings = new Set([0,1]);
+        [...$('q-strings').children].forEach(b=> b.setAttribute('aria-pressed', String(+b.dataset.s<=1)));
+        fillEarSet(); updateHelp(); newQuestion();
+      }
+    });
+  } else {
+    steps.push({
+      t:'Name the notes — all six strings', m:5,
+      why:'You know ' + Math.round(cov.frac*100) + '% of the neck. Weak spots come up most often, so this will feel harder than the score suggests.',
+      go:()=>{
+        showView('game');
+        $('q-mode').value='name'; game.mode='name';
+        $('q-natural').checked = false; game.naturals = false;
+        $('q-focus').checked = true; game.focus = true;
+        game.strings = new Set(tuning().map((_,i)=>i));
+        [...$('q-strings').children].forEach(b=> b.setAttribute('aria-pressed','true'));
+        fillEarSet(); updateHelp(); newQuestion();
+      }
+    });
+  }
+
+  steps.push({
+    t:'Chord changes, in time', m:minutes>=20 ? 5 : 3,
+    why:'The bar does not wait for your fingers. This is the drill that turns chords you know into chords you can use.',
+    go:()=>{ showView('rhythm'); if(!RH.drill) $('rh-chgo').click(); }
+  });
+
+  if(minutes >= 20){
+    const earWeak = (ivl.pct !== null && ivl.pct < 0.75) || (qual.pct !== null && qual.pct < 0.75) || (ivl.n + qual.n) < 10;
+    steps.push(earWeak ? {
+      t:'Ear training', m:4,
+      why:(ivl.n + qual.n) < 10
+        ? 'You have barely used this. Major or minor is the single most useful thing your ear can learn.'
+        : 'Your ear is behind your hands right now, which is the usual way round and worth correcting.',
+      go:()=>{
+        showView('game');
+        $('q-mode').value='chord'; game.mode='chord';
+        game.earset = qual.n < 20 ? 'easy' : 'core';
+        fillEarSet(); $('q-earset').value = game.earset;
+        $('q-earset-wrap').classList.remove('hide');
+        updateHelp(); newQuestion();
+      }
+    } : {
+      t:'One pentatonic box, said out loud', m:4,
+      why:'Play the shape and name every note as you land on it. Slow, and the fastest thing you can do.',
+      go:()=>{ showView('pent'); setTimeout(()=> $('p-play') && $('p-play').click(), 400); }
+    });
+  }
+
+  steps.push({
+    t:'Play over something', m:minutes>=30 ? 10 : minutes>=20 ? 5 : 3,
+    why:'The reason for all of the above. Fewer notes than you want to play, and aim for the ringed ones when the chord changes.',
+    go:()=>{ showView('jam'); if(!JAM.playing) $('jam-play').click(); }
+  });
+
+  // trim or stretch the last step so the total matches what was asked for
+  let total = steps.reduce((a,s)=>a+s.m, 0);
+  const last = steps[steps.length-1];
+  last.m = Math.max(2, last.m + (minutes - total));
+  return steps;
+}
+
+function planChime(up){
+  audio();
+  const base = 72;
+  if(up){ pluck(base, 0, 1.1, .4); pluck(base+7, 0.13, 1.4, .4); }
+  else   { pluck(base+7, 0, 1.0, .35); pluck(base, 0.13, 1.6, .4); }
+}
+function planStart(){
+  PLAN.minutes = +$('pl-mins').value;
+  PLAN.steps = buildPlan(PLAN.minutes);
+  PLAN.i = -1; PLAN.running = true; PLAN.paused = false; PLAN.remain = 0;
+  $('pb-pause').textContent = 'Pause';
+  $('plan-bar').classList.remove('hide');
+  document.body.classList.add('has-plan');
+  planNext();
+  if(PLAN.tick) clearInterval(PLAN.tick);
+  PLAN.tick = setInterval(planTick, 250);
+}
+function planNext(){
+  PLAN.i++;
+  if(PLAN.i >= PLAN.steps.length) return planDone();
+  const st = PLAN.steps[PLAN.i];
+  PLAN.endAt = Date.now() + st.m*60000;
+  $('pb-title').textContent = st.t;
+  $('pb-why').textContent = st.why;
+  $('pb-step').textContent = (PLAN.i+1) + ' of ' + PLAN.steps.length;
+  planPaint();
+  try{ st.go(); }catch(e){}
+  if(PLAN.i > 0) planChime(true);
+}
+function planTick(){
+  if(!PLAN.running || PLAN.paused) return;
+  if(Date.now() >= PLAN.endAt){ planNext(); return; }
+  planPaint();
+}
+function planPaint(){
+  const left = Math.max(0, PLAN.endAt - Date.now());
+  const s = Math.ceil(left/1000);
+  $('pb-time').textContent = Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  const st = PLAN.steps[PLAN.i];
+  if(st) $('pb-fill').style.width = (100 * (1 - left/(st.m*60000))).toFixed(1) + '%';
+}
+function planDone(){
+  planStop(true);
+  $('pl-go').textContent = '\u25b6 Start a session';
+  showView('play');
+  const mins = PLAN.minutes;
+  $('pl-done').innerHTML = '<b>That is the session.</b> ' + mins + ' minutes, and you turned up — '
+    + 'which is the part that compounds. The attendance strip in Drills just got another mark.';
+  planChime(true); setTimeout(()=>planChime(true), 240);
+}
+function planStop(finished){
+  PLAN.running = false;
+  if(PLAN.tick) clearInterval(PLAN.tick);
+  PLAN.tick = null;
+  $('plan-bar').classList.add('hide');
+  document.body.classList.remove('has-plan');
+  if(typeof JAM!=='undefined' && JAM.playing) jamStop();
+  if(typeof RH!=='undefined' && RH.playing) rhStop();
+  if(!finished) $('pl-done').textContent = '';
+  const today = new Date().toISOString().slice(0,10);
+  stats.days[today] = (stats.days[today]||0) + (finished ? 1 : 0);
+  store.set('stats', stats);
+}
+
+(function initPlan(){
+  $('pl-go').onclick = ()=>{
+    if(PLAN.running){ planStop(false); $('pl-go').textContent = '\u25b6 Start a session'; }
+    else { planStart(); $('pl-go').textContent = '\u25a0 End the session'; }
+  };
+  $('pb-next').onclick = ()=> planNext();
+  $('pb-stop').onclick = ()=>{ planStop(false); $('pl-go').textContent = '\u25b6 Start a session'; };
+  $('pb-pause').onclick = ()=>{
+    if(!PLAN.running) return;
+    if(PLAN.paused){ PLAN.endAt = Date.now() + (PLAN.remain||0); PLAN.paused = false; }
+    else { PLAN.remain = Math.max(0, PLAN.endAt - Date.now()); PLAN.paused = true; }
+    $('pb-pause').textContent = PLAN.paused ? 'Resume' : 'Pause';
+  };
 })();
 
 /* ============================================================
