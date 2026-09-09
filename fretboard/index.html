@@ -950,6 +950,19 @@ tbody tr.act td:first-child::after{content:''}
       <h3>This shape</h3>
       <div id="ch-detail"></div>
       <div class="sep"></div>
+      <h3>Getting a barre to sound</h3>
+      <ul class="tight">
+        <li><b>It is leverage, not strength.</b> Squeezing harder is what everyone tries and it is the wrong lever.
+        Pull the guitar gently back into your body with your strumming arm and the barre needs far less grip.</li>
+        <li><b>Roll the finger slightly onto its side.</b> The flat pad of a finger has creases in it that strings fall
+        into; the bony outside edge does not.</li>
+        <li><b>Put it right behind the fret</b>, not in the middle of the gap. Half the buzzing is position, not force.</li>
+        <li><b>Only some strings need the barre.</b> In an E-shape barre the other fingers cover the middle strings, so
+        the index only has to hold the outer ones cleanly. Check them one at a time and find out which is actually dead.</li>
+        <li><b>Start at the fifth fret, not the first.</b> The frets are closer and the string tension is lower, so the
+        same shape is easier — then walk it down once it speaks.</li>
+      </ul>
+
       <h3>Reading the diagram</h3>
       <ul class="tight">
         <li><b>×</b> above a string means don't play it; <b>○</b> means play it open.</li>
@@ -3536,6 +3549,21 @@ function renderChords(){
     + '<dt>Stretch</dt><dd>'+(v.span? (v.span+1)+' frets' : 'one fret')+'</dd>'
     + '<dt>Bass note</dt><dd>'+pretty(nameOf(v.bassPc, CH.root))+(v.bassPc===rootPc? ' — root position' : ' — an inversion')+'</dd>'
     + '<dt>Notes</dt><dd>'+(v.full? 'complete' : 'the fifth is left out, which is normal')+'</dd>'
+    + (function(){
+        /* a shape with no open strings is the same shape everywhere on the neck */
+        if(v.pick.some(f=> f===0) || !v.minFret) return '';
+        const others = [];
+        for(let d=-4; d<=4; d++){
+          const f = v.minFret + d;
+          if(d===0 || f < 1 || (v.minFret + v.span + d) > S.frets) continue;
+          others.push('<b>' + pretty(nameOf((rootPc + d + 12*4) % 12, CH.root)) + (CHORD_SUFFIX[CH.qual]||'') + '</b> at ' + f);
+          if(others.length >= 6) break;
+        }
+        return others.length
+          ? '<dt>Move it</dt><dd>Nothing is open, so this shape is the same chord everywhere: '
+            + others.join(', ') + '. Learn one, get twelve.</dd>'
+          : '';
+      })()
     + '</dl>';
 }
 
@@ -4396,6 +4424,7 @@ const CHANGE_POOLS = [
   {n:'A · D · E — blues in A',                    c:[['A','maj'],['D','maj'],['E','maj']]},
   {n:'Every open chord',                          c:[['C','maj'],['A','maj'],['G','maj'],['E','maj'],['D','maj'],['A','min'],['E','min'],['D','min']]},
   {n:'Sevenths: G7 · C7 · D7',                    c:[['G','dom7'],['C','dom7'],['D','dom7']]},
+  {n:'Barre chords: F · Bm · C · Am',             c:[['F','maj'],['B','min'],['C','maj'],['A','min']]},
   {n:'Sent from another view',                    c:[['G','maj'],['C','maj'],['D','maj']], custom:true}
 ];
 const CUSTOM_POOL = CHANGE_POOLS.length - 1;
