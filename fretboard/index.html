@@ -3763,10 +3763,16 @@ function buildPlan(minutes){
     go:()=>{ showView('jam'); if(!JAM.playing) $('jam-play').click(); }
   });
 
-  // trim or stretch the last step so the total matches what was asked for
-  let total = steps.reduce((a,s)=>a+s.m, 0);
-  const last = steps[steps.length-1];
-  last.m = Math.max(2, last.m + (minutes - total));
+  // make the steps add up to the length that was asked for: surplus goes to the
+  // playing step, a shortfall comes off the back, never taking a step below a
+  // useful length
+  let diff = minutes - steps.reduce((a,x)=>a+x.m, 0);
+  if(diff > 0){ steps[steps.length-1].m += diff; diff = 0; }
+  for(let i=steps.length-1; i>=0 && diff<0; i--){
+    const floor = i===0 ? 1 : 2;
+    const take = Math.min(steps[i].m - floor, -diff);
+    if(take > 0){ steps[i].m -= take; diff += take; }
+  }
   return steps;
 }
 
@@ -4116,7 +4122,11 @@ function drawHarm(){
   const rows=[];
   for(let i=0;i<Math.min(n,6);i++){
     const semi = Math.round(12*Math.log2(i+1));
-    const what = i===0 ? 'the note itself' : (semi%12===0 ? 'octave' : IVL_NAME[semi%12]);
+    // the third harmonic is an octave AND a fifth above, not just a fifth
+    const oct = Math.floor(semi/12), rem = semi%12;
+    const what = i===0 ? 'the note itself'
+      : rem===0 ? (oct===1 ? 'an octave up' : oct+' octaves up')
+      : (oct ? (oct===1?'an octave':oct+' octaves')+' + '+IVL_NAME[rem] : IVL_NAME[rem]);
     rows.push('<span><b>'+(i+1)+'×</b> '+Math.round(f0*(i+1))+' Hz · '+pitchName(src.midi+semi)+' — '+what+'</span>');
   }
   $('pl-harmrow').innerHTML = rows.join('');
