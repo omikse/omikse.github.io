@@ -117,6 +117,12 @@ Filter by string, cap the fret range, restrict to naturals, and optionally run a
 The accuracy bars show which note names you are actually slow on, which is more useful than
 the score.
 
+Forty-two scales, modes, pentatonics and chord types are available anywhere a
+scale is chosen — the seven modes plus phrygian dominant, lydian dominant and
+altered; harmonic and melodic minor, harmonic major, whole tone and both
+diminished scales; the pentatonics and blues scales; and twenty-one chord types
+usable as arpeggios.
+
 ### Chords
 Every shape here was found by searching, not typed in from a chord book. For each
 four-fret window it enumerates one note per string and keeps the combinations that
@@ -257,7 +263,8 @@ Kept in `localStorage`, applied to every view:
 - **Sound** — on/off
 - **Theme** — light and dark, following your system until you pick one yourself
 - **Keyboard** — alt+1 to alt+8 switch views; the tab strip takes arrow keys once
-  focused; every fretboard can be walked with the arrows and played with Enter
+  focused; every fretboard can be walked with the arrows and played with Enter.
+  Press <kbd>?</kbd> for the full list
 - **Share** — copies a link that encodes the view, root, scale, capo, labels,
   chord, tuning, fret count, accidentals and handedness, so you can send someone
   a setup rather than a list of instructions

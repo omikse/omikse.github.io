@@ -541,6 +541,20 @@ body.has-plan{padding-bottom:86px}
 #jam-parse{font-size:.84rem}
 #jam-parse b{color:var(--text)}
 #jam-parse .bad{color:var(--rose)}
+
+/* ---------- keyboard help ---------- */
+#helpwrap{position:fixed; inset:0; z-index:60; background:rgba(0,0,0,.55); display:flex;
+  align-items:center; justify-content:center; padding:20px}
+#helpbox{background:var(--panel); border:1px solid var(--line2); border-radius:14px;
+  max-width:640px; width:100%; max-height:86vh; overflow:auto; padding:22px 24px; box-shadow:var(--shadow)}
+#helpbox h2{margin-bottom:4px}
+#helpbox h3{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:18px 0 8px}
+#helpbox dl{display:grid; grid-template-columns:auto 1fr; gap:7px 16px; align-items:baseline; font-size:.9rem; margin:0}
+#helpbox dt{white-space:nowrap}
+#helpbox dd{margin:0; color:var(--muted)}
+kbd{display:inline-block; padding:2px 7px; border-radius:6px; background:var(--panel2);
+  border:1px solid var(--line2); border-bottom-width:2px; font:inherit; font-size:.82em;
+  font-family:ui-monospace,Consolas,monospace; color:var(--text)}
 .hide{display:none !important}
 </style>
 </head>
@@ -562,6 +576,7 @@ body.has-plan{padding-bottom:86px}
     </div>
     <button class="btn ghost" id="g-settings" aria-expanded="false" aria-controls="gset" title="Tuning, frets, accidentals, handedness">Setup</button>
     <button class="btn ghost" id="g-share" title="Copy a link to exactly this setup">Share</button>
+    <button class="btn ghost" id="g-help" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
     <button class="btn ghost" id="g-theme" title="Toggle theme">◐</button>
   </div>
   <nav id="tabs" role="tablist">
@@ -1349,6 +1364,47 @@ body.has-plan{padding-bottom:86px}
 
 </div>
 
+<div id="helpwrap" class="hide" role="dialog" aria-modal="true" aria-labelledby="help-h">
+  <div id="helpbox">
+    <h2 id="help-h">Keyboard</h2>
+    <p class="hint" style="margin-bottom:0">Everything here works without a mouse, which matters when one hand is holding a guitar.</p>
+
+    <h3>Moving around</h3>
+    <dl>
+      <dt><kbd>alt</kbd> + <kbd>1</kbd>…<kbd>8</kbd></dt><dd>jump straight to a view</dd>
+      <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>walk the tab strip once it has focus; <kbd>Home</kbd> and <kbd>End</kbd> go to the ends</dd>
+      <dt><kbd>?</kbd></dt><dd>open and close this</dd>
+      <dt><kbd>esc</kbd></dt><dd>close this</dd>
+    </dl>
+
+    <h3>On any fretboard</h3>
+    <dl>
+      <dt><kbd>tab</kbd></dt><dd>move onto the neck</dd>
+      <dt><kbd>← → ↑ ↓</kbd></dt><dd>fret by fret and string by string — the left and right flip in left-handed mode</dd>
+      <dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>the nut and the last fret</dd>
+      <dt><kbd>enter</kbd> <kbd>space</kbd></dt><dd>play the note under the cursor</dd>
+    </dl>
+
+    <h3>The capo</h3>
+    <dl>
+      <dt>drag it</dt><dd>pick it up at the nut and drop it on a fret</dd>
+      <dt><kbd>← →</kbd></dt><dd>move it a fret at a time once it has focus</dd>
+      <dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>take it off, or put it on the twelfth</dd>
+    </dl>
+
+    <h3>In the drills</h3>
+    <dl>
+      <dt><kbd>1</kbd>…<kbd>=</kbd></dt><dd>pick the matching answer</dd>
+      <dt><kbd>space</kbd></dt><dd>skip to the next question</dd>
+    </dl>
+
+    <div class="sep"></div>
+    <p class="hint" style="margin:0">Screen readers get a running commentary of the prompt, the verdict and the
+    chord playing in Jam, and every square of every neck announces its string, fret and note.</p>
+    <div style="margin-top:16px"><button class="btn primary" id="help-close">Close</button></div>
+  </div>
+</div>
+
 <div id="plan-bar" class="hide" role="region" aria-label="Practice session">
   <div class="prog"><i id="pb-fill"></i></div>
   <div class="row">
@@ -1410,6 +1466,13 @@ const SCALES = {
   lydian:       {n:'Lydian',             iv:[0,2,4,6,7,9,11], grp:'Modes'},
   mixolydian:   {n:'Mixolydian',         iv:[0,2,4,5,7,9,10], grp:'Modes'},
   locrian:      {n:'Locrian',            iv:[0,1,3,5,6,8,10], grp:'Modes'},
+  phrygDom:     {n:'Phrygian dominant',  iv:[0,1,4,5,7,8,10], grp:'Modes'},
+  lydDom:       {n:'Lydian dominant',    iv:[0,2,4,6,7,9,10], grp:'Modes'},
+  altered:      {n:'Altered',            iv:[0,1,3,4,6,8,10], grp:'Modes'},
+  harmMajor:    {n:'Harmonic major',     iv:[0,2,4,5,7,8,11], grp:'Scales'},
+  wholeTone:    {n:'Whole tone',         iv:[0,2,4,6,8,10],   grp:'Scales'},
+  dimHW:        {n:'Diminished (half–whole)', iv:[0,1,3,4,6,7,9,10], grp:'Scales'},
+  dimWH:        {n:'Diminished (whole–half)', iv:[0,2,3,5,6,8,9,11], grp:'Scales'},
   chromatic:    {n:'Chromatic',          iv:[0,1,2,3,4,5,6,7,8,9,10,11], grp:'Scales'},
   maj:          {n:'Major triad',        iv:[0,4,7],          grp:'Chords'},
   min:          {n:'Minor triad',        iv:[0,3,7],          grp:'Chords'},
@@ -1448,6 +1511,13 @@ const SCALE_BLURB = {
   mixolydian:'Major with a ♭7. Dominant chords and blues-rock.',
   locrian:'♭2 and ♭5. Unstable by design; rarely a home key.',
   chromatic:'Every note. Useful as a map, not as a melody.',
+  phrygDom:'Phrygian with a major 3rd — the fifth mode of harmonic minor. Flamenco, klezmer, and every metal riff that sounds Middle Eastern.',
+  lydDom:'Major with a ♯4 and a ♭7 at once. The sound of a dominant chord that refuses to resolve; Simpsons-adjacent.',
+  altered:'Every note a dominant chord can be bent by, all at once. Play it over the V and land on the I.',
+  harmMajor:'Major with a ♭6. The major scale with the harmonic minor’s ache borrowed into it.',
+  wholeTone:'Six notes, every one a whole step apart. No leading tone, so nothing pulls anywhere — dreams and dissolves.',
+  dimHW:'Eight notes alternating half and whole steps. The scale for a dominant 7♭9; every four frets it repeats itself.',
+  dimWH:'The same eight notes started the other way, for diminished chords rather than dominants.',
 };
 
 const TUNINGS = {
@@ -1872,6 +1942,22 @@ function showView(v){
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) showView(b.dataset.v); });
+
+let helpReturn = null;
+function toggleHelp(show){
+  const w = $('helpwrap');
+  const open = show === undefined ? w.classList.contains('hide') : show;
+  if(open){ helpReturn = document.activeElement; w.classList.remove('hide'); $('help-close').focus(); }
+  else { w.classList.add('hide'); if(helpReturn && helpReturn.focus) helpReturn.focus(); }
+}
+$('g-help').onclick = ()=> toggleHelp();
+$('help-close').onclick = ()=> toggleHelp(false);
+$('helpwrap').addEventListener('click', e=>{ if(e.target === $('helpwrap')) toggleHelp(false); });
+document.addEventListener('keydown', e=>{
+  const typing = /^(INPUT|SELECT|TEXTAREA)$/.test((e.target||{}).tagName||'');
+  if(e.key === 'Escape' && !$('helpwrap').classList.contains('hide')){ e.preventDefault(); return toggleHelp(false); }
+  if(e.key === '?' && !typing){ e.preventDefault(); toggleHelp(); }
+});
 /* alt+1..8 jumps between views; arrow keys walk the tab strip once it has focus */
 document.addEventListener('keydown', e=>{
   if(e.altKey && !e.ctrlKey && !e.metaKey && e.key>='1' && e.key<='8'){
@@ -2094,6 +2180,7 @@ stats.extraSeen = stats.extraSeen || {};
   document.addEventListener('keydown', e=>{
     if($('v-game').classList.contains('hide')) return;
     if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT') return;
+    if(!$('helpwrap').classList.contains('hide')) return;
     if(e.code==='Space'){ e.preventDefault(); newQuestion(); return; }
     const keys='1234567890-=';
     const i = keys.indexOf(e.key);
