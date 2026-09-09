@@ -495,6 +495,25 @@ body.has-plan{padding-bottom:86px}
 .rhgrid .slot[data-state="p"] .strname,
 .rhgrid .slot[data-state="p"] .cnt{color:var(--scale-ink)}
 .rhgrid .slot[data-state="p"] .strname{opacity:.8}
+
+/* On a phone the neck has to be on the first screen — it is what the app is for.
+   The reading matter goes underneath it. */
+@media(max-width:720px){
+  #v-play{display:flex; flex-direction:column}
+  #v-play > #pl-card{order:1}
+  #v-play > .bar{order:2}
+  #v-play > .learn-mid{order:3}
+  #v-play > .note{order:4}
+  #v-play > #tu-card{order:5}
+  #v-play > .card{order:6}
+  #v-play > .grid{order:7}
+  #pl-card p{display:none}
+  #pl-card h3{margin-bottom:10px}
+  .bar{gap:8px 10px; padding:11px}
+  .f > label{font-size:.62rem}
+  .bar select{padding:6px 8px; min-width:78px}
+  .seg button{padding:6px 9px; font-size:.86rem}
+}
 .hide{display:none !important}
 </style>
 </head>
@@ -538,7 +557,7 @@ body.has-plan{padding-bottom:86px}
   Go twelve frets higher on the same string and the wave has exactly twice as many humps. Pick up the capo at the nut and
   drop it anywhere on the neck to move where “zero” is.</div>
 
-  <div class="card" style="margin:18px 0 14px; border-color:color-mix(in srgb,var(--root) 32%, var(--line))">
+  <div class="card" id="pl-card" style="margin:18px 0 14px; border-color:color-mix(in srgb,var(--root) 32%, var(--line))">
     <h3 style="margin-bottom:6px">Not sure what to do today?</h3>
     <p style="margin-bottom:12px">Pick a length and it will build a session out of what you have and have not
     practised, then walk you through it a step at a time — tuning, note names, chord changes, ear, and playing over
@@ -4757,7 +4776,7 @@ loadWork();
   const note = sec.querySelector('.note');
   const card = $('pl-go') && $('pl-go').closest('.card');
   const returning = Object.keys(stats.days||{}).length > 0 || Object.keys(stats.byPos||{}).length > 0;
-  if(returning && note && card) sec.insertBefore(card, note);
+  if(returning && note && card && !matchMedia('(max-width:720px)').matches) sec.insertBefore(card, note);
 })();
 applyHash();
 redrawAll(); renderPlay();
