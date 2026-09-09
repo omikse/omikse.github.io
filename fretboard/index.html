@@ -559,6 +559,14 @@ tbody tr.act{cursor:pointer}
 tbody tr.act:hover{background:var(--raise)}
 tbody tr.act td:first-child::after{content:''}
 .rowhint{font-size:.68rem; color:var(--faint); white-space:nowrap}
+
+#pl-harm{cursor:pointer}
+#pl-harmrow span[data-h]{cursor:pointer; padding:1px 5px; border-radius:5px}
+#pl-harmrow span[data-h]:hover{background:var(--raise); color:var(--text)}
+#backup textarea{width:100%; min-height:96px; background:var(--panel2); color:var(--text);
+  border:1px solid var(--line2); border-radius:9px; padding:9px; font:inherit;
+  font-family:ui-monospace,Consolas,monospace; font-size:.76rem; resize:vertical}
+#backup-msg.ok{color:var(--scale)} #backup-msg.no{color:var(--rose)}
 .hide{display:none !important}
 </style>
 </head>
@@ -841,6 +849,20 @@ tbody tr.act td:first-child::after{content:''}
       <span><i style="background:#35c2a5"></i>solid</span>
     </div>
     <div class="sep"></div>
+    <details id="backup" style="margin:0 0 14px">
+      <summary><b>Move this history to another device</b> <span class="hint">&mdash; it lives in this browser only</span></summary>
+      <p class="hint" style="margin:10px 0">Everything below is your practice record. Copy it, paste it into the same
+      box on your phone or your other computer, and press merge &mdash; the two are added together rather than one
+      replacing the other, so it is safe to do in either direction.</p>
+      <textarea id="backup-text" spellcheck="false" aria-label="Practice history"></textarea>
+      <div class="quick" style="margin-top:8px">
+        <button id="backup-copy">Copy</button>
+        <button id="backup-merge">Merge what is in the box</button>
+        <button class="ghost" id="backup-refresh">Show mine again</button>
+        <span id="backup-msg" class="hint" style="align-self:center"></span>
+      </div>
+    </details>
+
     <h3>Days you turned up</h3>
     <div class="days" id="q-days"></div>
     <p class="hint" style="margin:8px 0 0" id="q-days-sub"></p>
@@ -2150,6 +2172,39 @@ stats.byQual = stats.byQual || {};
 stats.byMode = stats.byMode || {};
 stats.extraSeen = stats.extraSeen || {};
 
+/* Two practice records add together: counts sum, days merge, the best streak is
+   whichever was better. Nothing is lost whichever direction you copy. */
+function mergeStats(incoming){
+  const bucket = (a, b)=>{
+    const out = Object.assign({}, a || {});
+    Object.keys(b || {}).forEach(k=>{
+      const x = out[k] || {ok:0, n:0}, y = b[k] || {ok:0, n:0};
+      out[k] = {ok:(x.ok||0) + (y.ok||0), n:(x.n||0) + (y.n||0)};
+    });
+    return out;
+  };
+  stats.byNote = bucket(stats.byNote, incoming.byNote);
+  stats.byPos  = bucket(stats.byPos,  incoming.byPos);
+  stats.byIvl  = bucket(stats.byIvl,  incoming.byIvl);
+  stats.byQual = bucket(stats.byQual, incoming.byQual);
+  stats.byMode = bucket(stats.byMode, incoming.byMode);
+  const days = Object.assign({}, stats.days || {});
+  Object.keys(incoming.days || {}).forEach(d=> days[d] = (days[d]||0) + (incoming.days[d]||0));
+  stats.days = days;
+  stats.best = Math.max(stats.best||0, incoming.best||0);
+  const seen = Object.assign({}, stats.extraSeen || {});
+  Object.keys(incoming.extraSeen || {}).forEach(k=> seen[k] = (seen[k]||0) + (incoming.extraSeen[k]||0));
+  stats.extraSeen = seen;
+  store.set('stats', stats);
+}
+function statsSummary(o){
+  const count = b => Object.keys(b||{}).reduce((a,k)=> a + ((b[k]||{}).n||0), 0);
+  const answers = count(o.byNote) + count(o.byIvl) + count(o.byQual);
+  const days = Object.keys(o.days||{}).length;
+  return answers + (answers===1 ? ' answer over ' : ' answers over ')
+    + days + (days===1 ? ' day' : ' days');
+}
+
 (function initGame(){
   gameStrings();
   $('q-mode').onchange = e=>{
@@ -2199,6 +2254,30 @@ stats.extraSeen = stats.extraSeen || {};
     if(i>=0){ const b=$('q-answers').children[i]; if(b) b.click(); }
   });
   fillEarSet();
+  const showBackup = ()=>{ $('backup-text').value = JSON.stringify(stats); $('backup-msg').textContent=''; $('backup-msg').className='hint'; };
+  $('backup-refresh').onclick = showBackup;
+  $('backup-copy').onclick = ()=>{
+    $('backup-text').select();
+    const done = ok=>{ $('backup-msg').textContent = ok ? 'Copied.' : 'Select the box and copy it yourself.'; $('backup-msg').className = ok?'ok':'no'; };
+    if(navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText($('backup-text').value).then(()=>done(true), ()=>done(false));
+    else done(false);
+  };
+  $('backup-merge').onclick = ()=>{
+    let incoming;
+    try{ incoming = JSON.parse($('backup-text').value); }
+    catch(e){ $('backup-msg').textContent='That is not a practice record.'; $('backup-msg').className='no'; return; }
+    if(!incoming || typeof incoming !== 'object' || (!incoming.byNote && !incoming.byPos && !incoming.days)){
+      $('backup-msg').textContent='That is not a practice record.'; $('backup-msg').className='no'; return;
+    }
+    const before = statsSummary(stats);
+    mergeStats(incoming);
+    renderStats(); showBackup();
+    $('backup-msg').textContent = 'Merged. Was ' + before + ', now ' + statsSummary(stats) + '.';
+    $('backup-msg').className = 'ok';
+  };
+  $('backup').addEventListener('toggle', ()=>{ if($('backup').open) showBackup(); });
+
   updateScore(); renderStats(); updateHelp();
 })();
 
@@ -5213,9 +5292,31 @@ function drawHarm(){
     const what = i===0 ? 'the note itself'
       : rem===0 ? (oct===1 ? 'an octave up' : oct+' octaves up')
       : (oct ? (oct===1?'an octave':oct+' octaves')+' + '+IVL_NAME[rem] : IVL_NAME[rem]);
-    rows.push('<span><b>'+(i+1)+'×</b> '+Math.round(f0*(i+1))+' Hz · '+pitchName(src.midi+semi)+' — '+what+'</span>');
+    rows.push('<span data-h="'+(i+1)+'" title="Click to hear this harmonic on its own"><b>'+(i+1)+'×</b> '+Math.round(f0*(i+1))+' Hz · '+pitchName(src.midi+semi)+' — '+what+'</span>');
   }
   $('pl-harmrow').innerHTML = rows.join('');
+  $('pl-harmrow').onclick = e=>{
+    const el = e.target.closest('[data-h]'); if(!el) return;
+    playHarmonic(+el.dataset.h, f0);
+  };
+  $('pl-harm').onclick = e=>{
+    const r = cv.getBoundingClientRect();
+    const idx = Math.floor((e.clientX - r.left) / (r.width / n)) + 1;
+    if(idx >= 1 && idx <= n) playHarmonic(idx, f0);
+  };
+}
+/* One partial on its own, as a sine: this is what the string is doing at that speed
+   while it is also doing everything else. */
+function playHarmonic(n, f0){
+  const ctx = audio(); if(!ctx || !master || !S.sound) return;
+  const t = ctx.currentTime;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'sine'; o.frequency.value = f0 * n;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.28, t + 0.012);
+  g.gain.setTargetAtTime(0.0001, t + 0.55, 0.3);
+  o.connect(g).connect(master);
+  o.start(t); o.stop(t + 2);
 }
 
 const JUST = {0:'1:1',1:'16:15',2:'9:8',3:'6:5',4:'5:4',5:'4:3',6:'45:32',7:'3:2',8:'8:5',9:'5:3',10:'16:9',11:'15:8',12:'2:1'};
