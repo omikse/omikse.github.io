@@ -119,7 +119,14 @@ Click a box to cycle it through strike, muted chuck and miss. Seven presets are
 there to start from, including the D · D U · U D U that sits under a thousand
 songs, and each starts playing when you pick it. It strums a real voicing of
 whatever chord you choose, with an optional click on the beat, and a playhead that
-shows which of the eight you are on.
+shows which of the eight you are on. Jam can borrow the pattern too, so the backing
+track strums the way you do.
+
+Underneath it is the drill that most beginners actually need: changing chords in
+time. Pick a set — G C D, the four chords, every open chord, the sevenths — and it
+keeps the bar going, shows what is coming next and counts the beats down to the
+change. The change happens on the beat whether your fingers are ready or not,
+which is the only way they ever get ready.
 
 ### Pentatonics
 All five boxes for minor and major pentatonic, each labelled with the CAGED shape it belongs

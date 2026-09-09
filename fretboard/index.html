@@ -453,6 +453,17 @@ details[open] summary{margin-bottom:8px}
   .rhgrid .slot{padding:9px 2px 8px}
   .rhgrid .slot .arrow{font-size:1.15rem}
 }
+
+/* ---------- chord change drill ---------- */
+.changer{display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin:14px 0 6px}
+.changer .now{font-size:3rem; font-weight:700; letter-spacing:-.03em; line-height:1; min-width:2.6em}
+.changer .now.warn{color:var(--root)}
+.changer .next{color:var(--muted); font-size:1rem}
+.changer .next b{color:var(--text); font-size:1.5rem; display:block; letter-spacing:-.02em}
+.changer .cd{font-variant-numeric:tabular-nums; font-size:.8rem; color:var(--muted)}
+.pips{display:flex; gap:6px}
+.pips i{width:11px; height:11px; border-radius:50%; background:var(--line2)}
+.pips i.on{background:var(--root)}
 .hide{display:none !important}
 </style>
 </head>
@@ -788,6 +799,32 @@ details[open] summary{margin-bottom:8px}
   </div>
 
   <div class="card">
+    <h3>Changing chords in time</h3>
+    <p class="hint" style="margin-bottom:12px">The hard part of a song is rarely a chord. It is arriving at the next
+    one without the strumming hand stopping to wait. This keeps the bar going and tells you what is coming, so the
+    change has to happen on the beat whether your fingers are ready or not. Slow it down until they are.</p>
+    <div class="bar" style="margin:0 0 8px; background:none; border:0; padding:0">
+      <div class="f"><label for="rh-pool">Chords</label><select id="rh-pool"></select></div>
+      <div class="f"><label for="rh-bars">Change every</label><select id="rh-bars">
+        <option value="1">1 bar</option><option value="2" selected>2 bars</option><option value="4">4 bars</option>
+      </select></div>
+      <button class="btn primary" id="rh-chgo">▶ Start the drill</button>
+    </div>
+    <div class="changer hide" id="rh-changer">
+      <span class="now" id="rh-now">—</span>
+      <span class="next">next<b id="rh-next">—</b></span>
+      <div>
+        <div class="pips" id="rh-pips"></div>
+        <div class="cd" id="rh-cd"></div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="cd">changes</div>
+        <div style="font-size:1.5rem;font-weight:700" id="rh-count">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <h3>Patterns worth knowing</h3>
     <div id="rh-presets"></div>
     <p class="hint" id="rh-why" style="margin:10px 0 0">Pick one and it starts playing.</p>
@@ -844,6 +881,7 @@ details[open] summary{margin-bottom:8px}
         <span class="mono hint" id="jam-bpmv">90</span>
       </div>
       <label class="chk" style="padding:0"><input type="checkbox" id="jam-count" checked> Count in</label>
+      <label class="chk" style="padding:0"><input type="checkbox" id="jam-rh"> Use my strum pattern</label>
       <div class="f"><label for="jam-drums">Drums</label><select id="jam-drums">
         <option value="straight" selected>Straight</option>
         <option value="shuffle">Shuffle</option>
@@ -2749,7 +2787,7 @@ const fbJ = new Fretboard('fb-jam', {clickable:true});
    ============================================================ */
 const JAM = {
   key:'A', minor:false, prog:0, bpm:90, playing:false,
-  scale:'minPent', target:true, drums:'straight',
+  scale:'minPent', target:true, drums:'straight', useRh:false,
   steps:[], idx:0, nextTime:0, timer:null, cur:-1, voicings:[]
 };
 const JAM_SCALES = ['minPent','majPent','blues','minor','major','dorian','mixolydian','majBlues'];
@@ -2820,14 +2858,26 @@ function jamTick(){
           }
           if(bar===st.bars-1) hat(at(3.5), 0.11, true);
         }
-        const hit = (at, dir, vol, dur)=>{
+        const hit = (at, dir, vol, dur, tight)=>{
           const order = dir>0 ? idx : idx.slice().reverse();
-          order.forEach((s,k)=> pluck(midiAt(s, v.pick[s]), (at - ctx.currentTime) + k*0.022, dur, vol));
+          order.forEach((s,k)=> pluck(midiAt(s, v.pick[s]), (at - ctx.currentTime) + k*(tight?0.012:0.022), dur, vol));
         };
-        hit(b0,            +1, .34, beat*2.2);
-        hit(b0+beat*1.5,   -1, .16, beat*1.1);
-        hit(b0+beat*2,     +1, .28, beat*1.8);
-        hit(b0+beat*3.5,   -1, .16, beat*1.1);
+        if(JAM.useRh && typeof RH !== 'undefined'){
+          for(let e=0;e<8;e++){
+            const what = RH.pat[e];
+            if(what === '-') continue;
+            const down = e%2===0;
+            hit(b0 + beat*e*0.5, down?1:-1,
+                what==='m' ? 0.20 : (down ? 0.34 : 0.24),
+                what==='m' ? 0.075 : beat*1.7,
+                what==='m');
+          }
+        } else {
+          hit(b0,            +1, .34, beat*2.2);
+          hit(b0+beat*1.5,   -1, .16, beat*1.1);
+          hit(b0+beat*2,     +1, .28, beat*1.8);
+          hit(b0+beat*3.5,   -1, .16, beat*1.1);
+        }
         // a bass note under it
         pluck(midiAt(bassS, v.pick[bassS]) - 12, (b0 - ctx.currentTime), beat*2.4, .30);
         pluck(midiAt(bassS, v.pick[bassS]) - 12, (b0 + beat*2 - ctx.currentTime), beat*2.0, .24);
@@ -2973,6 +3023,7 @@ function metTick(){
   $('jam-bpm').onchange = ()=>{ if(JAM.playing){ jamStop(); jamStart(); } };
   $('jam-play').onclick = ()=> JAM.playing ? jamStop() : jamStart();
   $('jam-drums').onchange = e=>{ JAM.drums=e.target.value; };
+  $('jam-rh').onchange = e=>{ JAM.useRh=e.target.checked; };
 
   function autoScale(){
     const progs = jamProgs();
@@ -3172,7 +3223,8 @@ function renderTuner(live){
 const RH = {
   pat:'x-xx-xxx'.split(''),      // 8 eighth-note slots: x strike, m muted chuck, - miss
   bpm:88, playing:false, slot:-1, nextTime:0, idx:0, timer:null,
-  root:'G', qual:'maj', click:true, voicing:null
+  root:'G', qual:'maj', click:true, voicing:null,
+  drill:false, pool:0, barsPer:2, cur:null, next:null, changes:0, bar:0
 };
 const RH_PRESETS = [
   {n:'All downs',        p:'x-x-x-x-', why:'Where everyone starts. One strike a beat, all downstrokes.'},
@@ -3205,6 +3257,7 @@ function rhStop(){
   RH.timer = null; RH.slot = -1;
   $('rh-play').textContent = '▶ Play the pattern';
   $('rh-play').classList.remove('on');
+  if($('rh-chgo')) $('rh-chgo').textContent = '▶ Start the drill';
   renderRhythm();
 }
 function rhStart(){
@@ -3222,13 +3275,29 @@ function rhTick(){
   const eighth = 30/RH.bpm;                 // half a beat
   while(RH.nextTime < ctx.currentTime + 0.7){
     const i = RH.idx % 8;
+    if(RH.drill && i === 0){
+      if(RH.bar % RH.barsPer === 0){
+        if(RH.next){ RH.cur = RH.next; RH.changes++; }
+        else RH.cur = pickNext();
+        RH.next = pickNext();
+        RH.root = RH.cur[0]; RH.qual = RH.cur[1];
+        RH.voicing = rhVoicing();
+      }
+      RH.bar++;
+    }
     const what = RH.pat[i];
     const when = RH.nextTime - ctx.currentTime;
     if(what === 'x') rhStrum(RH.voicing, i%2===0, {when:when, v:i%2===0?0.44:0.32}, false);
     else if(what === 'm') rhStrum(RH.voicing, i%2===0, {when:when, v:0.36}, true);
     if(RH.click && i%2===0) click(when, i===0);
     const showAt = Math.max(0, when*1000);
-    setTimeout(()=>{ if(RH.playing){ RH.slot = i; paintSlots(); } }, showAt);
+    const barsDone = RH.drill ? ((RH.bar-1) % RH.barsPer) : 0;
+    const beatsLeft = RH.drill ? (RH.barsPer*4 - (barsDone*4 + Math.floor(i/2)) - 1) : 0;
+    setTimeout(()=>{
+      if(!RH.playing) return;
+      RH.slot = i; paintSlots();
+      if(RH.drill) paintChanger(beatsLeft);
+    }, showAt);
     RH.nextTime += eighth;
     RH.idx++;
   }
@@ -3271,6 +3340,35 @@ function renderRhythm(){
   $('rh-shape').textContent = v ? v.pick.map(f=> f<0 ? '×' : f).join('  ') : '—';
 }
 
+/* ---- chord-change drill, riding the same bar as the strum pattern ---- */
+const CHANGE_POOLS = [
+  {n:'G · C · D — three chords, a hundred songs', c:[['G','maj'],['C','maj'],['D','maj']]},
+  {n:'Em · Am · D — the easy minors',             c:[['E','min'],['A','min'],['D','maj']]},
+  {n:'G · D · Em · C — the four chords',          c:[['G','maj'],['D','maj'],['E','min'],['C','maj']]},
+  {n:'C · Am · F · G — the doo-wop set',          c:[['C','maj'],['A','min'],['F','maj'],['G','maj']]},
+  {n:'A · D · E — blues in A',                    c:[['A','maj'],['D','maj'],['E','maj']]},
+  {n:'Every open chord',                          c:[['C','maj'],['A','maj'],['G','maj'],['E','maj'],['D','maj'],['A','min'],['E','min'],['D','min']]},
+  {n:'Sevenths: G7 · C7 · D7',                    c:[['G','dom7'],['C','dom7'],['D','dom7']]}
+];
+function chLabel(p){ return pretty(p[0]) + (CHORD_SUFFIX[p[1]] || ''); }
+function pickNext(){
+  const pool = CHANGE_POOLS[RH.pool].c;
+  if(pool.length < 2) return pool[0];
+  let n; do { n = randOf(pool); } while(n === RH.cur && pool.length>1);
+  return n;
+}
+function paintChanger(beatsLeft){
+  $('rh-now').textContent  = RH.cur  ? chLabel(RH.cur)  : '—';
+  $('rh-next').textContent = RH.next ? chLabel(RH.next) : '—';
+  const total = RH.barsPer*4;
+  const pips = $('rh-pips');
+  if(pips.children.length !== total) pips.innerHTML = Array.from({length:total},()=>'<i></i>').join('');
+  [...pips.children].forEach((el,i)=> el.classList.toggle('on', i < total-beatsLeft));
+  $('rh-cd').textContent = beatsLeft<=0 ? 'change now' : beatsLeft + ' beat' + (beatsLeft===1?'':'s') + ' to the change';
+  $('rh-now').classList.toggle('warn', beatsLeft<=2);
+  $('rh-count').textContent = String(RH.changes);
+}
+
 (function initRhythm(){
   fillRoots($('rh-root'), RH.root);
   CHORD_KEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=SCALES[k].n; $('rh-qual').appendChild(o); });
@@ -3300,7 +3398,18 @@ function renderRhythm(){
       rhStrum(v, i%2===0, {when:0, v:0.4}, RH.pat[i]==='m');
     }
   };
-  $('rh-play').onclick = ()=> RH.playing ? rhStop() : rhStart();
+  $('rh-play').onclick = ()=>{ RH.drill=false; $('rh-changer').classList.add('hide'); RH.playing ? rhStop() : rhStart(); };
+  CHANGE_POOLS.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.n; $('rh-pool').appendChild(o); });
+  $('rh-pool').onchange = e=>{ RH.pool=+e.target.value; };
+  $('rh-bars').onchange = e=>{ RH.barsPer=+e.target.value; };
+  $('rh-chgo').onclick = ()=>{
+    if(RH.drill && RH.playing){ rhStop(); RH.drill=false; $('rh-chgo').textContent='▶ Start the drill'; $('rh-changer').classList.add('hide'); return; }
+    if(RH.playing) rhStop();
+    RH.drill = true; RH.bar = 0; RH.changes = 0; RH.cur = null; RH.next = null;
+    $('rh-changer').classList.remove('hide');
+    $('rh-chgo').textContent = '■ Stop the drill';
+    rhStart();
+  };
   $('rh-root').onchange = e=>{ RH.root=e.target.value; RH.voicing=rhVoicing(); renderRhythm(); };
   $('rh-qual').onchange = e=>{ RH.qual=e.target.value; RH.voicing=rhVoicing(); renderRhythm(); };
   $('rh-click').onchange = e=>{ RH.click=e.target.checked; };
