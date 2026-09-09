@@ -359,7 +359,14 @@ details[open] summary{margin-bottom:8px}
   transform:scale(1.28); z-index:5;
   box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 60%, transparent), 0 2px 6px rgba(0,0,0,.5);
 }
-@media (prefers-reduced-motion: reduce){ .fb .dot{transition:none} .fb .dot.lit{transform:none} }
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
+  .fb .dot.lit{transform:none}
+  .rhgrid .slot.now{box-shadow:0 0 0 3px var(--scale)}
+}
 
 /* ---------- knowledge heatmap ---------- */
 .fb .dot.heat{border:0; font-size:.62rem; font-weight:700}
@@ -1458,7 +1465,7 @@ const S = {
   acc: store.get('acc','auto'),
   lefty: store.get('lefty',false),
   sound: store.get('sound',true),
-  theme: store.get('theme','dark'),
+  theme: store.get('theme', (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark'),
   eRoot:'A', eScale:'minPent', eLabels:'name', eGhost:false, eOct:false,
   pRoot:'A', pType:'minor', pBox:1, pLabels:'name', pBlues:false, pRest:false, pChord:false, pJoin:false,
   cofKey:'C', cofMinor:false,
@@ -1884,7 +1891,20 @@ document.addEventListener('keydown', e=>{
   $('g-theme').onclick = ()=>{
     S.theme = S.theme==='dark'?'light':'dark';
     document.documentElement.dataset.theme = S.theme; store.set('theme',S.theme);
+    if(!$('v-play').classList.contains('hide')){ drawWave(); drawHarm(); }
   };
+  /* until you pick one for yourself, follow the system */
+  if(window.matchMedia && store.get('theme', null) === null){
+    const mq = matchMedia('(prefers-color-scheme: light)');
+    const follow = ()=>{
+      if(store.get('theme', null) !== null) return;
+      S.theme = mq.matches ? 'light' : 'dark';
+      document.documentElement.dataset.theme = S.theme;
+      if(!$('v-play').classList.contains('hide')){ drawWave(); drawHarm(); }
+    };
+    if(mq.addEventListener) mq.addEventListener('change', follow);
+    else if(mq.addListener) mq.addListener(follow);
+  }
 })();
 function redrawAll(){ renderChords(); renderIdentify(); renderJam(); renderRhythm(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
 

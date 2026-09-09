@@ -249,7 +249,7 @@ Kept in `localStorage`, applied to every view:
 - **Left-handed** — mirrors the neck; the nut, fret wires, capo and arrow keys all
   flip with it
 - **Sound** — on/off
-- **Theme** — light and dark
+- **Theme** — light and dark, following your system until you pick one yourself
 - **Keyboard** — alt+1 to alt+8 switch views; the tab strip takes arrow keys once
   focused; every fretboard can be walked with the arrows and played with Enter
 - **Share** — copies a link that encodes the view, root, scale, capo, labels,
