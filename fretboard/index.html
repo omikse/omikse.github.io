@@ -1095,6 +1095,12 @@ kbd{display:inline-block; padding:2px 7px; border-radius:6px; background:var(--p
     <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
       <button class="btn primary" id="met-play" style="padding:10px 16px">▶ Click</button>
       <button class="btn" id="met-tap">Tap tempo</button>
+      <div class="f"><label for="met-sub">Click on</label><select id="met-sub">
+        <option value="1" selected>Beats</option>
+        <option value="2">Eighths</option>
+        <option value="3">Triplets</option>
+        <option value="4">Sixteenths</option>
+      </select></div>
       <div class="f"><label for="met-sig">Bar</label><select id="met-sig">
         <option value="4" selected>4 beats</option><option value="3">3 beats</option>
         <option value="6">6 beats</option><option value="2">2 beats</option>
@@ -1665,17 +1671,19 @@ function hat(when, vol, open){
 }
 
 /* a short wooden tick; accented on beat one */
-function click(when, accent){
+function click(when, accent, quiet){
   if(!S.sound) return;
   const ctx = audio(); if(!ctx || !master) return;
   const t = ctx.currentTime + Math.max(0, when);
   const o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
   o.type = 'square';
-  o.frequency.setValueAtTime(accent ? 1600 : 1050, t);
-  o.frequency.exponentialRampToValueAtTime(accent ? 760 : 560, t+0.03);
-  f.type='bandpass'; f.frequency.value = accent ? 1500 : 1000; f.Q.value = 1.2;
+  const hi = quiet ? 2100 : accent ? 1600 : 1050;
+  const lo = quiet ? 1400 : accent ? 760 : 560;
+  o.frequency.setValueAtTime(hi, t);
+  o.frequency.exponentialRampToValueAtTime(lo, t+0.03);
+  f.type='bandpass'; f.frequency.value = quiet ? 2000 : accent ? 1500 : 1000; f.Q.value = 1.2;
   g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(accent ? 0.34 : 0.2, t+0.002);
+  g.gain.linearRampToValueAtTime(quiet ? 0.085 : accent ? 0.34 : 0.2, t+0.002);
   g.gain.exponentialRampToValueAtTime(0.0001, t+0.055);
   o.connect(f).connect(g).connect(master);
   o.start(t); o.stop(t+0.09);
@@ -3724,7 +3732,8 @@ function renderJam(){
 
 /* ---- metronome, sharing the audio clock with the loop ---- */
 const MET = {on:false, bpm:90, beats:4, beat:0, nextTime:0, timer:null, taps:[],
-             ramp:false, rampBy:4, rampEvery:8, rampTo:140, bars:0, startBpm:90, schedBeat:0};
+             ramp:false, rampBy:4, rampEvery:8, rampTo:140, bars:0, startBpm:90, schedBeat:0,
+             sub:1, schedSub:0};
 function metDots(){
   const w = $('met-beats'); if(!w) return;
   if(w.children.length !== MET.beats)
@@ -3744,7 +3753,7 @@ function metStop(){
 }
 function metStart(){
   const ctx = audio(); if(!ctx) return;
-  MET.on = true; MET.beat = 0; MET.schedBeat = 0; MET.bars = 0; MET.startBpm = MET.bpm;
+  MET.on = true; MET.beat = 0; MET.schedBeat = 0; MET.schedSub = 0; MET.bars = 0; MET.startBpm = MET.bpm;
   MET.nextTime = ctx.currentTime + 0.08;
   if($('met-rampmsg')) $('met-rampmsg').textContent = '';
   $('met-play').textContent = '■ Stop';
@@ -3756,10 +3765,15 @@ function metTick(){
   while(MET.nextTime < ctx.currentTime + 0.6){
     /* schedBeat is the scheduler's cursor; MET.beat is what the dots show, set later
        by a timer. They must not be the same variable, or the display clobbers the count. */
-    const b = MET.schedBeat;
-    click(MET.nextTime - ctx.currentTime, b===0);
-    const lead = (MET.nextTime - ctx.currentTime)*1000;
-    setTimeout(()=>{ if(MET.on){ MET.beat = b; metDots(); } }, Math.max(0, lead));
+    const b = MET.schedBeat, onBeat = MET.schedSub === 0;
+    click(MET.nextTime - ctx.currentTime, onBeat && b===0, !onBeat);
+    if(onBeat){
+      const lead = (MET.nextTime - ctx.currentTime)*1000;
+      setTimeout(()=>{ if(MET.on){ MET.beat = b; metDots(); } }, Math.max(0, lead));
+    }
+    MET.schedSub++;
+    if(MET.schedSub < MET.sub){ MET.nextTime += (60/MET.bpm)/MET.sub; continue; }
+    MET.schedSub = 0;
     MET.schedBeat = (b+1) % MET.beats;
     if(MET.schedBeat === 0){
       MET.bars++;
@@ -3770,7 +3784,7 @@ function metTick(){
         $('met-rampmsg').textContent = MET.startBpm + ' → ' + MET.bpm + ' bpm over ' + MET.bars + ' bars';
       }
     }
-    MET.nextTime += 60/MET.bpm;
+    MET.nextTime += (60/MET.bpm)/MET.sub;
   }
   MET.timer = setTimeout(metTick, 110);
 }
@@ -3778,7 +3792,8 @@ function metTick(){
 (function initMetronome(){
   metDots();
   $('met-play').onclick = ()=> MET.on ? metStop() : metStart();
-  $('met-sig').onchange = e=>{ MET.beats=+e.target.value; MET.beat=0; metDots(); };
+  $('met-sig').onchange = e=>{ MET.beats=+e.target.value; MET.beat=0; MET.schedBeat=0; MET.schedSub=0; metDots(); };
+  $('met-sub').onchange = e=>{ MET.sub=+e.target.value; MET.schedSub=0; };
   $('met-bpm').oninput = e=>{ MET.bpm=+e.target.value; $('met-bpmv').textContent=e.target.value; };
   $('met-ramp').onchange = e=>{ MET.ramp = e.target.checked; if(MET.ramp) MET.startBpm = MET.bpm; };
   $('met-rampby').onchange = e=>{ MET.rampBy = +e.target.value; };
@@ -4933,7 +4948,7 @@ function saveWork(){
     ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions, fingers:CH.fingers},
     jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums, useRh:JAM.useRh, typed:$('jam-chords-in') ? $('jam-chords-in').value : ''},
     rh:{pat:RH.pat.join(''), bpm:RH.bpm, root:RH.root, qual:RH.qual, click:RH.click, mode:RH.mode, pick:RH.pick},
-    met:{bpm:MET.bpm, beats:MET.beats, ramp:MET.ramp, rampBy:MET.rampBy, rampEvery:MET.rampEvery, rampTo:MET.rampTo},
+    met:{bpm:MET.bpm, beats:MET.beats, sub:MET.sub, ramp:MET.ramp, rampBy:MET.rampBy, rampEvery:MET.rampEvery, rampTo:MET.rampTo},
     game:{mode:game.mode, hi:game.hi, naturals:game.naturals, focus:game.focus, earset:game.earset}
   });
 }
@@ -4983,7 +4998,7 @@ function loadWork(){
     if(w.met){
       Object.assign(MET, w.met);
       $('met-bpm').value=String(MET.bpm); $('met-bpmv').textContent=String(MET.bpm);
-      $('met-sig').value=String(MET.beats); metDots();
+      $('met-sig').value=String(MET.beats); $('met-sub').value=String(MET.sub||1); metDots();
       $('met-ramp').checked = !!MET.ramp;
       $('met-rampby').value = String(MET.rampBy);
       $('met-rampevery').value = String(MET.rampEvery);

@@ -190,7 +190,8 @@ the previous shape without playing an awkward one, so I–V–vi–IV in A comes
 `x02220 · 022100 · 244222 · xx0232` — what a guitarist would actually play.
 Scheduling runs about three quarters of a second ahead of the audio clock, so the
 loop keeps time regardless of what the page is doing. There is a count-in, and a
-metronome with tap tempo and 2/3/4/6 beats to the bar that shares the same clock,
+metronome with tap tempo, 2/3/4/6 beats to the bar and a click on beats, eighths,
+triplets or sixteenths, sharing the same clock,
 so you can run either or both. The metronome can also ramp — add so many bpm every so
 many bars up to a ceiling — which is how speed is actually built: from something clean
 and slow, not from trying fast and missing.
