@@ -421,6 +421,7 @@ details[open] summary{margin-bottom:8px}
   .learn-mid{grid-template-columns:1fr; grid-template-areas:"neck" "info" "side"}
   a[href]:after{content:""}
 }
+.tscroll{overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin}
 .hide{display:none !important}
 </style>
 </head>
@@ -616,6 +617,7 @@ details[open] summary{margin-bottom:8px}
     </select></div>
     <div class="f"><label>Strings</label><div class="seg" id="q-strings"></div></div>
     <label class="chk"><input type="checkbox" id="q-natural"> Naturals only</label>
+    <label class="chk"><input type="checkbox" id="q-focus"> Lean on my weak spots</label>
     <button class="btn primary" id="q-start">Start</button>
     <button class="btn ghost" id="q-reset" title="Clear saved stats">Reset stats</button>
   </div>
@@ -1593,7 +1595,7 @@ function renderInfo(){
     + (SCALE_BLURB[PL.scale] ? '<p class="hint" style="margin:0 0 10px">'+SCALE_BLURB[PL.scale]+'</p>' : '')
     + '<dl class="kv">'+facts.map(f=>'<dt>'+f[0]+'</dt><dd>'+f[1]+'</dd>').join('')+'</dl>'
     + '<h3>Roots on each string</h3>'
-    + '<table><tbody>'+rows.join('')+'</tbody></table>';
+    + '<div class="tscroll"><table><tbody>'+rows.join('')+'</tbody></table></div>';
 }
 
 function playScaleUp(){
@@ -1609,7 +1611,7 @@ function playScaleUp(){
    GAME
    ============================================================ */
 const game = {
-  mode:'name', hi:12, limit:0, naturals:false, earset:'core', strings:new Set(),
+  mode:'name', hi:12, limit:0, naturals:false, focus:false, earset:'core', strings:new Set(),
   q:null, score:0, streak:0, total:0, correct:0, times:[], t0:0, tick:null, locked:false, found:new Set()
 };
 const fbH = new Fretboard('fb-heat', {clickable:false, rowH:34});
@@ -1633,6 +1635,7 @@ const EAR_SETS = {easy:[12,7,5], core:[12,7,5,4,3,9,8], all:[1,2,3,4,5,6,7,8,9,1
   $('q-hi').onchange = e=>{ game.hi=+e.target.value; fbG.layout(); if(game.q) newQuestion(); };
   $('q-time').onchange = e=>{ game.limit=+e.target.value; };
   $('q-natural').onchange = e=>{ game.naturals=e.target.checked; };
+  $('q-focus').onchange = e=>{ game.focus=e.target.checked; };
   $('q-start').onclick = ()=>{ audio(); newQuestion(); };
   $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; stats.byPos={}; stats.days={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
   fbG.onCell = (s,f)=> onBoardClick(s,f);
@@ -1687,13 +1690,27 @@ function randOf(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function randomPos(minFret=0){
   const ss=[...game.strings], t=tuning();
   const span = Math.min(game.hi, S.frets);
-  for(let i=0;i<400;i++){
-    const s=randOf(ss), f=minFret+Math.floor(Math.random()*(span-minFret+1));
+  const cands = [];
+  for(const s of ss) for(let f=minFret; f<=span; f++){
     const pc=(t[s]+f)%12;
     if(game.naturals && SHARP[pc].length>1) continue;
-    return {s,f,pc};
+    cands.push({s:s, f:f, pc:pc});
   }
-  const s=ss[0]; return {s,f:minFret,pc:(t[s]+minFret)%12};
+  if(!cands.length){ const s=ss[0]; return {s:s, f:minFret, pc:(t[s]+minFret)%12}; }
+  if(!game.focus) return randOf(cands);
+  /* weight the draw by how well you know each square: the ones you miss and the
+     ones you have never been asked come up most, the solid ones still come up */
+  let total = 0;
+  const w = cands.map(c=>{
+    const r = stats.byPos[S.tuningName+'|'+c.s+':'+c.f];
+    let x;
+    if(!r || !r.n) x = 4;
+    else { const p = r.ok/r.n; x = p>=0.9 ? 1 : p>=0.75 ? 3 : p>=0.5 ? 6 : 10; }
+    total += x; return x;
+  });
+  let roll = Math.random()*total;
+  for(let i=0;i<cands.length;i++){ roll -= w[i]; if(roll<=0) return cands[i]; }
+  return cands[cands.length-1];
 }
 function stopClock(){ if(game.tick){ clearInterval(game.tick); game.tick=null; } $('q-bar').style.visibility='hidden'; }
 function startClock(){
@@ -1941,7 +1958,7 @@ function renderHeat(){
   fbH.paint();
   const total = t.length*(fbH.frets+1);
   $('q-heat-sub').innerHTML = asked
-    ? 'You have been asked about <b>'+asked+'</b> of '+total+' positions in this tuning, and <b>'+solid+'</b> of those are solid. The blanks are the map you have not drawn yet.'
+    ? 'You have been asked about <b>'+asked+'</b> of '+total+' positions in this tuning, and <b>'+solid+'</b> of those are solid. The blanks are the map you have not drawn yet — tick <em>lean on my weak spots</em> and the game will aim at them.'
     : 'Nothing here yet. Play a few rounds of <em>Name the note</em> or <em>Find the note</em> and this fills in.';
 
   const days = [], now = new Date();
@@ -3094,7 +3111,7 @@ function saveWork(){
     ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions},
     jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums},
     met:{bpm:MET.bpm, beats:MET.beats},
-    game:{mode:game.mode, hi:game.hi, naturals:game.naturals, earset:game.earset}
+    game:{mode:game.mode, hi:game.hi, naturals:game.naturals, focus:game.focus, earset:game.earset}
   });
 }
 function loadWork(){
@@ -3122,7 +3139,7 @@ function loadWork(){
     if(w.met){ Object.assign(MET, w.met);
       $('met-bpm').value=String(MET.bpm); $('met-bpmv').textContent=String(MET.bpm);
       $('met-sig').value=String(MET.beats); metDots(); }
-    if(w.game){ Object.assign(game, w.game);
+    if(w.game){ Object.assign(game, w.game); $('q-focus').checked = !!game.focus;
       $('q-mode').value=game.mode; $('q-hi').value=String(game.hi);
       $('q-natural').checked=game.naturals; $('q-earset').value=game.earset;
       $('q-earset-wrap').classList.toggle('hide', game.mode!=='ear'); }
@@ -3262,7 +3279,7 @@ function drawWave(){
   }
   if(!PL.A && !PL.B){
     ctx.fillStyle = muted; ctx.textAlign='center'; ctx.font='13px ui-sans-serif,system-ui';
-    ctx.fillText('Click a fret on the neck below', W/2, mid-8);
+    ctx.fillText('Click a fret on the neck above', W/2, mid-8);
   }
 
   const cyc = sl => sl ? (PL.win/1000*midiToFreq(sl.midi)).toFixed(1) : null;
@@ -3490,6 +3507,11 @@ function plLoop(on){
 })();
 
 renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam();
+document.querySelectorAll('table').forEach(tb=>{
+  if(tb.parentElement && tb.parentElement.classList.contains('tscroll')) return;
+  const w = document.createElement('div'); w.className = 'tscroll';
+  tb.parentNode.insertBefore(w, tb); w.appendChild(tb);
+});
 loadWork();
 applyHash();
 redrawAll(); renderPlay();
