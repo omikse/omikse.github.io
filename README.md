@@ -65,7 +65,7 @@ The neck sits in the middle; everything else is arranged around it.
   and character, and lists every root position on every string.
 
 ### Drills
-Six drills, all scored, with per-note accuracy kept in `localStorage`:
+Seven drills, all scored, with per-note accuracy kept in `localStorage`:
 
 | Mode | What it asks |
 |---|---|
@@ -75,6 +75,7 @@ Six drills, all scored, with per-note accuracy kept in `localStorage`:
 | Find the interval | A reference note and an interval — click the target, any string |
 | Hear the interval | Two notes play, low then high — name the distance by ear |
 | Hear the chord | A chord is strummed — say what kind it is |
+| Play it | You are given a note — play it on the guitar and the app listens |
 
 The two ear modes are what diagrams cannot teach. Pick how many intervals are
 in play (three, seven or all twelve); after you answer it shows where the two notes
@@ -83,6 +84,12 @@ minor is arguably the more useful skill for a beginner, so chord mode goes from
 exactly that up to nine qualities including diminished, augmented, suspended and
 the sevenths, strumming a real voicing at a random root and revealing the shape
 afterwards. Accuracy is tracked per interval and per chord type in its own panel.
+
+*Play it* is the one that involves the actual instrument. It names a note, listens
+through the microphone, and moves on when it hears that pitch class in any octave —
+so the loop runs screen to fretboard to string to ear rather than stopping at a
+button. It shares the tuner's microphone through a reference-counted handle, and
+whichever of the two you close last is the one that releases the device.
 
 Filter by string, cap the fret range, restrict to naturals, and optionally run a clock.
 The accuracy bars show which note names you are actually slow on, which is more useful than

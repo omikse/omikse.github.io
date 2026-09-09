@@ -700,6 +700,9 @@ body.has-plan{padding-bottom:86px}
         <option value="ear">Hear the interval</option>
         <option value="chord">Hear the chord</option>
       </optgroup>
+      <optgroup label="With the guitar in your hands">
+        <option value="playit">Play it — I listen</option>
+      </optgroup>
     </select></div>
     <div class="f hide" id="q-earset-wrap"><label for="q-earset" id="q-earset-lab">Intervals</label><select id="q-earset"></select></div>
     <div class="f"><label for="q-hi">Highest fret</label><select id="q-hi">
@@ -726,6 +729,11 @@ body.has-plan{padding-bottom:86px}
     <div class="timerbar" id="q-bar" style="visibility:hidden"><i></i></div>
     <div class="sep"></div>
     <div class="prompt" id="q-prompt" role="status" aria-live="polite">Pick a mode and press <em>Start</em>.</div>
+    <div class="earbox hide" id="q-listen">
+      <button class="big" id="q-mic">● Turn on the microphone</button>
+      <span class="hint" id="q-heard">Nothing yet.</span>
+      <button class="alt" id="q-reveal">Show me</button>
+    </div>
     <div class="earbox hide" id="q-ear">
       <button class="big" id="q-replay">▶ Play it again</button>
       <button class="alt" id="q-together">Play both together</button>
@@ -835,7 +843,7 @@ body.has-plan{padding-bottom:86px}
     <label class="chk"><input type="checkbox" id="rh-click" checked> Click on the beat</label>
     <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:170px">
       <span class="hint">Tempo</span>
-      <input type="range" id="rh-bpm" min="45" max="160" value="88" step="1" style="flex:1;accent-color:var(--root)">
+      <input type="range" id="rh-bpm" aria-label="Tempo in beats per minute" min="45" max="160" value="88" step="1" style="flex:1;accent-color:var(--root)">
       <span class="mono hint" id="rh-bpmv">88</span>
     </div>
   </div>
@@ -934,7 +942,7 @@ body.has-plan{padding-bottom:86px}
       <button class="btn primary" id="jam-play" style="padding:11px 18px;font-size:1rem">▶ Play the loop</button>
       <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:180px">
         <span class="hint">Tempo</span>
-        <input type="range" id="jam-bpm" min="50" max="160" value="90" step="2" style="flex:1;accent-color:var(--root)">
+        <input type="range" id="jam-bpm" aria-label="Tempo in beats per minute" min="50" max="160" value="90" step="2" style="flex:1;accent-color:var(--root)">
         <span class="mono hint" id="jam-bpmv">90</span>
       </div>
       <label class="chk" style="padding:0"><input type="checkbox" id="jam-count" checked> Count in</label>
@@ -973,7 +981,7 @@ body.has-plan{padding-bottom:86px}
       </select></div>
       <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:170px">
         <span class="hint">Tempo</span>
-        <input type="range" id="met-bpm" min="40" max="200" value="90" step="1" style="flex:1;accent-color:var(--root)">
+        <input type="range" id="met-bpm" aria-label="Metronome tempo in beats per minute" min="40" max="200" value="90" step="1" style="flex:1;accent-color:var(--root)">
         <span class="mono hint" id="met-bpmv">90</span>
       </div>
       <div class="beats" id="met-beats"></div>
@@ -981,11 +989,11 @@ body.has-plan{padding-bottom:86px}
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
       <label class="chk" style="padding:0"><input type="checkbox" id="met-ramp"> Speed up as I go</label>
       <span class="hint">add
-        <select id="met-rampby" style="min-width:64px"><option>2</option><option selected>4</option><option>6</option></select>
+        <select id="met-rampby" aria-label="Beats per minute to add" style="min-width:64px"><option>2</option><option selected>4</option><option>6</option></select>
         bpm every
-        <select id="met-rampevery" style="min-width:64px"><option>4</option><option selected>8</option><option>16</option></select>
+        <select id="met-rampevery" aria-label="Bars between each increase" style="min-width:64px"><option>4</option><option selected>8</option><option>16</option></select>
         bars, up to
-        <select id="met-rampto" style="min-width:74px"><option>100</option><option>120</option><option selected>140</option><option>160</option><option>200</option></select>
+        <select id="met-rampto" aria-label="Tempo ceiling" style="min-width:74px"><option>100</option><option>120</option><option selected>140</option><option>160</option><option>200</option></select>
       </span>
       <span class="hint" id="met-rampmsg" style="margin-left:auto"></span>
     </div>
@@ -1100,7 +1108,7 @@ body.has-plan{padding-bottom:86px}
       <div class="quick" id="cof-prog" style="margin-top:0"></div>
       <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
         <label class="chk" style="padding:0" for="cof-bpm">Tempo</label>
-        <input type="range" id="cof-bpm" min="50" max="150" value="86" step="2" style="flex:1;accent-color:var(--root)">
+        <input type="range" id="cof-bpm" aria-label="Progression tempo in beats per minute" min="50" max="150" value="86" step="2" style="flex:1;accent-color:var(--root)">
         <span class="mono hint" id="cof-bpmv">86</span>
       </div>
       <div id="cof-now" style="margin-top:10px;min-height:1.2em"></div>
@@ -1740,6 +1748,7 @@ function showView(v){
   if(v!=='jam' && typeof JAM!=='undefined' && JAM.playing) jamStop();
   if(v!=='rhythm' && typeof RH!=='undefined' && RH.playing) rhStop();
   if(v!=='play' && typeof TUNE!=='undefined' && TUNE.on) tunerStop();
+  if(v!=='game' && typeof game!=='undefined' && game.mic) micOff();
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) showView(b.dataset.v); });
@@ -1860,6 +1869,7 @@ function playScaleUp(){
    ============================================================ */
 const game = {
   mode:'name', hi:12, limit:0, naturals:false, focus:false, earset:'core', strings:new Set(),
+  mic:false, micRaf:null, heardPc:-1, heldSince:0,
   q:null, score:0, streak:0, total:0, correct:0, times:[], t0:0, tick:null, locked:false, found:new Set()
 };
 const fbH = new Fretboard('fb-heat', {clickable:false, rowH:34});
@@ -1897,6 +1907,16 @@ stats.byQual = stats.byQual || {};
     if(game.q) newQuestion(); updateHelp(); renderStats();
   };
   $('q-earset').onchange = e=>{ game.earset=e.target.value; if((game.mode==='ear'||game.mode==='chord') && game.q) newQuestion(); };
+  $('q-mic').onclick = ()=> game.mic ? micOff() : micOn();
+  $('q-reveal').onclick = ()=>{
+    if(!game.q || game.locked) return;
+    const t = tuning();
+    fbG.clear();
+    for(const st of game.strings) for(let f=0; f<=fbG.frets; f++)
+      if((t[st]+f)%12 === game.q.pc) fbG.set(st, f, 'root', pretty(nameOf(game.q.pc)));
+    fbG.paint();
+    resolve(false, 'That is where ' + pretty(nameOf(game.q.pc)) + ' lives. Play one of them.');
+  };
   $('q-replay').onclick = ()=> playEar(false);
   $('q-together').onclick = ()=> playEar(true);
   $('q-hi').onchange = e=>{ game.hi=+e.target.value; fbG.layout(); if(game.q) newQuestion(); };
@@ -1943,6 +1963,7 @@ function updateHelp(){
     octaves:'One position is shown. Click every other place that same note appears in range.',
     interval:'The orange ring is the reference note. Click the note the given interval above it, on any string.',
     ear:'Two notes play, low then high. Name the distance between them — then the neck shows you where they were.',
+    playit:'Find the note on your guitar and play it. The app listens through the microphone and moves on when it hears the right pitch, in any octave.',
     chord:'A chord is strummed. Say what kind it is — the root does not matter, only the flavour. Then the neck shows you the shape.'
   }[game.mode];
   $('q-help').innerHTML = h;
@@ -2014,6 +2035,9 @@ function newQuestion(){
     const p = randomPos();
     const iv = randOf([2,3,4,5,7,9,10,12].filter(x=>x<=12));
     game.q = Object.assign({}, p, {iv, targetPc:(p.pc+iv)%12});
+  } else if(game.mode==='playit'){
+    game.q = randomPos();
+    game.heardPc = -1; game.heldSince = 0;
   } else if(game.mode==='chord'){
     const set = CHORD_SETS[game.earset] || CHORD_SETS.core;
     const roots = ROOT_CHOICES.filter(r=> r.indexOf('b')<0);
@@ -2060,6 +2084,14 @@ function drawQuestion(){
     fbG.set(q.s,q.f,'root', pretty(nameOf(q.pc)));
     P.innerHTML = `Click every other <em>${pretty(nameOf(q.pc))}</em> <span class="hint">— ${q.targets.size} to find</span>`;
   }
+  else if(game.mode==='playit'){
+    P.innerHTML = 'Play <em>' + pretty(nameOf(q.pc)) + '</em> on your guitar '
+      + '<span class="hint">— any string, any octave</span>';
+    $('q-listen').classList.remove('hide');
+    $('q-heard').textContent = game.mic ? 'Listening…' : 'Turn the microphone on to start.';
+    fbG.paint();
+    return;
+  }
   else if(game.mode==='chord'){
     P.innerHTML = 'Listen — <em>what kind of chord</em> is that?';
     $('q-ear').classList.remove('hide');
@@ -2083,6 +2115,7 @@ function drawQuestion(){
     P.innerHTML = `From this note, click ${art} <em>${ivName}</em> above <span class="hint">— any string</span>`;
   }
   $('q-ear').classList.toggle('hide', game.mode!=='ear' && game.mode!=='chord');
+  $('q-listen').classList.toggle('hide', game.mode!=='playit');
   fbG.paint();
 }
 function playEar(together){
@@ -2098,6 +2131,56 @@ function playEar(together){
   const lo = midiAt(q.s,q.f), hi = lo + q.iv;
   pluck(lo, 0, 2.0, .5);
   pluck(hi, together ? 0.02 : 0.62, 2.0, .5);
+}
+async function micOn(){
+  try{
+    await micAcquire('game');
+  }catch(e){
+    $('q-heard').textContent = (e && e.name==='NotAllowedError')
+      ? 'Microphone permission was declined, so this mode cannot work.'
+      : 'No microphone available in this browser.';
+    return;
+  }
+  game.mic = true;
+  $('q-mic').textContent = '■ Microphone on';
+  $('q-mic').classList.add('on');
+  $('q-heard').textContent = 'Listening…';
+  listenLoop();
+}
+function micOff(){
+  game.mic = false;
+  if(game.micRaf) cancelAnimationFrame(game.micRaf);
+  game.micRaf = null;
+  micRelease('game');
+  $('q-mic').textContent = '● Turn on the microphone';
+  $('q-mic').classList.remove('on');
+}
+let listenFrame = 0;
+function listenLoop(){
+  if(!game.mic) return;
+  game.micRaf = requestAnimationFrame(listenLoop);
+  if((listenFrame++ % 3) !== 0) return;
+  if(game.mode !== 'playit' || !game.q || game.locked) return;
+  const hz = micPitch();
+  if(hz <= 0){ game.heldSince = 0; return; }
+  const m = 69 + 12*Math.log2(hz/440);
+  const near = Math.round(m);
+  const cents = Math.abs(m - near)*100;
+  const pc = ((near % 12) + 12) % 12;
+  $('q-heard').innerHTML = 'Hearing <b>' + pretty(nameOf(pc)) + (Math.floor(near/12)-1) + '</b>'
+    + (cents > 35 ? ' <span style="color:var(--muted)">(a bit out of tune)</span>' : '');
+  if(pc === game.q.pc && cents < 40){
+    const now = performance.now();
+    if(!game.heldSince) game.heldSince = now;
+    if(now - game.heldSince > 120){
+      const t = tuning();
+      fbG.clear();
+      for(const st of game.strings) for(let f=0; f<=fbG.frets; f++)
+        if((t[st]+f)%12 === game.q.pc) fbG.set(st, f, 'on', pretty(nameOf(game.q.pc)));
+      fbG.paint();
+      resolve(true, 'Heard it — ' + pretty(nameOf(game.q.pc)) + '. Every place it lives is lit up.');
+    }
+  } else game.heldSince = 0;
 }
 function buildQualButtons(){
   const A = $('q-answers'); A.innerHTML=''; A.classList.add('ivl');
@@ -2226,7 +2309,11 @@ function resolve(ok, msg){
   game.total++; if(ok){ game.correct++; game.score+=game.mode==='octaves'?3:1; game.streak++; game.times.push(dt); }
   else game.streak=0;
   if(game.streak>stats.best) stats.best=game.streak;
-  if(game.mode==='chord'){
+  if(game.mode==='playit'){
+    const nk = SHARP[game.q.pc];
+    const rec = stats.byNote[nk] || (stats.byNote[nk]={ok:0,n:0});
+    rec.n++; if(ok) rec.ok++;
+  } else if(game.mode==='chord'){
     const ck = game.q.qual;
     const r3 = stats.byQual[ck] || (stats.byQual[ck]={ok:0,n:0});
     r3.n++; if(ok) r3.ok++;
@@ -2247,7 +2334,7 @@ function resolve(ok, msg){
   store.set('stats',stats);
   flash(msg, ok?'ok':'no');
   updateScore(); renderStats();
-  if(ok && game.mode!=='ear' && game.mode!=='chord') pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
+  if(ok && game.mode!=='ear' && game.mode!=='chord' && game.mode!=='playit') pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
   setTimeout(()=>{ if(game.locked) newQuestion(); }, ok?900:1900);
 }
 function renderStats(){
@@ -2499,8 +2586,8 @@ function renderCircle(){
     if(!S.cofMinor && i===idx) minCls+=' rel';
     if(S.cofMinor && i===idx){ minCls+=' sel'; majCls+=' rel'; }
     else if(S.cofMinor && fnSet.has(i)) minCls+=' fn';
-    svg += `<path class="${majCls}" data-i="${i}" data-m="0" d="${arcPath(cx,cy,132,188,a1,a2)}"/>`;
-    svg += `<path class="${minCls}" data-i="${i}" data-m="1" d="${arcPath(cx,cy,84,132,a1,a2)}"/>`;
+    svg += `<path class="${majCls}" data-i="${i}" data-m="0" tabindex="0" role="button" aria-label="${pretty(c.maj)} major, ${c.sig==='—'?'no sharps or flats':c.sig}" d="${arcPath(cx,cy,132,188,a1,a2)}"/>`;
+    svg += `<path class="${minCls}" data-i="${i}" data-m="1" tabindex="0" role="button" aria-label="${pretty(c.min)} minor, relative minor of ${pretty(c.maj)}" d="${arcPath(cx,cy,84,132,a1,a2)}"/>`;
     const mp=(r)=>[cx+r*Math.cos(mid), cy+r*Math.sin(mid)];
     const [mx,my]=mp(160), [nx,ny]=mp(108);
     const selMaj = (!S.cofMinor&&i===idx), selMin=(S.cofMinor&&i===idx);
@@ -2515,6 +2602,7 @@ function renderCircle(){
   svg += `</svg>`;
   $('cof-svg').innerHTML = svg;
   $('cof-svg').querySelectorAll('path').forEach(p=>{
+    p.onkeydown = e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); p.onclick(); } };
     p.onclick = ()=>{
       const c = COF[+p.dataset.i]; S.cofMinor = p.dataset.m==='1';
       S.cofKey = S.cofMinor? c.min : c.maj;
@@ -3258,6 +3346,43 @@ function metTick(){
 const TUNE = {on:false, stream:null, node:null, an:null, buf:null, raf:null,
               hz:0, cents:0, midi:0, quiet:true, hold:0, lastGood:0};
 
+/* One microphone, shared by the tuner and the listening drill, reference counted so
+   whichever finishes second is the one that releases it. */
+const MIC = {stream:null, an:null, buf:null, users:new Set(), asking:false};
+async function micAcquire(who){
+  MIC.users.add(who);
+  if(MIC.an) return MIC.an;
+  if(MIC.asking) return null;
+  const ctx = audio(); if(!ctx) return null;
+  MIC.asking = true;
+  try{
+    MIC.stream = await navigator.mediaDevices.getUserMedia({
+      audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}
+    });
+  }catch(e){
+    MIC.asking = false; MIC.users.delete(who);
+    throw e;
+  }
+  MIC.asking = false;
+  const src = ctx.createMediaStreamSource(MIC.stream);
+  MIC.an = ctx.createAnalyser();
+  MIC.an.fftSize = 2048;
+  MIC.buf = new Float32Array(MIC.an.fftSize);
+  src.connect(MIC.an);            // deliberately not connected to the output
+  return MIC.an;
+}
+function micRelease(who){
+  MIC.users.delete(who);
+  if(MIC.users.size) return;
+  if(MIC.stream) MIC.stream.getTracks().forEach(t=>t.stop());
+  MIC.stream = null; MIC.an = null; MIC.buf = null;
+}
+function micPitch(){
+  if(!MIC.an || !actx) return -1;
+  MIC.an.getFloatTimeDomainData(MIC.buf);
+  return detectPitch(MIC.buf, actx.sampleRate);
+}
+
 /* YIN pitch detection. Plain autocorrelation happily locks onto a subharmonic —
    at twice the period a periodic signal correlates just as well — so this uses the
    cumulative mean normalised difference and takes the FIRST dip under a threshold
@@ -3334,20 +3459,13 @@ async function tunerStart(){
   const ctx = audio(); if(!ctx) return;
   $('tu-msg').textContent = 'Asking for the microphone…';
   try{
-    TUNE.stream = await navigator.mediaDevices.getUserMedia({
-      audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}
-    });
+    await micAcquire('tuner');
   }catch(e){
     $('tu-msg').innerHTML = 'No microphone — ' + (e && e.name==='NotAllowedError'
       ? 'permission was declined. You can still use the reference tones below.'
       : 'this browser would not give one. The reference tones below still work.');
     return;
   }
-  TUNE.node = ctx.createMediaStreamSource(TUNE.stream);
-  TUNE.an = ctx.createAnalyser();
-  TUNE.an.fftSize = 2048;
-  TUNE.buf = new Float32Array(TUNE.an.fftSize);
-  TUNE.node.connect(TUNE.an);          // note: not connected to the output, so no feedback
   TUNE.on = true;
   $('tu-toggle').textContent = '■ Stop the tuner';
   $('tu-toggle').classList.add('on');
@@ -3359,8 +3477,7 @@ function tunerStop(){
   TUNE.on = false;
   if(TUNE.raf) cancelAnimationFrame(TUNE.raf);
   TUNE.raf = null;
-  if(TUNE.stream) TUNE.stream.getTracks().forEach(t=>t.stop());
-  TUNE.stream = null; TUNE.node = null; TUNE.an = null;
+  micRelease('tuner');
   $('tu-toggle').textContent = '● Turn on the tuner';
   $('tu-toggle').classList.remove('on');
   $('tu-msg').textContent = 'The microphone is off.';
@@ -3371,8 +3488,7 @@ function tunerLoop(){
   if(!TUNE.on) return;
   TUNE.raf = requestAnimationFrame(tunerLoop);
   if((tunerFrame++ % 3) !== 0) return;          // ~20 readings a second is plenty
-  TUNE.an.getFloatTimeDomainData(TUNE.buf);
-  const hz = detectPitch(TUNE.buf, actx.sampleRate);
+  const hz = micPitch();
   const now = performance.now();
   if(hz > 0){
     TUNE.hz = hz; TUNE.lastGood = now;
