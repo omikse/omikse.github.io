@@ -15,7 +15,7 @@
  *     pdf-json keeps each booklet's `work` directory out of .gitignore.
  */
 
-import { RENDERERS, ESSAY_CRITERIA, buildEssayCriterionPrompt } from "./renderers.js?v=e0ac3bea";
+import { RENDERERS, ESSAY_CRITERIA, buildEssayCriterionPrompt } from "./renderers.js?v=a0ea3e42";
 
 export const MODEL_NAME = "gemini-2.5-flash";   // pinned; newer models are worse here
 
@@ -134,6 +134,63 @@ export function parseJsonReply(raw) {
 }
 
 /* ------------------------------------------------------------------ *
+ * Running many calls at once
+ * ------------------------------------------------------------------ */
+
+/**
+ * Run `task(item)` for every item concurrently, then retry whatever the API
+ * throttled, slowly.
+ *
+ * Independent calls should not queue behind each other: grading eight essay
+ * criteria one at a time took 243 s, concurrently it takes 22 s. But a free key
+ * allows five requests a minute and rejects the rest with 429, so anything
+ * throttled is redone afterwards at that pace instead of being lost. Fast on a
+ * paid key, still correct on a free one.
+ *
+ * Shared by the essay and by whole-sheet grading so the retry behaviour cannot
+ * drift between them.
+ *
+ * Returns `{ failures: [{ item, err }], fatal }` — `fatal` is a misconfiguration
+ * (no key, bad key) that would defeat every item equally, so the caller can
+ * report the cause instead of a pile of identical failures.
+ */
+export async function runConcurrently(items, task, onProgress = () => {}) {
+  const total = items.length;
+  let done = 0;
+
+  const attempt = async item => {
+    try {
+      await task(item);
+      return null;
+    } catch (err) {
+      return { item, err };
+    } finally {
+      onProgress(++done, total, item);
+    }
+  };
+
+  onProgress(0, total, null);
+  const errors = (await Promise.all(items.map(attempt))).filter(Boolean);
+
+  const fatal = errors.find(e => e.err.fatal)?.err || null;
+  const throttled = errors.filter(e => e.err.quota).map(e => e.item);
+  const failures = errors.filter(e => !e.err.quota);
+
+  if (throttled.length && !fatal) {
+    await new Promise(r => setTimeout(r, RATE_LIMIT_PAUSE_MS));
+    for (let i = 0; i < throttled.length; i++) {
+      if (i > 0) await new Promise(r => setTimeout(r, RETRY_GAP_MS));
+      done--;                                     // this one is being redone
+      const again = await attempt(throttled[i]);
+      if (again) failures.push(again);
+    }
+  }
+
+  onProgress(total, total, null);
+  return { failures, fatal };
+}
+
+/* ------------------------------------------------------------------ *
  * Open questions — one call, one grade
  * ------------------------------------------------------------------ */
 
@@ -191,61 +248,36 @@ export async function gradeEssay(question, apiKey, onProgress = () => {}) {
   const responses = {};
   const failures = [];
 
-  const total = ESSAY_CRITERIA.length;
-  let done = 0;
-
-  /** One criterion. Returns null on success, or the error for later triage. */
-  const runCriterion = async id => {
-    try {
-      const raw = await callGemini(buildEssayCriterionPrompt(question, id), apiKey);
-      responses[id] = raw;                       // kept even if unparseable
-      const parsed = parseJsonReply(raw);
-      if (parsed) results[id] = parsed;
-      else failures.push({ id, error: "nie udało się odczytać odpowiedzi modelu" });
-      return null;
-    } catch (err) {
-      if (err.raw) responses[id] = err.raw;
-      return { id, err };
-    } finally {
-      onProgress(++done, total, id);
-    }
+  const gradeOne = async id => {
+    const raw = await callGemini(buildEssayCriterionPrompt(question, id), apiKey)
+      .catch(err => {
+        if (err.raw) responses[id] = err.raw;    // even a refusal is evidence
+        throw err;
+      });
+    responses[id] = raw;                         // kept even if unparseable
+    const parsed = parseJsonReply(raw);
+    if (parsed) results[id] = parsed;
+    else failures.push({ id, error: "nie udało się odczytać odpowiedzi modelu" });
   };
 
-  onProgress(0, total, null);
-  const errors = (await Promise.all(ESSAY_CRITERIA.map(c => runCriterion(c.id))))
-    .filter(Boolean);
+  const outcome = await runConcurrently(ESSAY_CRITERIA.map(c => c.id), gradeOne, onProgress);
 
   // A missing or invalid key fails every criterion identically, so report that
   // reason rather than eight anonymous failures.
-  const fatal = errors.find(e => e.err.fatal);
-  if (fatal && !Object.keys(results).length) throw fatal.err;
-
-  // Throttled criteria are not lost, just too fast for this key: pause, then
-  // redo them at the free tier's pace.
-  const throttled = errors.filter(e => e.err.quota).map(e => e.id);
-  errors.filter(e => !e.err.quota)
-        .forEach(e => failures.push({ id: e.id, error: e.err.message }));
-
-  if (throttled.length) {
-    await new Promise(r => setTimeout(r, RATE_LIMIT_PAUSE_MS));
-    for (let i = 0; i < throttled.length; i++) {
-      if (i > 0) await new Promise(r => setTimeout(r, RETRY_GAP_MS));
-      done--;                                    // this one is being redone
-      const again = await runCriterion(throttled[i]);
-      if (again) failures.push({ id: again.id, error: again.err.message });
-    }
-  }
-
-  onProgress(total, total, null);
+  if (outcome.fatal && !Object.keys(results).length) throw outcome.fatal;
+  outcome.failures.forEach(f => failures.push({ id: f.item, error: f.err.message }));
 
   return {
     ai_raw_results: results,        // parsed per-criterion values (§22)
     ai_raw_responses: responses,    // verbatim model output, kept because paid for
     failed_criteria: failures,
-    raw_table_fill: {},             // ← unbuilt: needs the aggregator
-    effective_table_fill: {},       // ←
-    totals: {},                     // ←
-    applied_gating_rules: [],       // ←
+    // Left empty here on purpose: the caller runs aggregateEssay() over
+    // ai_raw_results and writes these four in, so points are never decided by
+    // anything that talked to a model.
+    raw_table_fill: {},
+    effective_table_fill: {},
+    totals: {},
+    applied_gating_rules: [],
     answer_snapshot: question.user_answer,
     model: MODEL_NAME,
     created_at: new Date().toISOString(),

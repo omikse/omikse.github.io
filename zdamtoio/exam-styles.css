@@ -15,6 +15,15 @@
   --q-shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .04);
   --font: system-ui, -apple-system, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* The CKE form's own colours. They started life scoped to .scorecard, but the
+     question cards now borrow them so the sheet and the marking table look like
+     one document — which only works if they are inherited from the root. */
+  --sc-purple: #7030a0;
+  --sc-purple-dark: #4c2168;
+  --sc-lav: #e7ddf3;
+  --sc-lav-line: #c9b6e4;
+  --sc-red: #c00000;
 }
 
 * { box-sizing: border-box; }
@@ -119,21 +128,84 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   background: var(--q-card-bg);
 }
 
+/* The header is a row of the examiner's form: a solid purple number block and
+   a bordered points box on a lavender ground. Same tokens as the scorecard
+   (--sc-*), so the sheet a student writes on and the table they are marked
+   against read as one document rather than two designs. */
 .q-header {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 18px;
+  border: 1.5px solid var(--sc-purple);
+  border-radius: 4px;
+  background: var(--sc-lav);
+  overflow: hidden;
+}
+.q-number {
+  display: grid;
+  place-items: center;
+  min-width: 92px;
+  padding: 9px 12px;
+  background: var(--sc-purple);
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: .01em;
+}
+/* Points sit in a square box like the ones on the form, not a soft pill. */
+.q-points {
+  margin: 6px 8px 6px auto;
+  display: grid;
+  place-items: center;
+  padding: 3px 10px;
+  background: #fff;
+  border: 2px solid var(--sc-purple);
+  color: var(--q-ink);
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Action buttons, in the same purple. */
+.q-actions button,
+.q-sheet-foot button {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sc-purple);
+  background: #fff;
+  border: 1.5px solid var(--sc-purple);
+  border-radius: 4px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.q-actions button:hover:not(:disabled),
+.q-sheet-foot button:hover:not(:disabled) {
+  background: var(--sc-lav);
+}
+
+/* Foot of the sheet: check everything, or finish. */
+.q-sheet-foot {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 12px;
-  margin-bottom: 14px;
-  border-bottom: 2px solid var(--q-accent);
+  flex-wrap: wrap;
+  margin-top: var(--q-gap);
+  padding-top: 20px;
+  border-top: 2px solid var(--sc-lav-line);
 }
-.q-number { font-weight: 700; font-size: 16px; }
-.q-points {
-  font-size: 13px;
+.q-sheet-foot button:first-child {
+  background: var(--sc-purple);
+  color: #fff;
+}
+.q-sheet-foot button:first-child:hover:not(:disabled) {
+  background: var(--sc-purple-dark);
+}
+.q-sheet-foot-note {
+  font-size: 12px;
   color: var(--q-muted);
-  background: var(--q-bg);
-  padding: 2px 8px;
-  border-radius: 999px;
 }
 .q-type {
   margin-left: auto;
@@ -378,11 +450,6 @@ table.task-table th { text-align: center; font-weight: 700; background: #fafafa;
    Essay scorecard (examiner table) — matches the printed CKE sheet
    ============================================================ */
 .scorecard {
-  --sc-purple: #7030a0;
-  --sc-purple-dark: #4c2168;
-  --sc-lav: #e7ddf3;
-  --sc-lav-line: #c9b6e4;
-  --sc-red: #c00000;
   display: flex;
   flex-direction: column;
   gap: 14px;

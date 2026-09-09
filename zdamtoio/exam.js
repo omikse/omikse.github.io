@@ -11,11 +11,13 @@
  */
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay }
-  from "./renderers.js?v=e0ac3bea";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=e0ac3bea";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=e0ac3bea";
+  from "./renderers.js?v=a0ea3e42";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
+         submitAttempt, startOver } from "./progress.js?v=a0ea3e42";
+import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
+  from "./grading.js?v=a0ea3e42";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=e0ac3bea";
+  from "./admin.js?v=a0ea3e42";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -65,6 +67,19 @@ function describeExam(id) {
   const month = session.slice(2) === "05" ? "Maj" : session.slice(2) || "";
   const level = formula.startsWith("R") ? "poziom rozszerzony" : "poziom podstawowy";
   return { level, when: [month, year].filter(Boolean).join(" ") };
+}
+
+/* How long CKE gives for each paper.
+ *
+ * Not in the exam JSON — the booklets carry only id, name and the questions —
+ * so it lives here, keyed by the formula code describeExam() already reads off
+ * the id. If a paper ever gets its own duration, move this into the pipeline
+ * rather than special-casing an id here. */
+const EXAM_MINUTES = { P0: 240, R0: 210 };
+
+function examMinutes(id) {
+  const level = String(id).split("-")[1] || "";
+  return EXAM_MINUTES[level] ?? EXAM_MINUTES[level.startsWith("R") ? "R0" : "P0"];
 }
 
 /* Polish plurals take three forms: 1 zadanie, 2-4 zadania, 5+ zadań — and the
@@ -126,11 +141,24 @@ function renderMenu(showHidden = false) {
           <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> ${esc(entry.questions)} ${plural(entry.questions, "zadanie", "zadania", "zadań")}</li>
           <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">grade</span> ${esc(entry.max_points)} pkt</li>
         </ul>
-        <span class="text-${colour}-600 font-semibold text-xs flex items-center gap-1 mt-auto">
-          Rozwiąż <span class="material-symbols-outlined text-sm">arrow_forward</span>
-        </span>
+        <div class="mt-auto flex items-center justify-between gap-2">
+          <span class="text-${colour}-600 font-semibold text-xs flex items-center gap-1">
+            Rozwiąż <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </span>
+          <button type="button" data-mode="exam" title="Z zegarem, bez sprawdzania w trakcie"
+            class="text-[10px] font-semibold text-slate-400 hover:text-${colour}-600 border border-slate-200
+                   hover:border-${colour}-300 rounded-full px-2 py-1 transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">timer</span>${esc(examMinutes(entry.id))} min
+          </button>
+        </div>
       </div>`;
-    card.addEventListener("click", () => loadExam(entry.id));
+    // Clicking the card practises; the small button sits the paper under the
+    // clock. Two targets rather than a dialog, so the default stays one click.
+    card.querySelector('[data-mode="exam"]').addEventListener("click", event => {
+      event.stopPropagation();
+      loadExam(entry.id, "exam");
+    });
+    card.addEventListener("click", () => loadExam(entry.id, "practice"));
     grid.appendChild(card);
   });
 }
@@ -258,10 +286,23 @@ function setStatus(text) {
    evidence — an autosave that fails silently already cost us once. */
 let saveBadge = "";
 
+/* The score so far. snapshot() already computes exactly these numbers on every
+   save and then throws them away; showing them costs nothing and saves the
+   student adding up eighteen badges by hand. */
+function scoreSummaryText() {
+  if (!exam) return "";
+  const { totals } = snapshot();
+  const checked = `${totals.graded} z ${(exam.questions || []).length} sprawdzonych`;
+  return `${totals.points}/${totals.maxPoints} pkt · ${checked}`;
+}
+
 function paintStatus() {
   const el = document.getElementById("exam-status");
   if (!el) return;
-  el.innerHTML = esc(statusText) + (saveBadge ? ` <span class="ml-2">${saveBadge}</span>` : "");
+  const score = scoreSummaryText();
+  el.innerHTML = esc(statusText)
+    + (score ? ` <span class="font-semibold text-slate-700">${esc(score)}</span>` : "")
+    + (saveBadge ? ` <span class="ml-2">${saveBadge}</span>` : "");
 }
 
 onSaveState((state, detail) => {
@@ -282,9 +323,12 @@ onSaveState((state, detail) => {
    order the index lists them (Arkusz 1, then the wypracowanie) and their
    questions are simply concatenated — CKE numbers them as one continuous run,
    so the essay already sorts last. */
-async function loadExam(examId) {
+async function loadExam(examId, mode = "practice") {
   const entry = examIndex.find(e => e.id === examId);
   if (!entry) return;
+
+  stopClock();
+  document.getElementById("exam-summary")?.remove();
 
   const { level, when } = describeExam(entry.id);
   document.getElementById("exam-title-display").textContent = `Matura ${when}`;
@@ -311,7 +355,14 @@ async function loadExam(examId) {
     // Put any saved work back on the questions BEFORE rendering: every
     // renderer reads q.user_answer when it draws, so restoring is just an
     // assignment — no per-type restore logic anywhere.
-    const { answers, grades, essay } = await startOrResume(entry.id, name);
+    const resumed = await startOrResume(entry.id, name,
+      { mode, minutes: examMinutes(entry.id) });
+    const { answers, grades, essay } = resumed;
+    attempt = {
+      mode: resumed.mode || "practice",
+      deadline: resumed.deadline ?? null,
+      status: resumed.status || "in_progress",
+    };
     let restored = 0;
     for (const q of questions) {
       const qid = String(q.id || q.number);
@@ -325,6 +376,16 @@ async function loadExam(examId) {
 
     renderExam(exam);
     if (restored) setStatus(`${questions.length} ${plural(questions.length, "zadanie", "zadania", "zadań")} · przywrócono ${restored} ${plural(restored, "zapisaną odpowiedź", "zapisane odpowiedzi", "zapisanych odpowiedzi")}.`);
+
+    // An attempt whose clock ran out while the tab was closed is already over.
+    if (isExamMode() && !isFrozen() && msLeft() !== null && msLeft() <= 0) {
+      await finishExam({ reason: "expired" });
+    } else if (isFrozen()) {
+      freezeSheet();
+      renderSummary();
+    } else {
+      startClock();
+    }
   } catch (err) {
     console.error(err);
     setStatus(`Nie udało się wczytać arkusza: ${err.message}`);
@@ -387,6 +448,7 @@ function persist() {
   if (!exam) return;
   collectAll();
   save(snapshot());
+  paintStatus();          // the running total moves with every answer and grade
 }
 
 /* ------------------------------------------------------------------ *
@@ -567,10 +629,19 @@ function renderCard(question) {
   const gradeBtn = card.querySelector('[data-action="grade"]');
   const resultBox = card.querySelector(".q-result");
 
+  // One guard for both grade paths: an exam is not a place to check answers.
+  const refuseIfLocked = () => {
+    if (!gradingLocked()) return false;
+    resultBox.innerHTML = note("Sprawdzanie jest wyłączone w trybie egzaminacyjnym — "
+      + "zakończ arkusz, aby zobaczyć wynik.");
+    return true;
+  };
+
   if (gradeBtn && deterministic) {
     // P-TF and P-CHOICE compare against scoring.correct_answers — exact,
     // instant, free, and never a model (CLAUDE.md rule 3).
     gradeBtn.addEventListener("click", () => {
+      if (refuseIfLocked()) return;
       renderer.collect(question, card);
       question.grade_result = { ...renderer.grade(question), source: "auto" };
       resultBox.innerHTML = renderer.renderResult ? renderer.renderResult(question) : "";
@@ -580,6 +651,7 @@ function renderCard(question) {
 
   if (gradeBtn && aiGraded) {
     gradeBtn.addEventListener("click", async () => {
+      if (refuseIfLocked()) return;
       renderer.collect(question, card);
 
       if (!isAnswered(question.user_answer)) {
@@ -648,6 +720,25 @@ function renderExam(loadedExam) {
     }
   });
 
+  // Foot of the sheet: check everything at once, as an alternative to the
+  // per-question buttons rather than a replacement for them.
+  const foot = document.createElement("div");
+  foot.className = "q-sheet-foot";
+  foot.innerHTML = `
+    ${gradingLocked() ? "" : `<button type="button" data-action="grade-all">Sprawdź cały arkusz</button>`}
+    <button type="button" data-action="finish">${isExamMode() ? "Zakończ egzamin" : "Podsumowanie"}</button>
+    <span class="q-sheet-foot-note">${gradingLocked()
+      ? "W trybie egzaminacyjnym wynik zobaczysz po zakończeniu."
+      : "Zadania zamknięte sprawdzają się bez zapytań do AI."}</span>`;
+  foot.querySelector("[data-action='grade-all']")
+      ?.addEventListener("click", event => gradeWholeSheet(event.currentTarget));
+  foot.querySelector("[data-action='finish']").addEventListener("click", () => {
+    if (isExamMode() && !confirm("Zakończyć egzamin? Odpowiedzi zostaną zamknięte i nie da się ich zmienić."))
+      return;
+    finishExam();
+  });
+  host.appendChild(foot);
+
   setStatus(`${questions.length} ${plural(questions.length, "zadanie", "zadania", "zadań")}.`);
 
   // One delegated listener for the whole sheet rather than one per field:
@@ -655,6 +746,311 @@ function renderExam(loadedExam) {
   // `input` covers typing and `change` covers radios and selects.
   host.addEventListener("input", persist);
   host.addEventListener("change", persist);
+}
+
+/* ------------------------------------------------------------------ *
+ * Exam mode: the clock, freezing, and the summary
+ * ------------------------------------------------------------------ */
+
+/* attempt = how this sheet is being sat. `mode` is fixed when the attempt is
+   created; `deadline` is an absolute time, so the clock keeps running while the
+   tab is closed rather than politely pausing. */
+let attempt = { mode: "practice", deadline: null, status: "in_progress" };
+let clockTimer = null;
+
+const isExamMode = () => attempt.mode === "exam";
+const isFrozen = () => attempt.status === "submitted";
+
+/** Grading is refused while an exam clock is running — you cannot check your
+ *  answers mid-exam. Practice mode never locks. */
+const gradingLocked = () => isExamMode() && !isFrozen();
+
+function msLeft() {
+  return attempt.deadline ? attempt.deadline - Date.now() : null;
+}
+
+function formatClock(ms) {
+  const t = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  const pad = n => String(n).padStart(2, "0");
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+function stopClock() {
+  clearInterval(clockTimer);
+  clockTimer = null;
+}
+
+function paintClock() {
+  const el = document.getElementById("exam-subtitle-display");
+  if (!el || !isExamMode()) return;
+  const left = msLeft();
+  if (left === null) return;
+
+  if (left <= 0) {
+    el.innerHTML = `<span class="text-red-600 font-semibold">Czas minął</span>`;
+    return;
+  }
+  const warn = left < 15 * 60_000;
+  el.innerHTML = `<span class="${warn ? "text-red-600" : "text-slate-700"} font-semibold">`
+    + `⏱ ${formatClock(left)}</span>`;
+}
+
+function startClock() {
+  stopClock();
+  if (!isExamMode() || isFrozen() || attempt.deadline === null) return;
+  paintClock();
+  clockTimer = setInterval(() => {
+    paintClock();
+    if (msLeft() <= 0) {
+      stopClock();
+      finishExam({ reason: "expired" });
+    }
+  }, 1000);
+}
+
+/** Disable every input in the sheet — actually disabled, not merely dimmed. */
+function freezeSheet() {
+  document.querySelectorAll("#exam-host input, #exam-host textarea, #exam-host select")
+    .forEach(el => { el.disabled = true; });
+  document.querySelectorAll("#exam-host .q-actions button")
+    .forEach(btn => { btn.disabled = true; });
+}
+
+/**
+ * End the sheet.
+ *
+ * In exam mode this freezes the attempt for good. In practice mode it only
+ * summarises — a student revising should be free to fix an answer and try
+ * again. Expiry never triggers grading: eight or twenty-three calls is the
+ * student's money and must follow a click, not a clock.
+ */
+async function finishExam({ reason = "manual" } = {}) {
+  collectAll();
+  stopClock();
+
+  if (isExamMode()) {
+    attempt.status = "submitted";
+    await submitAttempt(snapshot());
+    freezeSheet();
+    paintClock();
+  } else {
+    persist();
+  }
+
+  renderSummary({ reason });
+  document.getElementById("exam-summary")?.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+
+function summaryHost() {
+  let box = document.getElementById("exam-summary");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "exam-summary";
+    box.className = "max-w-4xl mx-auto mb-6";
+    const host = document.getElementById("exam-host");
+    host.parentNode.insertBefore(box, host);
+  }
+  return box;
+}
+
+/* Points split the way the paper is printed: Arkusz 1 is the test, the
+   wypracowanie is its own booklet worth 35 of the 60. */
+function summaryParts() {
+  const questions = exam?.questions || [];
+  const split = { test: { got: 0, max: 0 }, essay: { got: 0, max: 0 } };
+  for (const q of questions) {
+    const bucket = q.type === "P-ESSAY" ? split.essay : split.test;
+    bucket.max += Number(q.scoring?.max_points ?? 0);
+    bucket.got += Number(q.grade_result?.points ?? (q.evaluation?.totals?.official_points ?? 0));
+  }
+  return split;
+}
+
+function renderSummary({ reason = "manual" } = {}) {
+  const box = summaryHost();
+  const { totals } = snapshot();
+  const parts = summaryParts();
+  const pending = pendingWork();
+  const calls = pending.ai.length + (pending.essay ? 8 : 0);
+
+  const headline = reason === "expired"
+    ? `<span class="text-red-600">Czas minął — arkusz zamknięty</span>`
+    : isExamMode() ? "Arkusz zakończony" : "Podsumowanie";
+
+  box.innerHTML = `
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="flex items-baseline gap-3 mb-4">
+        <h3 class="text-lg font-bold text-slate-800">${headline}</h3>
+        ${isExamMode() ? "" : `<span class="text-xs text-slate-400">tryb nauki — nic nie jest zablokowane</span>`}
+      </div>
+
+      <div class="flex flex-wrap items-end gap-8 mb-4">
+        <div>
+          <div class="text-3xl font-bold text-slate-900">${esc(totals.points)}<span class="text-slate-400 text-xl">/${esc(totals.maxPoints)}</span></div>
+          <div class="text-xs text-slate-500">punktów</div>
+        </div>
+        <div class="text-sm text-slate-600">
+          <div>Arkusz 1 (test): <strong>${esc(parts.test.got)}/${esc(parts.test.max)}</strong></div>
+          <div>Wypracowanie: <strong>${esc(parts.essay.got)}/${esc(parts.essay.max)}</strong></div>
+        </div>
+        <div class="text-sm text-slate-600">
+          <div>Sprawdzone: <strong>${esc(totals.graded)}</strong> z ${esc((exam?.questions || []).length)}</div>
+          ${pending.unanswered.length
+            ? `<div class="text-amber-600">Bez odpowiedzi: ${esc(pending.unanswered.length)}</div>` : ""}
+        </div>
+      </div>
+
+      ${calls ? `<p class="text-xs text-slate-500 mb-4">
+         Nie wszystko jest sprawdzone — brakuje ${esc(calls)}
+         ${plural(calls, "zapytania", "zapytań", "zapytań")} do AI.</p>` : ""}
+
+      <div class="flex flex-wrap gap-2">
+        ${calls ? `<button type="button" data-summary="grade"
+          class="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+          Sprawdź cały arkusz</button>` : ""}
+        <button type="button" data-summary="retake"
+          class="px-4 py-2 text-sm font-semibold border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors">
+          Rozwiąż ponownie</button>
+      </div>
+    </div>`;
+
+  box.querySelector('[data-summary="grade"]')
+     ?.addEventListener("click", e => gradeWholeSheet(e.currentTarget).then(() => renderSummary({ reason })));
+  box.querySelector('[data-summary="retake"]')
+     ?.addEventListener("click", retakeExam);
+}
+
+async function retakeExam() {
+  if (!exam) return;
+  if (!confirm("Rozpocząć ten arkusz od nowa? Obecne odpowiedzi i oceny zostaną zarchiwizowane.")) return;
+
+  try {
+    await startOver(exam.id);
+  } catch (err) {
+    // startOver archives a copy first and then blanks the live attempt. If the
+    // rules refuse the second step the archive is already written -- nothing is
+    // lost, but the exam stays frozen, and saying so beats leaving the student
+    // clicking a button that appears to do nothing.
+    setStatus("Nie udało się rozpocząć od nowa: " + (err.code || err.message)
+      + ". Odpowiedzi są bezpieczne.");
+    return;
+  }
+
+  document.getElementById("exam-summary")?.remove();
+  await loadExam(exam.id, attempt.mode);
+}
+
+/* ------------------------------------------------------------------ *
+ * Grading the whole sheet
+ * ------------------------------------------------------------------ */
+
+/** Redraw one question's result box from whatever the renderer now reports. */
+function paintResult(question) {
+  const card = document.querySelector(
+    `.q-card[data-question-id="${CSS.escape(String(question.id || question.number))}"]`);
+  const renderer = RENDERERS[question.type];
+  if (!card || !renderer?.renderResult) return;
+  card.querySelector(".q-result").innerHTML = renderer.renderResult(question) || "";
+}
+
+/** What still needs doing, split by what it costs. */
+function pendingWork() {
+  const questions = exam?.questions || [];
+  const ungraded = questions.filter(q => isAnswered(q.user_answer) && !q.grade_result);
+  return {
+    free: ungraded.filter(q => RENDERERS[q.type]?.grade),
+    ai: ungraded.filter(q => !RENDERERS[q.type]?.grade && RENDERERS[q.type]?.buildPrompt
+                             && q.type !== "P-ESSAY"),
+    essay: questions.find(q => q.type === "P-ESSAY"
+                               && isAnswered(q.user_answer)
+                               && !q.essay_grading) || null,
+    unanswered: questions.filter(q => !isAnswered(q.user_answer)),
+  };
+}
+
+/**
+ * Grade everything outstanding in one go.
+ *
+ * The closed questions are free and instant. The rest costs one API call each,
+ * plus eight for the wypracowanie, so the count is stated and confirmed before
+ * anything is spent — an accidental click here is real money.
+ */
+async function gradeWholeSheet(button) {
+  collectAll();
+  const work = pendingWork();
+  const calls = work.ai.length + (work.essay ? 8 : 0);
+
+  if (!work.free.length && !calls) {
+    setStatus(work.unanswered.length
+      ? `Brak nowych odpowiedzi do sprawdzenia (${work.unanswered.length} bez odpowiedzi).`
+      : "Wszystko już sprawdzone.");
+    return;
+  }
+
+  if (calls) {
+    const parts = [
+      `${work.ai.length} ${plural(work.ai.length, "zadanie otwarte", "zadania otwarte", "zadań otwartych")}`,
+      work.essay ? "wypracowanie (8 zapytań)" : null,
+    ].filter(Boolean).join(" + ");
+    const ok = confirm(
+      `Sprawdzenie całego arkusza wyśle ${calls} ${plural(calls, "zapytanie", "zapytania", "zapytań")} do AI.\n\n`
+      + `${parts}\n\nZadania zamknięte sprawdzają się bez zapytań.\n\nKontynuować?`);
+    if (!ok) return;
+  }
+
+  // Free first, so something is on screen immediately.
+  for (const q of work.free) {
+    q.grade_result = { ...RENDERERS[q.type].grade(q), source: "auto" };
+    paintResult(q);
+  }
+  persist();
+
+  if (!calls) {
+    setStatus(`Sprawdzono ${work.free.length} ${plural(work.free.length, "zadanie", "zadania", "zadań")}.`);
+    return;
+  }
+
+  const label = button?.textContent;
+  if (button) button.disabled = true;
+  let graded = 0;
+
+  try {
+    if (work.ai.length) {
+      const outcome = await runConcurrently(work.ai, async q => {
+        q.grade_result = await gradeQuestion(q, apiKey);
+        paintResult(q);
+        persist();                       // store each as it lands; it is paid for
+      }, done => {
+        graded = done;
+        if (button) button.textContent = `Sprawdzanie… ${done}/${work.ai.length}`;
+        setStatus(`Sprawdzanie zadań otwartych: ${done}/${work.ai.length}`);
+      });
+
+      if (outcome.fatal && !graded) throw outcome.fatal;
+      outcome.failures.forEach(f => {
+        const card = document.querySelector(
+          `.q-card[data-question-id="${CSS.escape(String(f.item.id || f.item.number))}"]`);
+        if (card) card.querySelector(".q-result").innerHTML = note(f.err.message, true);
+      });
+    }
+
+    if (work.essay) {
+      if (button) button.textContent = "Ocenianie wypracowania…";
+      work.essay.essay_grading = await gradeEssay(work.essay, apiKey, (done, total) => {
+        setStatus(`Ocenianie wypracowania: ${done}/${total} kryteriów`);
+      });
+      applyEssayEvaluation(work.essay);
+      paintResult(work.essay);
+    }
+
+    persist();
+    setStatus("Sprawdzono cały arkusz.");
+  } catch (err) {
+    setStatus(err instanceof GradingError ? err.message : String(err));
+  } finally {
+    if (button) { button.disabled = false; button.textContent = label; }
+  }
 }
 
 /* Read every answer back out of the DOM and into the question objects. */

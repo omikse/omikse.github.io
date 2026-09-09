@@ -51,6 +51,17 @@ service cloud.firestore {
       return resource.data.status == 'in_progress';
     }
 
+    // The one way out of a frozen attempt: starting the paper again. Permitted
+    // only when the incoming document is genuinely blank, so this cannot be
+    // used to edit a submitted attempt -- the answers and grades must be gone,
+    // and "Rozwiąż ponownie" archives them to a separate document first.
+    function isReset() {
+      let d = request.resource.data;
+      return d.status == 'in_progress'
+          && d.answers.size() == 0
+          && d.grades.size() == 0;
+    }
+
     match /admins/{uid} {
       allow read: if isOwner(uid) || isAdmin();
       allow write: if false;        // granted by hand in the console
@@ -69,9 +80,11 @@ service cloud.firestore {
       match /attempts/{attemptId} {
         allow read:   if isOwner(uid) || isAdmin();
         allow create: if isOwner(uid) && validAttempt();
-        // Students edit their own work while it is open; admins may grade at
-        // any point, including after submission.
-        allow update: if (isOwner(uid) && validAttempt() && stillOpen()) || isAdmin();
+        // Students edit their own work while it is open, and may blank a
+        // finished attempt to sit the paper again; admins may grade at any
+        // point, including after submission.
+        allow update: if isAdmin()
+                      || (isOwner(uid) && validAttempt() && (stillOpen() || isReset()));
         allow delete: if false;
       }
     }

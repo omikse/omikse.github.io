@@ -88,6 +88,25 @@ history; there is deliberately no second git repo in this folder.
 
 GitHub Pages takes a minute or two to rebuild after the push.
 
+## Solving an exam
+
+Clicking an exam card opens it in **tryb nauki**: answer in any order, check any
+question whenever, and "Podsumowanie" totals it up without locking anything.
+
+The small **⏱ 240 min** button on the card starts **tryb egzaminacyjny** instead:
+a countdown runs, checking answers is disabled until you finish, and "Zakończ
+egzamin" (or the clock running out) closes the sheet and shows the result. The
+countdown is stored as an absolute deadline, so closing the tab does not pause
+it — but it is checked in the browser, so it is a practice clock, not
+invigilation.
+
+Either way the summary gives the total, split into Arkusz 1 and the
+wypracowanie, and **Rozwiąż ponownie** archives the attempt and starts over.
+
+Two ways to be marked: **Sprawdź** under each question, or **Sprawdź cały
+arkusz** at the foot of the sheet. The second says how many API calls it will
+cost before spending any — a podstawowa paper is about 23.
+
 ## Grading, honestly
 
 - **Closed questions** (`P-TF`, `P-CHOICE`) — graded by comparison in the
