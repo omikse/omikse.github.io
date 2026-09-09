@@ -2,8 +2,16 @@
 
 The student-facing web app: **https://omikse.github.io/zdamtoio/**
 
-Google sign-in, real CKE exams rendered from the `pdf-json` pipeline output, and
-per-user progress (answers + grading) stored in Firestore.
+Google sign-in, real CKE exams, and per-user progress (answers + grading)
+stored in Firestore.
+
+It is the third of three components and owns none of the other two:
+
+```
+../tools/pdf-json/      the converter — PDF -> exam JSON
+../tools/web-renderer/  the renderer  — exam JSON -> page, answers, grades
+./                      the site       — auth, persistence, exam mode, admin
+```
 
 **This folder is a strict 1:1 copy of what is served at `/zdamtoio/`.** No build
 step, no `src/`. What you see here is what is live. Deploy with `python publish.py`.
@@ -13,7 +21,7 @@ step, no `src/`. What you see here is what is live. Deploy with `python publish.
 ES modules fail silently otherwise. Use **`python serve.py`**, then
 http://localhost:8000 — not `python -m http.server`, which sends no
 `Cache-Control` and lets Chrome pin `exam.js`/`renderers.js` from cache, so your
-edits appear to do nothing. Same trap as `tools/pdf-json`.
+edits appear to do nothing. Same trap as `tools/web-renderer`.
 
 ## Where the answers are
 
@@ -21,8 +29,8 @@ edits appear to do nothing. Same trap as `tools/pdf-json`.
 |---|---|
 | How does a question type render / grade? | `renderers.js` — **generated, see below** |
 | What shape is an exam JSON? | `../tools/pdf-json/qtypes-POLSKI.jsonc` |
-| Deeper renderer / grading docs | `../tools/pdf-json/DOCUMENTATION.md` (§8 types, §11 grading) |
-| Attempt-history shape for the essay | `../tools/pdf-json/P-ESSAY_projekt_oceniania.md` §22 |
+| Deeper renderer / grading docs | `../tools/web-renderer/DOCUMENTATION.md` (§8 types, §11 grading, §14 the arkusz header) |
+| Attempt-history shape for the essay | `../tools/web-renderer/P-ESSAY_projekt_oceniania.md` §22 |
 | Who can read/write what | `firestore.rules` |
 | How exams get here | `sync.py` |
 | How the site goes live | `publish.py` |
@@ -30,15 +38,17 @@ edits appear to do nothing. Same trap as `tools/pdf-json`.
 ## Rules that cost real money or damage to break
 
 1. **`renderers.js`, `exam-styles.css` and `exams/` are GENERATED.** Never edit
-   them here — `sync.py` overwrites them without asking. Fix the problem in
-   `../tools/pdf-json`, then re-run `python sync.py`.
+   them here — `sync.py` overwrites them without asking. `renderers.js` and
+   `exam-styles.css` come from `../tools/web-renderer/` (as `styles.css`);
+   `exams/` comes from `../tools/pdf-json/`. Fix it there, then re-run
+   `python sync.py`.
 2. **Type logic lives only in `renderers.js`.** Do not special-case a question
    type in `exam.js`; that is what the `RENDERERS` registry is for. Adding a
-   type means adding it in `pdf-json` and re-syncing.
+   type means adding it in `../tools/web-renderer` and re-syncing.
 3. **`P-TF` and `P-CHOICE` are graded by comparison, never by an AI prompt.**
    `renderer.grade(q)` already does it — exact, instant and free.
 4. **Gemini is pinned to `gemini-2.5-flash`.** Newer models are worse here; see
-   `pdf-json/CLAUDE.md` rule 5. Free tier is **20 requests/day, 5/minute**, so a
+   `../tools/pdf-json/CLAUDE.md` rule 5. Free tier is **20 requests/day, 5/minute**, so a
    full exam (17 open questions + 8 essay criteria = 25 calls) does not fit in
    one day. Grade per question on demand, never "grade everything".
 5. **The essay has no official score yet.** The deterministic aggregator (raw AI

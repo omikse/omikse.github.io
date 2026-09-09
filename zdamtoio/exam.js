@@ -6,18 +6,18 @@
  * about individual question types — that all lives behind the RENDERERS
  * registry in renderers.js, which is generated (see sync.py). Keep it that way.
  *
- * Closely modelled on tools/pdf-json/app.js, which is the debug harness for the
+ * Closely modelled on tools/web-renderer/app.js, which is the debug harness for the
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange }
-  from "./renderers.js?v=3b7fb012";
+  from "./renderers.js?v=7f5c3df7";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=3b7fb012";
+         submitAttempt, startOver } from "./progress.js?v=7f5c3df7";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=3b7fb012";
+  from "./grading.js?v=7f5c3df7";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=3b7fb012";
+  from "./admin.js?v=7f5c3df7";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -459,7 +459,7 @@ function persist() {
  * Analiza — admin-only look inside one question
  * ------------------------------------------------------------------ */
 
-/* The pipeline's own debug harness (tools/pdf-json/app.js) has "Pokaż prompt"
+/* The renderer's own debug harness (tools/web-renderer/app.js) has "Pokaż prompt"
  * and "Pokaż JSON" buttons on every card; porting the renderer here dropped
  * them. This puts them back for admins, because when a grade looks wrong the
  * only useful questions are "what exactly was sent" and "what exactly came

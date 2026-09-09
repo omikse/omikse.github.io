@@ -1,18 +1,19 @@
-"""Pull generated artefacts from tools/pdf-json into this folder.
+"""Pull generated artefacts from the toolchain into this folder.
 
     python sync.py
 
-Copies, always overwriting:
+Two upstream components, each the owner of what it produces:
 
-    renderers.js            <- pdf-json/renderers.js
-    exam-styles.css         <- pdf-json/styles.css
-    exams/index.json        <- pdf-json/exams/index.json
+    renderers.js            <- tools/web-renderer/renderers.js
+    exam-styles.css         <- tools/web-renderer/styles.css
+    exams/index.json        <- tools/pdf-json/exams/index.json
     exams/<part>/*.json     <- the booklet deliverables it lists
     exams/<part>/assets/    <- the extracted illustrations
 
-Direction is deliberate: pdf-json is the source of truth and knows nothing about
-this folder, so it can keep moving on its own branch. Everything copied here is
-DERIVED -- never edit it in place, fix it there and re-run this.
+The renderer renders; the converter owns the exam data. Direction is deliberate:
+neither knows anything about this folder, so both can keep moving on their own
+branch. Everything copied here is DERIVED -- never edit it in place, fix it
+upstream and re-run this.
 
 Scope is the standard `100` papers only, matching pdf-json/CLAUDE.md. Any part
 whose id carries an adapted-variant code is skipped loudly rather than silently.
@@ -28,7 +29,9 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE.parent / "tools" / "pdf-json"
+TOOLS = HERE.parent / "tools"
+SRC = TOOLS / "pdf-json"          # the converter: exam data
+RENDERER = TOOLS / "web-renderer" # the renderer: renderers.js + styles.css
 
 IN_SCOPE_VARIANT = "100"
 
@@ -66,13 +69,15 @@ def copy_tree(src, dst):
 
 def main():
     if not SRC.is_dir():
-        sys.exit(f"pdf-json not found at {SRC}")
+        sys.exit(f"the converter is not at {SRC}")
+    if not RENDERER.is_dir():
+        sys.exit(f"the renderer is not at {RENDERER}")
 
     total = 0
 
     for src_name, dst_name in (("renderers.js", "renderers.js"),
                                ("styles.css", "exam-styles.css")):
-        src = SRC / src_name
+        src = RENDERER / src_name
         if not src.is_file():
             sys.exit(f"missing {src}")
         total += copy_file(src, HERE / dst_name)

@@ -22,7 +22,7 @@ web_claude/                ==  https://omikse.github.io/zdamtoio/
   exams/                   GENERATED — 6 exams, 9 booklets, ~1.6 MB
 
   serve.py                 local dev server (no-cache)
-  sync.py                  pull generated files from ../tools/pdf-json
+  sync.py                  pull generated files from ../tools/*
   publish.py               mirror to the Pages repo, commit, push
   CLAUDE.md                the rules — read before changing anything
 ```
@@ -41,16 +41,24 @@ wonder why your edit did nothing.
 
 ## Where the exams come from
 
-They are produced by the conversion pipeline in `../tools/pdf-json` (CKE PDF →
-structured JSON) and copied here:
+The toolchain upstream of this folder is two separate components:
+
+| | what it owns |
+|---|---|
+| `../tools/pdf-json` | the **converter** — CKE PDF → structured exam JSON, and the exam data itself |
+| `../tools/web-renderer` | the **renderer** — `renderers.js` + `styles.css`: how a question renders, collects an answer, and is graded |
+
+One command pulls from both:
 
 ```bash
 python sync.py
 ```
 
-That pulls `renderers.js`, `styles.css` and every in-scope booklet with its
-images. Those files are **derived** — editing them here is pointless, the next
-sync overwrites them. Fix things in `pdf-json` instead.
+That copies `renderers.js` and `styles.css` (as `exam-styles.css`) from the
+renderer, and every in-scope booklet with its images from the converter. Those
+files are **derived** — editing them here is pointless, the next sync overwrites
+them. Fix a question type or its styling in `web-renderer`; fix the exam data in
+`pdf-json`.
 
 ### Adding one exam by hand
 
