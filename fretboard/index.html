@@ -1909,6 +1909,8 @@ function fillEarSet(){
   $('q-earset').value = cur;
 }
 stats.byQual = stats.byQual || {};
+stats.byMode = stats.byMode || {};
+stats.extraSeen = stats.extraSeen || {};
 
 (function initGame(){
   gameStrings();
@@ -1936,7 +1938,7 @@ stats.byQual = stats.byQual || {};
   $('q-natural').onchange = e=>{ game.naturals=e.target.checked; };
   $('q-focus').onchange = e=>{ game.focus=e.target.checked; };
   $('q-start').onclick = ()=>{ audio(); newQuestion(); };
-  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; stats.byQual={}; stats.byPos={}; stats.days={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
+  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; stats.byQual={}; stats.byMode={}; stats.extraSeen={}; stats.byPos={}; stats.days={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
   fbG.onCell = (s,f)=> onBoardClick(s,f);
   document.addEventListener('keydown', e=>{
     if($('v-game').classList.contains('hide')) return;
@@ -2368,6 +2370,9 @@ function resolve(ok, msg){
     const pr = stats.byPos[pk] || (stats.byPos[pk]={ok:0,n:0});
     pr.n++; if(ok) pr.ok++;
   }
+  const mk = game.mode;
+  const mr = stats.byMode[mk] || (stats.byMode[mk]={ok:0,n:0});
+  mr.n++; if(ok) mr.ok++;
   const today = new Date().toISOString().slice(0,10);
   stats.days[today] = (stats.days[today]||0) + 1;
   store.set('stats',stats);
@@ -3949,25 +3954,46 @@ function buildPlan(minutes){
   });
 
   if(minutes >= 20){
-    const earWeak = (ivl.pct !== null && ivl.pct < 0.75) || (qual.pct !== null && qual.pct < 0.75) || (ivl.n + qual.n) < 10;
-    steps.push(earWeak ? {
-      t:'Ear training', m:4,
-      why:(ivl.n + qual.n) < 10
-        ? 'You have barely used this. Major or minor is the single most useful thing your ear can learn.'
-        : 'Your ear is behind your hands right now, which is the usual way round and worth correcting.',
-      go:()=>{
-        showView('game');
-        $('q-mode').value='chord'; game.mode='chord';
-        game.earset = qual.n < 20 ? 'easy' : 'core';
-        fillEarSet(); $('q-earset').value = game.earset;
-        $('q-earset-wrap').classList.remove('hide');
-        updateHelp(); newQuestion();
-      }
-    } : {
-      t:'One pentatonic box, said out loud', m:4,
-      why:'Play the shape and name every note as you land on it. Slow, and the fastest thing you can do.',
-      go:()=>{ showView('pent'); setTimeout(()=> $('p-play') && $('p-play').click(), 400); }
-    });
+    /* Rotate the extra step. Order by how often the session has actually run each one,
+       then by how much practice it has had — counting answers alone does not work,
+       because a step you open and look at scores nothing and would win forever. */
+    const offered = k => stats.extraSeen[k] || 0;
+    const seen = k => (stats.byMode[k] || {n:0}).n;
+    const bump = k => { stats.extraSeen[k] = offered(k) + 1; store.set('stats', stats); };
+    const options = [
+      {k:'chord', t:'Ear training', m:4,
+       why:'Major or minor is the single most useful thing your ear can learn, and the one a diagram cannot teach you.',
+       go:()=>{
+         showView('game');
+         $('q-mode').value='chord'; game.mode='chord';
+         game.earset = seen('chord') < 20 ? 'easy' : 'core';
+         fillEarSet(); $('q-earset').value = game.earset;
+         $('q-earset-wrap').classList.remove('hide');
+         updateHelp(); newQuestion();
+       }},
+      {k:'read', t:'Read some notation', m:4,
+       why:'Ten minutes a week of this is the difference between reading music and not. Remember the octave: the low E is written three ledger lines down.',
+       go:()=>{
+         showView('game');
+         $('q-mode').value='read'; game.mode='read';
+         $('q-natural').checked = seen('read') < 30; game.naturals = seen('read') < 30;
+         fillEarSet(); updateHelp(); newQuestion();
+       }},
+      {k:'playit', t:'Play what it asks for', m:4,
+       why:'The app listens through the microphone. Nothing else here makes you actually put a finger down.',
+       go:()=>{
+         showView('game');
+         $('q-mode').value='playit'; game.mode='playit';
+         fillEarSet(); updateHelp(); newQuestion();
+       }},
+      {k:'_pent', t:'One pentatonic box, said out loud', m:4,
+       why:'Play the shape and name every note as you land on it. Slow, and the fastest thing you can do.',
+       go:()=>{ showView('pent'); setTimeout(()=> $('p-play') && $('p-play').click(), 400); }}
+    ];
+    options.sort((a,b)=> (offered(a.k)-offered(b.k)) || (seen(a.k)-seen(b.k)));
+    options.forEach(o=>{ const go = o.go; o.go = ()=>{ bump(o.k); go(); }; });
+    steps.push(options[0]);
+    if(minutes >= 30) steps.push(Object.assign({}, options[1], {m:4}));
   }
 
   steps.push({
