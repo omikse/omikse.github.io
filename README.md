@@ -7,7 +7,7 @@ no network calls. Open it and it works.
 **Live:** https://omikse.github.io/fretboard/
 
 **Contents** — [A guided session](#a-guided-session) · [Learn](#learn) · [Drills](#drills) ·
-[Chords](#chords) · [Rhythm](#rhythm) · [Jam](#jam) · [Pentatonics](#pentatonics) ·
+[Play along](#play-along) · [Chords](#chords) · [Rhythm](#rhythm) · [Jam](#jam) · [Pentatonics](#pentatonics) ·
 [Circle](#circle) · [Theory](#theory) · [Global settings](#global-settings) ·
 [How the code is arranged](#how-the-code-is-arranged) · [Running it](#running-it) ·
 [A practice order that works](#a-practice-order-that-works)
@@ -124,6 +124,32 @@ scale is chosen — the seven modes plus phrygian dominant, lydian dominant and
 altered; harmonic and melodic minor, harmonic major, whole tone and both
 diminished scales; the pentatonics and blues scales; and twenty-one chord types
 usable as arpeggios.
+
+### Play along
+The microphone as an input device rather than a test. Two modes.
+
+**Watch me play** listens continuously and shows what it heard on the neck — the note
+name and how many cents off, the position you most likely used, and every other place
+that note lives, with a trail of the last few notes. It guesses the position by
+proximity to where your hand just was, so a G comes up at the third fret of the top
+string rather than the twelfth of the G string.
+
+**Follow a tune** goes the other way: it shows one note at a time on the neck and in a
+tab strip, and waits until it hears you play it. Nothing is timed and nothing scrolls
+away — take as long as you like over a note. A wrong note appears in red next to the
+one you were reaching for, so you can see how far off you were. "Show me this one"
+skips a note and counts it, and the score at the end says how many you found yourself.
+
+Eight traditional melodies, all long out of copyright, all single-line because that is
+what a microphone can actually follow. The fingering is derived rather than stored: for
+each note it takes every position that could play it and picks whichever is nearest the
+last one, so the tune stays under your hand — and it re-derives itself if you change
+tuning.
+
+Telling two of the same note apart is the interesting part, since the pitch does not
+change when you re-pluck. It watches the loudness for a fresh attack instead, and
+restarts its stability clock after every accepted note so a held string is not counted
+over and over.
 
 ### Chords
 Every shape here was found by searching, not typed in from a chord book. For each

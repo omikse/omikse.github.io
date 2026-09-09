@@ -567,6 +567,26 @@ tbody tr.act td:first-child::after{content:''}
   border:1px solid var(--line2); border-radius:9px; padding:9px; font:inherit;
   font-family:ui-monospace,Consolas,monospace; font-size:.76rem; resize:vertical}
 #backup-msg.ok{color:var(--scale)} #backup-msg.no{color:var(--rose)}
+
+/* ---------- play along ---------- */
+#al-toggle.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
+.bignote{font-size:3.4rem; font-weight:700; letter-spacing:-.03em; line-height:1; min-width:2.8em}
+.bignote.intune{color:var(--scale)}
+#al-cents{color:var(--muted); font-variant-numeric:tabular-nums}
+#al-trail{display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; min-height:30px}
+#al-trail span{padding:3px 10px; border-radius:7px; background:var(--panel2);
+  border:1px solid var(--line2); font-size:.9rem; font-variant-numeric:tabular-nums}
+#al-trail span.on{background:var(--root); border-color:var(--root); color:var(--root-ink); font-weight:700}
+#al-strip{display:flex; gap:5px; overflow-x:auto; padding:8px 2px; scrollbar-width:thin}
+#al-strip span{flex:0 0 auto; width:38px; padding:6px 0; border-radius:8px; text-align:center;
+  background:var(--panel2); border:1px solid var(--line2); line-height:1.2}
+#al-strip span b{display:block; font-size:1.05rem}
+#al-strip span i{display:block; font-style:normal; font-size:.6rem; color:var(--muted)}
+#al-strip span.done{opacity:.42}
+#al-strip span.now{background:var(--root); border-color:var(--root); color:var(--root-ink); transform:scale(1.1)}
+#al-strip span.now i{color:var(--root-ink); opacity:.75}
+#al-progress{font-size:1rem; font-weight:600}
+#al-heardnow{color:var(--muted); font-size:.88rem}
 .hide{display:none !important}
 </style>
 </head>
@@ -594,6 +614,7 @@ tbody tr.act td:first-child::after{content:''}
   <nav id="tabs" role="tablist">
     <button role="tab" data-v="play" title="Start here — tune up, see what a note is, and explore the neck" aria-selected="true">Learn</button>
     <button role="tab" data-v="game" title="Eight drills: name notes, find them, train your ear, read notation, or play into the microphone" aria-selected="false">Drills</button>
+    <button role="tab" data-v="along" title="Play your guitar and watch it appear on the neck, or follow a tune note by note" aria-selected="false">Play along</button>
     <button role="tab" data-v="chords" title="Find any chord shape, name one you stumbled on, and work out where the capo goes" aria-selected="false">Chords</button>
     <button role="tab" data-v="rhythm" title="Strumming and fingerpicking patterns, and the chord-change drill" aria-selected="false">Rhythm</button>
     <button role="tab" data-v="jam" title="A backing track that loops, with a scale to solo over it" aria-selected="false">Jam</button>
@@ -883,6 +904,87 @@ tbody tr.act td:first-child::after{content:''}
         <li><b>Octave shapes beat counting.</b> Two strings up and two frets across is the same note (one fret more once you cross to the B string). Drill it in <em>Find every octave</em>.</li>
         <li><b>Short and daily.</b> Five minutes every day beats an hour on Sunday. Watch the accuracy bars, not the score.</li>
       </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PLAY ALONG ================= -->
+<section id="v-along" class="hide">
+  <div class="note" style="margin:18px 0 14px"><b>This one listens.</b> Turn the microphone on and play — the neck
+  shows you what it heard, and every other place that note lives. Or pick a tune and it will show you one note at a
+  time and wait until you play it, however long that takes. Nothing is recorded and nothing leaves the page.
+  <span class="hint">If the guitar is out of tune, none of this will work — there is a tuner at the top of Learn.</span></div>
+
+  <div class="bar">
+    <div class="f"><label>Mode</label>
+      <div class="seg" id="al-mode">
+        <button data-m="mirror" aria-pressed="true">Watch me play</button>
+        <button data-m="follow" aria-pressed="false">Follow a tune</button>
+      </div>
+    </div>
+    <button class="btn primary" id="al-toggle" style="padding:10px 16px">● Start listening</button>
+    <span class="hint" id="al-msg">The microphone is off.</span>
+  </div>
+
+  <div class="card">
+    <div id="al-mirror">
+      <div style="display:flex; align-items:baseline; gap:16px; flex-wrap:wrap">
+        <span class="bignote" id="al-note">·</span>
+        <span id="al-cents"></span>
+        <button class="btn ghost" id="al-clear" style="margin-left:auto">Clear the trail</button>
+      </div>
+      <div id="al-trail"></div>
+    </div>
+
+    <div id="al-follow" class="hide">
+      <div class="bar" style="margin:0 0 10px; background:none; border:0; padding:0">
+        <div class="f"><label for="al-tune">Tune</label><select id="al-tune"></select></div>
+        <button class="btn" id="al-hear">▶ Hear it from here</button>
+        <button class="btn" id="al-skip">Show me this one</button>
+        <button class="btn ghost" id="al-restart">Start again</button>
+      </div>
+      <p class="hint" id="al-why" style="margin:0 0 8px"></p>
+      <div id="al-strip"></div>
+      <div style="display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; margin-top:6px">
+        <span id="al-progress"></span>
+        <span id="al-heardnow"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="fbwrap"><div class="fb" id="fb-along"></div></div>
+    <div class="legend">
+      <span><i style="background:var(--root)"></i>What to play, or where it is</span>
+      <span><i style="background:var(--scale)"></i>The same note elsewhere</span>
+      <span><i style="background:rgba(140,150,160,.35)"></i>Same name, other octaves</span>
+      <span><i style="background:var(--rose)"></i>What it actually heard</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>What it can and cannot hear</h3>
+      <ul class="tight">
+        <li><b>One note at a time.</b> Pitch detection follows a single note; strum a chord and it will pick one of
+        the strings, usually the loudest. This is for melodies.</li>
+        <li><b>It waits.</b> In follow mode nothing is timed and nothing scrolls away. Take as long as you like over
+        a note — the point is finding it, not keeping up.</li>
+        <li><b>A re-plucked note counts.</b> Two of the same note in a row are told apart by the fresh attack rather
+        than the pitch, since the pitch does not change.</li>
+        <li><b>Play near the microphone</b> and away from anything humming. An acoustic in a quiet room is ideal; an
+        unplugged electric works if you are close.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>The tunes</h3>
+      <p>All of them are traditional and long out of copyright, and all are melodies rather than chords — one note
+      at a time is what a microphone can actually follow, and it is also how everyone starts.</p>
+      <p>The fingering is worked out rather than stored: for each note it takes every place on the neck that could
+      play it and picks whichever is nearest your hand's last position, so the tune stays where you are instead of
+      jumping about. Change the tuning and the fingering changes with it.</p>
+      <p class="hint">Press <b>show me this one</b> if you are stuck — it moves on and counts it, so the score at the
+      end tells you how much you actually found yourself.</p>
     </div>
   </div>
 </section>
@@ -1416,7 +1518,7 @@ tbody tr.act td:first-child::after{content:''}
 
     <h3>Moving around</h3>
     <dl>
-      <dt><kbd>alt</kbd> + <kbd>1</kbd>…<kbd>8</kbd></dt><dd>jump straight to a view</dd>
+      <dt><kbd>alt</kbd> + <kbd>1</kbd>…<kbd>9</kbd></dt><dd>jump straight to a view</dd>
       <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>walk the tab strip once it has focus; <kbd>Home</kbd> and <kbd>End</kbd> go to the ends</dd>
       <dt><kbd>?</kbd></dt><dd>open and close this</dd>
       <dt><kbd>esc</kbd></dt><dd>close this</dd>
@@ -1964,7 +2066,7 @@ class Fretboard{
    tabs & global controls
    ============================================================ */
 const $ = id => document.getElementById(id);
-const VIEWS = ['play','game','chords','rhythm','jam','pent','circle','theory'];
+const VIEWS = ['play','game','along','chords','rhythm','jam','pent','circle','theory'];
 function showView(v){
   VIEWS.forEach(x=> $('v-'+x).classList.toggle('hide', x!==v));
   [...$('tabs').children].forEach(b=>{
@@ -1972,6 +2074,7 @@ function showView(v){
     b.setAttribute('aria-selected', String(on));
     if(on && b.scrollIntoView) b.scrollIntoView({block:'nearest', inline:'nearest'});
   });
+  if(v==='along') renderAlong();
   if(v==='chords'){ renderChords(); renderIdentify(); renderCapoCalc(); }
   if(v==='rhythm') renderRhythm();
   if(v==='jam') renderJam();
@@ -1986,6 +2089,7 @@ function showView(v){
   if(v!=='rhythm' && typeof RH!=='undefined' && RH.playing) rhStop();
   if(v!=='play' && typeof TUNE!=='undefined' && TUNE.on) tunerStop();
   if(v!=='game' && typeof game!=='undefined' && game.mic) micOff();
+  if(v!=='along' && typeof AL!=='undefined' && AL.on) alStop();
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) showView(b.dataset.v); });
@@ -2007,7 +2111,7 @@ document.addEventListener('keydown', e=>{
 });
 /* alt+1..8 jumps between views; arrow keys walk the tab strip once it has focus */
 document.addEventListener('keydown', e=>{
-  if(e.altKey && !e.ctrlKey && !e.metaKey && e.key>='1' && e.key<='8'){
+  if(e.altKey && !e.ctrlKey && !e.metaKey && e.key>='1' && e.key<='9'){
     const v = VIEWS[+e.key - 1];
     if(v){ e.preventDefault(); showView(v); }
     return;
@@ -2034,7 +2138,7 @@ document.addEventListener('keydown', e=>{
   $('g-sound').checked = S.sound;
   document.documentElement.dataset.theme = S.theme;
 
-  const relayout = ()=>{ [fbG,fbP,fbW,fbC,fbJ,fbH,fbI].forEach(fb=> fb && fb.layout()); redrawAll(); };
+  const relayout = ()=>{ [fbG,fbP,fbW,fbC,fbJ,fbH,fbI,fbA].forEach(fb=> fb && fb.layout()); redrawAll(); };
   tu.onchange = e=>{ S.tuningName=e.target.value; store.set('tuning',S.tuningName); relayout(); game.strings.clear(); gameStrings(); };
   $('g-frets').onchange = e=>{ S.frets=+e.target.value; store.set('frets',S.frets); relayout(); gameLayout(); };
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
@@ -2063,7 +2167,7 @@ document.addEventListener('keydown', e=>{
     else if(mq.addListener) mq.addListener(follow);
   }
 })();
-function redrawAll(){ renderChords(); renderIdentify(); renderJam(); renderRhythm(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
+function redrawAll(){ renderChords(); renderIdentify(); renderAlong(); renderJam(); renderRhythm(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
 
 function fillRoots(sel, val){
   ROOT_CHOICES.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=pretty(r); sel.appendChild(o); });
@@ -5056,6 +5160,268 @@ function renderIdentify(){
   };
 })();
 
+const fbA = new Fretboard('fb-along', {clickable:true});
+/* ============================================================
+   PLAY ALONG — the microphone as an input device
+   Mirror: watch what you play appear on the neck.
+   Follow: it shows a tune a note at a time and waits until it hears it.
+   ============================================================ */
+const AL = {
+  mode:'mirror', on:false, raf:null, frame:0,
+  heard:-1, cents:0, lastHeardAt:0, trail:[], lastPos:null,
+  tune:0, notes:[], idx:0, hits:0, firstTry:0, hints:0, startedAt:0, finished:false,
+  rms:0, rmsFloor:0.004, hist:[], stableMidi:-1, stableSince:0, lastAccept:-1, lastAcceptAt:0
+};
+
+/* Traditional melodies, all long out of copyright. Stored as MIDI numbers so they
+   land in a comfortable place on the neck whatever the tuning. */
+const TUNES = [
+  {n:'Twinkle, Twinkle, Little Star', why:'Five notes, all in first position. If you can play this you can play a melody.',
+   m:[60,60,67,67,69,69,67, 65,65,64,64,62,62,60]},
+  {n:'Frère Jacques', why:'Steps only, no leaps. Good for finding the next note without looking.',
+   m:[60,62,64,60, 60,62,64,60, 64,65,67, 64,65,67, 67,69,67,65,64,60, 67,69,67,65,64,60]},
+  {n:'Ode to Joy', why:'Beethoven, and almost entirely stepwise. The one everybody learns second.',
+   m:[64,64,65,67, 67,65,64,62, 60,60,62,64, 64,62,62]},
+  {n:'When the Saints Go Marching In', why:'A jump up to start each phrase — practice for leaving first position.',
+   m:[60,64,65,67, 60,64,65,67, 60,64,65,67,64,60,64,62]},
+  {n:'Amazing Grace', why:'Wide leaps and a long phrase. Harder than it sounds.',
+   m:[62,67,71,67,71,69,67,64,62, 62,67,71,67,71,69,67]},
+  {n:'Auld Lang Syne', why:'Mostly steps with one big reach. New Year in eight bars.',
+   m:[62,67,66,67,69,67,64,62, 62,67,69,71,72,71,67]},
+  {n:'Scarborough Fair', why:'Minor and modal — the same notes as a G major scale, but resting on A.',
+   m:[57,57,64,64,66,64,62,59, 57,60,59,57,55,57,55,52]},
+  {n:'Greensleeves', why:'The tune everyone half knows. Minor, and it moves.',
+   m:[57,60,62,63,64,62,59,55,57,59,60,57,57,56,57,59,56]}
+];
+
+function alMic(){
+  if(!MIC.an || !actx) return {hz:-1, rms:0};
+  MIC.an.getFloatTimeDomainData(MIC.buf);
+  let sum = 0;
+  const W = MIC.buf.length >> 1;
+  for(let i=0;i<W;i++) sum += MIC.buf[i]*MIC.buf[i];
+  return {hz: detectPitch(MIC.buf, actx.sampleRate), rms: Math.sqrt(sum/W)};
+}
+
+/* A re-plucked note keeps the same pitch, so pitch alone cannot tell two of them
+   apart. Watch the loudness for a fresh attack instead. */
+function alOnset(rms){
+  AL.hist.push(rms);
+  if(AL.hist.length > 12) AL.hist.shift();
+  if(AL.hist.length < 6) return false;
+  const recent = AL.hist[AL.hist.length-1];
+  const floor = Math.min.apply(null, AL.hist.slice(0, AL.hist.length-2));
+  return recent > AL.rmsFloor*2 && recent > floor*1.7;
+}
+
+/* Where would a hand actually play this? Nearest to where it just was. */
+function alPositions(midi){
+  const t = tuning(), out = [];
+  for(let s=0;s<t.length;s++){
+    const f = midi - midiAt(s,0);
+    if(f>=0 && f<=S.frets) out.push({s:s, f:f});
+  }
+  return out;
+}
+function layoutMelody(midis){
+  let prev = null;
+  return midis.map(m=>{
+    const opts = alPositions(m);
+    if(!opts.length) return null;
+    const cost = o => prev
+      ? Math.abs(o.f-prev.f) + Math.abs(o.s-prev.s)*0.7
+      : o.f*0.6 + (tuning().length-1-o.s)*0.25;
+    opts.sort((a,b)=> cost(a)-cost(b));
+    prev = opts[0];
+    return {s:prev.s, f:prev.f, midi:m};
+  });
+}
+
+async function alStart(){
+  try{ await micAcquire('along'); }
+  catch(e){
+    $('al-msg').innerHTML = (e && e.name==='NotAllowedError')
+      ? 'Microphone permission was declined, so this cannot listen. Everything else still works.'
+      : 'No microphone available in this browser.';
+    return;
+  }
+  AL.on = true; AL.hist = []; AL.stableMidi = -1; AL.lastAccept = -1; AL.lastPos = null;
+  $('al-toggle').textContent = '■ Stop listening';
+  $('al-toggle').classList.add('on');
+  $('al-msg').textContent = AL.mode==='mirror'
+    ? 'Play anything. Nothing is recorded or sent anywhere.'
+    : 'Play the highlighted note when you are ready — it waits for you.';
+  alLoop();
+}
+function alStop(){
+  AL.on = false;
+  if(AL.raf) cancelAnimationFrame(AL.raf);
+  AL.raf = null;
+  micRelease('along');
+  $('al-toggle').textContent = '● Start listening';
+  $('al-toggle').classList.remove('on');
+  $('al-msg').textContent = 'The microphone is off.';
+  renderAlong();
+}
+
+function alLoop(){
+  if(!AL.on) return;
+  AL.raf = requestAnimationFrame(alLoop);
+  if((AL.frame++ % 3) !== 0) return;
+
+  const {hz, rms} = alMic();
+  AL.rms = rms;
+  const onset = alOnset(rms);
+  const now = performance.now();
+
+  if(hz <= 0){
+    AL.stableMidi = -1;
+    if(now - AL.lastHeardAt > 700 && AL.heard >= 0){ AL.heard = -1; renderAlong(); }
+    return;
+  }
+  const exact = 69 + 12*Math.log2(hz/440);
+  const midi = Math.round(exact);
+  const cents = Math.round((exact - midi)*100);
+  AL.heard = midi; AL.cents = cents; AL.lastHeardAt = now;
+
+  if(midi !== AL.stableMidi){ AL.stableMidi = midi; AL.stableSince = now; }
+  const held = now - AL.stableSince;
+  const fresh = midi !== AL.lastAccept || onset || (now - AL.lastAcceptAt > 600);
+
+  /* 90 ms between accepts, and the stability clock restarts after each one, or a
+     note held down would be counted over and over */
+  if(held > 70 && fresh && Math.abs(cents) < 45 && (now - AL.lastAcceptAt) > 90){
+    AL.lastAccept = midi; AL.lastAcceptAt = now; AL.stableSince = now;
+    if(AL.mode === 'mirror'){
+      AL.trail.push(midi);
+      if(AL.trail.length > 10) AL.trail.shift();
+    } else {
+      alHeardInFollow(midi);
+    }
+  }
+  renderAlong();
+}
+
+function alHeardInFollow(midi){
+  if(AL.finished || !AL.notes.length) return;
+  const want = AL.notes[AL.idx];
+  if(!want) return;
+  if(midi === want.midi){
+    if(!want.hinted) AL.firstTry++;
+    AL.hits++;
+    AL.idx++;
+    if(AL.idx >= AL.notes.length) alFinish();
+  }
+}
+function alFinish(){
+  AL.finished = true;
+  const secs = Math.max(1, Math.round((performance.now() - AL.startedAt)/1000));
+  $('al-msg').innerHTML = '<b>That is the whole tune.</b> ' + AL.notes.length + ' notes in '
+    + secs + ' seconds, ' + AL.firstTry + ' of them without a hint'
+    + (AL.hints ? ' — ' + AL.hints + ' shown to you' : '') + '.';
+  planChime(true);
+}
+function alLoadTune(){
+  const t = TUNES[AL.tune];
+  AL.notes = layoutMelody(t.m).filter(Boolean).map(n=> Object.assign({}, n, {hinted:false}));
+  AL.idx = 0; AL.hits = 0; AL.firstTry = 0; AL.hints = 0;
+  AL.finished = false; AL.startedAt = performance.now();
+  renderAlong();
+}
+function alPlayTune(from){
+  audio();
+  const notes = AL.notes.slice(from || 0, (from||0) + 40);
+  notes.forEach((n,i)=> pluck(n.midi, i*0.42, 1.2, .45));
+}
+
+function renderAlong(){
+  const t = tuning();
+  const mirror = AL.mode === 'mirror';
+  $('al-mirror').classList.toggle('hide', !mirror);
+  $('al-follow').classList.toggle('hide', mirror);
+
+  fbA.clear();
+
+  if(mirror){
+    if(AL.heard >= 0){
+      const pcs = ((AL.heard % 12) + 12) % 12;
+      /* Of the places this note could have been played, guess the one nearest where
+         the hand just was — and failing that, the lowest fret. */
+      const opts = alPositions(AL.heard).slice().sort((a,b)=>
+        AL.lastPos ? (Math.abs(a.f-AL.lastPos.f)+Math.abs(a.s-AL.lastPos.s)*0.7)
+                   - (Math.abs(b.f-AL.lastPos.f)+Math.abs(b.s-AL.lastPos.s)*0.7)
+                   : a.f - b.f);
+      if(opts.length) AL.lastPos = opts[0];
+      opts.forEach((p,i)=> fbA.set(p.s, p.f, i===0 ? 'root' : 'on', pretty(nameOf(pcs))));
+      for(let s=0;s<t.length;s++) for(let f=0;f<=S.frets;f++){
+        if((t[s]+f)%12 === pcs && !fbA.marks.get(s+':'+f)) fbA.set(s, f, 'ghost', pretty(nameOf(pcs)));
+      }
+      const inTune = Math.abs(AL.cents) <= 12;
+      $('al-note').textContent = pitchName(AL.heard);
+      $('al-note').className = 'bignote' + (inTune ? ' intune' : '');
+      $('al-cents').textContent = (AL.cents>0?'+':'') + AL.cents + ' cents'
+        + (inTune ? '' : AL.cents < 0 ? ' — flat' : ' — sharp');
+    } else {
+      $('al-note').textContent = AL.on ? '—' : '·';
+      $('al-note').className = 'bignote';
+      $('al-cents').textContent = AL.on ? 'listening' : '';
+    }
+    $('al-trail').innerHTML = AL.trail.length
+      ? AL.trail.map((m,i)=> '<span class="' + (i===AL.trail.length-1 ? 'on' : '') + '">'
+          + pretty(nameOf(((m%12)+12)%12)) + (Math.floor(m/12)-1) + '</span>').join('')
+      : '<span class="hint" style="border:0;background:none">The last few notes you played appear here.</span>';
+  } else {
+    const cur = AL.notes[AL.idx], nxt = AL.notes[AL.idx+1];
+    if(nxt) fbA.set(nxt.s, nxt.f, 'ghost', pretty(nameOf(((nxt.midi%12)+12)%12)));
+    if(cur) fbA.set(cur.s, cur.f, 'root', pretty(nameOf(((cur.midi%12)+12)%12)));
+    if(AL.heard >= 0 && cur && AL.heard !== cur.midi){
+      /* show the wrong note where the hand most likely is — next to what it was aiming
+         for — rather than at whichever string happens to come first */
+      const near = alPositions(AL.heard).slice().sort((a,b)=>
+        (Math.abs(a.f-cur.f)+Math.abs(a.s-cur.s)*0.7) - (Math.abs(b.f-cur.f)+Math.abs(b.s-cur.s)*0.7))[0];
+      if(near) fbA.set(near.s, near.f, 'bad', pretty(nameOf(((AL.heard%12)+12)%12)));
+    }
+    $('al-strip').innerHTML = AL.notes.map((n,i)=>
+      '<span class="' + (i===AL.idx ? 'now' : i<AL.idx ? 'done' : '') + '">'
+      + '<b>' + n.f + '</b><i>' + (t.length-n.s) + '</i></span>').join('');
+    const strip = $('al-strip'), now = strip.querySelector('.now');
+    if(now && now.scrollIntoView) now.scrollIntoView({block:'nearest', inline:'center'});
+    $('al-progress').textContent = AL.finished
+      ? 'Finished'
+      : (AL.idx + ' of ' + AL.notes.length + ' — waiting for '
+         + (AL.notes[AL.idx] ? pitchName(AL.notes[AL.idx].midi) : '—'));
+    $('al-heardnow').textContent = AL.heard >= 0 ? 'hearing ' + pitchName(AL.heard) : '';
+  }
+  fbA.paint();
+}
+
+(function initAlong(){
+  TUNES.forEach((t,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=t.n; $('al-tune').appendChild(o); });
+  $('al-toggle').onclick = ()=> AL.on ? alStop() : alStart();
+  $('al-mode').onclick = e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    AL.mode = b.dataset.m;
+    [...e.currentTarget.children].forEach(x=> x.setAttribute('aria-pressed', String(x===b)));
+    if(AL.mode === 'follow' && !AL.notes.length) alLoadTune();
+    $('al-msg').textContent = AL.on
+      ? (AL.mode==='mirror' ? 'Play anything.' : 'Play the highlighted note when you are ready.')
+      : 'The microphone is off.';
+    renderAlong();
+  };
+  $('al-tune').onchange = e=>{ AL.tune = +e.target.value; alLoadTune(); $('al-why').textContent = TUNES[AL.tune].why; };
+  $('al-restart').onclick = ()=> alLoadTune();
+  $('al-hear').onclick = ()=> alPlayTune(AL.idx);
+  $('al-skip').onclick = ()=>{
+    if(AL.finished || !AL.notes.length) return;
+    if(AL.notes[AL.idx]) AL.notes[AL.idx].hinted = true;
+    AL.hints++; AL.idx++;
+    if(AL.idx >= AL.notes.length) alFinish(); else renderAlong();
+  };
+  $('al-clear').onclick = ()=>{ AL.trail = []; renderAlong(); };
+  $('al-why').textContent = TUNES[0].why;
+  alLoadTune();
+})();
+
 /* ============================================================
    shareable state in the URL
    ============================================================ */
@@ -5571,7 +5937,7 @@ function plLoop(on){
   });
 })();
 
-renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam(); renderRhythm(); renderIdentify();
+renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam(); renderRhythm(); renderIdentify(); renderAlong();
 document.querySelectorAll('table').forEach(tb=>{
   if(tb.parentElement && tb.parentElement.classList.contains('tscroll')) return;
   const w = document.createElement('div'); w.className = 'tscroll';
