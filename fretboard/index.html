@@ -2106,6 +2106,26 @@ function playSequence(fb, seq, gap, vol){
   });
 }
 
+/* D sharp major is a real key and nobody writes music in it, because it needs double
+   sharps and E flat major does not. When a spelling gets ugly, name the one people use. */
+function accidentalCount(names){
+  return names.reduce((a,n)=> a + (n.length - 1), 0);
+}
+function simplerKey(root, ivals){
+  const mine = spellScale(root, ivals);
+  if(!mine || !mine.some(n=> n.length > 2)) return null;      // no double accidentals, nothing to say
+  const pc = pcOf(root);
+  let best = null, bestCount = accidentalCount(mine);
+  ROOT_CHOICES.forEach(r=>{
+    if(pcOf(r) !== pc || r === root) return;
+    const sp = spellScale(r, ivals);
+    if(!sp) return;
+    const c = accidentalCount(sp);
+    if(c < bestCount){ bestCount = c; best = r; }
+  });
+  return best;
+}
+
 function renderInfo(){
   const def = SCALES[PL.scale], rootPc = pcOf(PL.root), ivals = def.iv;
   const spelled = spellScale(PL.root, ivals);
@@ -2135,6 +2155,11 @@ function renderInfo(){
     + notes.map((n,i)=>'<span class="pill '+(i===0?'on':'')+'">'+pretty(n)+'<span style="opacity:.6;font-size:.85em"> '+IVL_SHORT[ivals[i]]+'</span></span>').join('')
     + '</div>'
     + (SCALE_BLURB[PL.scale] ? '<p class="hint" style="margin:0 0 10px">'+SCALE_BLURB[PL.scale]+'</p>' : '')
+    + (function(){
+        const alt = simplerKey(PL.root, def.iv);
+        return alt ? '<p class="hint" style="margin:0 0 10px;color:var(--root)">Spelling this key needs double sharps or flats. '
+          + 'The same notes are written as <b>' + pretty(alt) + ' ' + def.n + '</b>, which is what you will see in print.</p>' : '';
+      })()
     + '<dl class="kv">'+facts.map(f=>'<dt>'+f[0]+'</dt><dd>'+f[1]+'</dd>').join('')+'</dl>'
     + '<h3>Roots on each string</h3>'
     + '<div class="tscroll"><table><tbody>'+rows.join('')+'</tbody></table></div>';
@@ -3220,6 +3245,20 @@ function renderTheory(){
   $('t-scale-steps').innerHTML = '<th>Step from previous</th>' + steps.map(s=>`<td class="hint">${s==null?'—':(s===2?'whole':'half')}</td>`).join('');
   $('t-scale-frets').textContent = SCALES.major.iv.concat([12]).join(' – ');
   $('t-keyname').textContent = pretty(key)+(minor?' minor':' major');
+  const altKey = simplerKey(key, iv);
+  const kn = $('t-keyname');
+  if(kn && kn.parentElement){
+    const old = document.getElementById('t-altkey');
+    if(old) old.remove();
+    if(altKey){
+      const note = document.createElement('span');
+      note.id = 't-altkey';
+      note.style.color = 'var(--root)';
+      note.innerHTML = ' — a key that needs double accidentals, and is written <b>'
+        + pretty(altKey) + (minor?' minor':' major') + '</b> in practice';
+      kn.parentElement.appendChild(note);
+    }
+  }
 
   // diatonic chords
   const rom=minor?ROMAN_MIN:ROMAN_MAJ, qual=minor?QUAL_MIN:QUAL_MAJ, sev=minor?SEV_MIN:SEV_MAJ, job=minor?JOB_MIN:JOB_MAJ;
