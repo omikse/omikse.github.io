@@ -201,7 +201,11 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   white-space: nowrap;
   padding: 0 2px;
 }
-/* Empty on purpose until the question is graded — this is where the mark goes. */
+/* Empty on purpose until the question is graded — this is where the mark goes.
+   A graded box also gets `.q-score-box-filled`. That class deliberately carries
+   no styling: the paper leaves the box plain whether or not a mark is in it.
+   It exists as a state hook for tests and selectors — don't delete the toggle
+   in exam.js on the grounds that nothing here uses it. */
 .q-score-box {
   height: 57px;
   background: #fff;

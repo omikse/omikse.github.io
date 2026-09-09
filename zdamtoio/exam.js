@@ -11,13 +11,13 @@
  */
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange }
-  from "./renderers.js?v=74cbff08";
+  from "./renderers.js?v=7a0ec9a4";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=74cbff08";
+         submitAttempt, startOver } from "./progress.js?v=7a0ec9a4";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=74cbff08";
+  from "./grading.js?v=7a0ec9a4";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=74cbff08";
+  from "./admin.js?v=7a0ec9a4";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
