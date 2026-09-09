@@ -51,10 +51,13 @@ edits appear to do nothing. Same trap as `tools/web-renderer`.
    `../tools/pdf-json/CLAUDE.md` rule 5. Free tier is **20 requests/day, 5/minute**, so a
    full exam (17 open questions + 8 essay criteria = 25 calls) does not fit in
    one day. Grade per question on demand, never "grade everything".
-5. **The essay has no official score yet.** The deterministic aggregator (raw AI
-   values → points via matrix/thresholds/gating) is unbuilt. Store the raw
-   per-criterion output per §22 and label it *diagnostyka, nie wynik oficjalny*.
-   Never let a model produce the total itself.
+5. **The essay total is computed here, never by a model.** `gradeEssay()`
+   collects raw per-criterion values (error counts, classifications);
+   `aggregateEssay()` in `renderers.js` turns them into points using the matrix,
+   thresholds and gating rules carried in the exam JSON. Both halves are built.
+   Asking a model for the total instead is the one thing the grading design
+   forbids, so `grading.js` deliberately returns empty fills and the caller
+   fills them from the aggregator.
 6. **Firebase config values are public identifiers, not secrets** — safe in this
    repo. `GEMINI_API_KEY` is a real secret and never goes in a file here.
 7. **Scope is the standard `100` papers only.** Everything else is an *arkusz
@@ -100,6 +103,22 @@ aid, not invigilation — do not describe it as anything else.
 
 **Expiry never grades.** Freezing is free; grading a sheet costs up to 23 API
 calls, so it always follows a click.
+
+**Freezing freezes answers, not grading.** `freezeSheet()` disables the inputs
+and nothing else. Whether a sheet may be graded is `gradingLocked()` alone —
+exam mode and not yet submitted — checked at click time by `refuseIfLocked()`.
+`freezeSheet` used to disable the grade buttons too, which contradicted it:
+finishing an exam is the exact moment grading becomes allowed, and the student
+was left clicking a dead button. One rule, one place.
+
+> ⚠️ **Exam mode silently degrades to practice when logged out.**
+> `startOrResume()` (`progress.js`) returns `mode: "practice"` for a visitor
+> with no account, ignoring the requested mode — so the "⏱ 240 min" button
+> starts no clock, locks nothing, and looks like it worked. Login is optional by
+> design, so this is a real decision, not a typo: either exam mode works without
+> an account (a local deadline, no persistence) or the button says it needs one.
+> Until it is settled, exam-mode behaviour cannot be exercised without signing
+> in — worth knowing before you conclude a lock is broken.
 
 ## Browser gotchas that already bit us
 
