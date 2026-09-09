@@ -645,13 +645,10 @@ details[open] summary{margin-bottom:8px}
       </optgroup>
       <optgroup label="Train your ear">
         <option value="ear">Hear the interval</option>
+        <option value="chord">Hear the chord</option>
       </optgroup>
     </select></div>
-    <div class="f hide" id="q-earset-wrap"><label for="q-earset">Intervals</label><select id="q-earset">
-      <option value="easy">Octave, 5th, 4th</option>
-      <option value="core" selected>The common seven</option>
-      <option value="all">All twelve</option>
-    </select></div>
+    <div class="f hide" id="q-earset-wrap"><label for="q-earset" id="q-earset-lab">Intervals</label><select id="q-earset"></select></div>
     <div class="f"><label for="q-hi">Highest fret</label><select id="q-hi">
       <option>5</option><option selected>12</option><option>15</option><option>17</option><option>22</option>
     </select></div>
@@ -679,7 +676,7 @@ details[open] summary{margin-bottom:8px}
     <div class="earbox hide" id="q-ear">
       <button class="big" id="q-replay">▶ Play it again</button>
       <button class="alt" id="q-together">Play both together</button>
-      <span class="hint">Hear the low note, then the high one. How far apart are they?</span>
+      <span class="hint" id="q-earhint">Hear the low note, then the high one. How far apart are they?</span>
     </div>
     <div class="fbwrap" style="margin-top:8px"><div class="fb" id="fb-game"></div></div>
     <div class="answers" id="q-answers"></div>
@@ -1761,15 +1758,34 @@ stats.byIvl = stats.byIvl || {};
 stats.byPos = stats.byPos || {};
 stats.days = stats.days || {};
 const EAR_SETS = {easy:[12,7,5], core:[12,7,5,4,3,9,8], all:[1,2,3,4,5,6,7,8,9,10,11,12]};
+const CHORD_SETS = {
+  easy:['maj','min'],
+  core:['maj','min','dom7','min7'],
+  all: ['maj','min','dim','aug','sus4','dom7','maj7','min7','m7b5']
+};
+const SET_LABELS = {
+  ear:   {lab:'Intervals', easy:'Octave, 5th, 4th', core:'The common seven', all:'All twelve'},
+  chord: {lab:'Chords',    easy:'Major or minor',   core:'Plus the sevenths', all:'Everything'}
+};
+function fillEarSet(){
+  const L = SET_LABELS[game.mode === 'chord' ? 'chord' : 'ear'];
+  $('q-earset-lab').textContent = L.lab;
+  const cur = game.earset;
+  $('q-earset').innerHTML = ['easy','core','all']
+    .map(k => '<option value="'+k+'">'+L[k]+'</option>').join('');
+  $('q-earset').value = cur;
+}
+stats.byQual = stats.byQual || {};
 
 (function initGame(){
   gameStrings();
   $('q-mode').onchange = e=>{
     game.mode=e.target.value;
-    $('q-earset-wrap').classList.toggle('hide', game.mode!=='ear');
+    $('q-earset-wrap').classList.toggle('hide', game.mode!=='ear' && game.mode!=='chord');
+    fillEarSet();
     if(game.q) newQuestion(); updateHelp(); renderStats();
   };
-  $('q-earset').onchange = e=>{ game.earset=e.target.value; if(game.mode==='ear' && game.q) newQuestion(); };
+  $('q-earset').onchange = e=>{ game.earset=e.target.value; if((game.mode==='ear'||game.mode==='chord') && game.q) newQuestion(); };
   $('q-replay').onclick = ()=> playEar(false);
   $('q-together').onclick = ()=> playEar(true);
   $('q-hi').onchange = e=>{ game.hi=+e.target.value; fbG.layout(); if(game.q) newQuestion(); };
@@ -1777,7 +1793,7 @@ const EAR_SETS = {easy:[12,7,5], core:[12,7,5,4,3,9,8], all:[1,2,3,4,5,6,7,8,9,1
   $('q-natural').onchange = e=>{ game.naturals=e.target.checked; };
   $('q-focus').onchange = e=>{ game.focus=e.target.checked; };
   $('q-start').onclick = ()=>{ audio(); newQuestion(); };
-  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; stats.byPos={}; stats.days={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
+  $('q-reset').onclick = ()=>{ store.del('stats'); stats.best=0; stats.byNote={}; stats.byIvl={}; stats.byQual={}; stats.byPos={}; stats.days={}; game.score=game.total=game.correct=game.streak=0; game.times=[]; updateScore(); renderStats(); };
   fbG.onCell = (s,f)=> onBoardClick(s,f);
   document.addEventListener('keydown', e=>{
     if($('v-game').classList.contains('hide')) return;
@@ -1787,6 +1803,7 @@ const EAR_SETS = {easy:[12,7,5], core:[12,7,5,4,3,9,8], all:[1,2,3,4,5,6,7,8,9,1
     const i = keys.indexOf(e.key);
     if(i>=0){ const b=$('q-answers').children[i]; if(b) b.click(); }
   });
+  fillEarSet();
   updateScore(); renderStats(); updateHelp();
 })();
 
@@ -1814,7 +1831,8 @@ function updateHelp(){
     find:'You are given a note and a string — click the right fret. <code>Space</code> skips.',
     octaves:'One position is shown. Click every other place that same note appears in range.',
     interval:'The orange ring is the reference note. Click the note the given interval above it, on any string.',
-    ear:'Two notes play, low then high. Name the distance between them — then the neck shows you where they were.'
+    ear:'Two notes play, low then high. Name the distance between them — then the neck shows you where they were.',
+    chord:'A chord is strummed. Say what kind it is — the root does not matter, only the flavour. Then the neck shows you the shape.'
   }[game.mode];
   $('q-help').innerHTML = h;
 }
@@ -1885,6 +1903,16 @@ function newQuestion(){
     const p = randomPos();
     const iv = randOf([2,3,4,5,7,9,10,12].filter(x=>x<=12));
     game.q = Object.assign({}, p, {iv, targetPc:(p.pc+iv)%12});
+  } else if(game.mode==='chord'){
+    const set = CHORD_SETS[game.earset] || CHORD_SETS.core;
+    const roots = ROOT_CHOICES.filter(r=> r.indexOf('b')<0);
+    let q = null;
+    for(let tries=0; tries<80 && !q; tries++){
+      const root = randOf(roots), qual = randOf(set);
+      const l = findVoicings(root, qual, 9, false);
+      if(l.length) q = {root:root, qual:qual, v:l[0], pc:pcOf(root)};
+    }
+    game.q = q || {root:'C', qual:'maj', v:findVoicings('C','maj',9,false)[0], pc:0};
   } else {
     const set = EAR_SETS[game.earset] || EAR_SETS.core;
     let q = null;
@@ -1921,6 +1949,14 @@ function drawQuestion(){
     fbG.set(q.s,q.f,'root', pretty(nameOf(q.pc)));
     P.innerHTML = `Click every other <em>${pretty(nameOf(q.pc))}</em> <span class="hint">— ${q.targets.size} to find</span>`;
   }
+  else if(game.mode==='chord'){
+    P.innerHTML = 'Listen — <em>what kind of chord</em> is that?';
+    $('q-ear').classList.remove('hide');
+    buildQualButtons();
+    fbG.paint();
+    playEar(false);
+    return;
+  }
   else if(game.mode==='ear'){
     P.innerHTML = 'Listen — <em>how far apart</em> are the two notes?';
     $('q-ear').classList.remove('hide');
@@ -1935,15 +1971,53 @@ function drawQuestion(){
     const art = /^[aeiou]/i.test(ivName) ? 'an' : 'a';
     P.innerHTML = `From this note, click ${art} <em>${ivName}</em> above <span class="hint">— any string</span>`;
   }
-  $('q-ear').classList.toggle('hide', game.mode!=='ear');
+  $('q-ear').classList.toggle('hide', game.mode!=='ear' && game.mode!=='chord');
   fbG.paint();
 }
 function playEar(together){
   const q = game.q; if(!q) return;
   audio();
+  if(game.mode==='chord'){
+    if(!q.v) return;
+    const idx=[]; for(let s=0;s<q.v.pick.length;s++) if(q.v.pick[s]>=0) idx.push(s);
+    if(together) idx.forEach((s,i)=> pluck(midiAt(s,q.v.pick[s]), i*0.24, 1.6, .45));
+    else idx.forEach((s,i)=> pluck(midiAt(s,q.v.pick[s]), i*0.032, 2.6, .45));
+    return;
+  }
   const lo = midiAt(q.s,q.f), hi = lo + q.iv;
   pluck(lo, 0, 2.0, .5);
   pluck(hi, together ? 0.02 : 0.62, 2.0, .5);
+}
+function buildQualButtons(){
+  const A = $('q-answers'); A.innerHTML=''; A.classList.add('ivl');
+  const set = CHORD_SETS[game.earset] || CHORD_SETS.core;
+  const keys='1234567890-=';
+  set.forEach((k,i)=>{
+    const b = document.createElement('button');
+    b.innerHTML = SCALES[k].n + '<small>' + (CHORD_SUFFIX[k] || 'major') + (keys[i] ? ' \u00b7 '+keys[i] : '') + '</small>';
+    b.dataset.q = k;
+    b.onclick = ()=>{ if(game.locked) return; answerQual(k); };
+    A.appendChild(b);
+  });
+}
+function answerQual(k){
+  const q = game.q, ok = k === q.qual;
+  [...$('q-answers').children].forEach(b=>{
+    if(b.dataset.q===q.qual) b.classList.add('right');
+    else if(b.dataset.q===k && !ok) b.classList.add('wrong');
+  });
+  const t = tuning(), rootPc = pcOf(q.root);
+  fbG.clear();
+  for(let s=0;s<t.length;s++){
+    const f = q.v.pick[s];
+    if(f<0 || f>fbG.frets) continue;
+    const pc=(t[s]+f)%12;
+    fbG.set(s, f, pc===rootPc ? 'root' : 'on', pretty(nameOf(pc, q.root)));
+  }
+  fbG.paint(q.root);
+  const name = pretty(q.root) + (CHORD_SUFFIX[q.qual]||'');
+  resolve(ok, ok ? ('Yes \u2014 that was ' + name + '.')
+                 : ('It was ' + name + ' \u2014 ' + SCALES[q.qual].n.toLowerCase() + ', not ' + SCALES[k].n.toLowerCase() + '.'));
 }
 function buildIvlButtons(){
   const A = $('q-answers'); A.innerHTML='';
@@ -2041,7 +2115,11 @@ function resolve(ok, msg){
   game.total++; if(ok){ game.correct++; game.score+=game.mode==='octaves'?3:1; game.streak++; game.times.push(dt); }
   else game.streak=0;
   if(game.streak>stats.best) stats.best=game.streak;
-  if(game.mode==='ear'){
+  if(game.mode==='chord'){
+    const ck = game.q.qual;
+    const r3 = stats.byQual[ck] || (stats.byQual[ck]={ok:0,n:0});
+    r3.n++; if(ok) r3.ok++;
+  } else if(game.mode==='ear'){
     const ik = String(game.q.iv);
     const r2 = stats.byIvl[ik] || (stats.byIvl[ik]={ok:0,n:0});
     r2.n++; if(ok) r2.ok++;
@@ -2058,11 +2136,12 @@ function resolve(ok, msg){
   store.set('stats',stats);
   flash(msg, ok?'ok':'no');
   updateScore(); renderStats();
-  if(ok && game.mode!=='ear') pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
+  if(ok && game.mode!=='ear' && game.mode!=='chord') pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
   setTimeout(()=>{ if(game.locked) newQuestion(); }, ok?900:1900);
 }
 function renderStats(){
   renderHeat();
+  if(game.mode==='chord') return renderQualStats();
   if(game.mode==='ear') return renderIvlStats();
   $('q-stats-title').textContent = 'Which notes trip you up';
   $('q-stats-sub').textContent = 'Accuracy per note name, across every session on this device.';
@@ -2118,6 +2197,19 @@ function renderHeat(){
   $('q-days-sub').textContent = played
     ? played + ' of the last 7 days' + (streak>1 ? ' — ' + streak + ' in a row right now. Five minutes a day beats an hour on Sunday.' : '.')
     : 'Nothing logged this week.';
+}
+
+function renderQualStats(){
+  $('q-stats-title').textContent = 'Which chords trip you up';
+  $('q-stats-sub').textContent = 'Accuracy per chord type, by ear, across every session on this device.';
+  $('q-stats').innerHTML = CHORD_SETS.all.map(k=>{
+    const r = stats.byQual[k] || {ok:0,n:0};
+    const pct = r.n ? Math.round(r.ok/r.n*100) : null;
+    return '<div class="b '+(pct!=null && pct<70 && r.n>=3 ? 'weak':'')+'">'
+      + '<span style="font-size:.74rem">'+(CHORD_SUFFIX[k]||'maj')+'</span>'
+      + '<span class="t"><i style="width:'+(pct==null?0:pct)+'%"></i></span>'
+      + '<span class="n" style="color:var(--muted)">'+(pct==null?'—':pct+'% · '+r.n)+'</span></div>';
+  }).join('');
 }
 
 function renderIvlStats(){
