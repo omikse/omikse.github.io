@@ -77,7 +77,7 @@ The neck sits in the middle; everything else is arranged around it.
   and character, and lists every root position on every string.
 
 ### Drills
-Eight drills, all scored, with per-note accuracy kept in `localStorage`:
+Nine drills, all scored, with per-note accuracy kept in `localStorage`:
 
 | Mode | What it asks |
 |---|---|
@@ -89,6 +89,7 @@ Eight drills, all scored, with per-note accuracy kept in `localStorage`:
 | Hear the chord | A chord is strummed — say what kind it is |
 | Play it | You are given a note — play it on the guitar and the app listens |
 | Read the note | One note on a staff — name it |
+| Play back what you hear | A short phrase plays — find it on the neck, in order |
 
 The two ear modes are what diagrams cannot teach. Pick how many intervals are
 in play (three, seven or all twelve); after you answer it shows where the two notes
@@ -97,6 +98,14 @@ minor is arguably the more useful skill for a beginner, so chord mode goes from
 exactly that up to nine qualities including diminished, augmented, suspended and
 the sevenths, strumming a real voicing at a random root and revealing the shape
 afterwards. Accuracy is tracked per interval and per chord type in its own panel.
+
+*Play back what you hear* is the one everything else is preparation for. It plays a
+three- to five-note phrase drawn from whatever scale the Learn view is set to, inside
+a five-fret window, and you find it on the neck one note at a time. It starts on the
+root so you have an anchor, never repeats a note twice in a row, and bounces off the
+edges of the window rather than sitting at the bottom. Getting a note wrong numbers
+the rest of the phrase on the neck so you can see what you were reaching for. This is
+how working a song out by ear actually feels.
 
 *Play it* is the one that involves the actual instrument. It names a note, listens
 through the microphone, and moves on when it hears that pitch class in any octave —

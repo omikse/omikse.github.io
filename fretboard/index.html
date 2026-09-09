@@ -730,6 +730,9 @@ body.has-plan{padding-bottom:86px}
         <option value="ear">Hear the interval</option>
         <option value="chord">Hear the chord</option>
       </optgroup>
+      <optgroup label="Train your ear">
+        <option value="echo">Play back what you hear</option>
+      </optgroup>
       <optgroup label="Read music">
         <option value="read">Read the note</option>
       </optgroup>
@@ -1986,10 +1989,11 @@ const CHORD_SETS = {
 };
 const SET_LABELS = {
   ear:   {lab:'Intervals', easy:'Octave, 5th, 4th', core:'The common seven', all:'All twelve'},
-  chord: {lab:'Chords',    easy:'Major or minor',   core:'Plus the sevenths', all:'Everything'}
+  chord: {lab:'Chords',    easy:'Major or minor',   core:'Plus the sevenths', all:'Everything'},
+  echo:  {lab:'Phrase',    easy:'Three notes',      core:'Four notes',        all:'Five notes'}
 };
 function fillEarSet(){
-  const L = SET_LABELS[game.mode === 'chord' ? 'chord' : 'ear'];
+  const L = SET_LABELS[game.mode === 'chord' ? 'chord' : game.mode === 'echo' ? 'echo' : 'ear'];
   $('q-earset-lab').textContent = L.lab;
   const cur = game.earset;
   $('q-earset').innerHTML = ['easy','core','all']
@@ -2004,14 +2008,20 @@ stats.extraSeen = stats.extraSeen || {};
   gameStrings();
   $('q-mode').onchange = e=>{
     game.mode=e.target.value;
-    $('q-earset-wrap').classList.toggle('hide', game.mode!=='ear' && game.mode!=='chord');
+    $('q-earset-wrap').classList.toggle('hide', ['ear','chord','echo'].indexOf(game.mode)<0);
     fillEarSet();
     if(game.q) newQuestion(); updateHelp(); renderStats();
   };
-  $('q-earset').onchange = e=>{ game.earset=e.target.value; if((game.mode==='ear'||game.mode==='chord') && game.q) newQuestion(); };
+  $('q-earset').onchange = e=>{ game.earset=e.target.value; if(['ear','chord','echo'].indexOf(game.mode)>=0 && game.q) newQuestion(); };
   $('q-mic').onclick = ()=> game.mic ? micOff() : micOn();
   $('q-reveal').onclick = ()=>{
     if(!game.q || game.locked) return;
+    if(game.mode==='echo'){
+      game.q.seq.forEach((n,k)=> fbG.set(n.s, n.f, k===0?'root':'blue', String(k+1)));
+      fbG.paint(PL.root);
+      return resolve(false, 'The phrase was '
+        + game.q.seq.map(n=> pretty(nameOf(((n.midi%12)+12)%12, PL.root))).join(' – ') + '.');
+    }
     const t = tuning();
     fbG.clear();
     for(const st of game.strings) for(let f=0; f<=fbG.frets; f++)
@@ -2067,6 +2077,7 @@ function updateHelp(){
     ear:'Two notes play, low then high. Name the distance between them — then the neck shows you where they were.',
     read:'One note on the staff. Name it. Guitar music is written an octave above where it sounds, so the low E sits three ledger lines below the staff.',
     playit:'Find the note on your guitar and play it. The app listens through the microphone and moves on when it hears the right pitch, in any octave.',
+    echo:'A short phrase plays. Find it on the neck, one note at a time, in order. This is the skill that lets you work songs out by ear — everything else here is preparation for it.',
     chord:'A chord is strummed. Say what kind it is — the root does not matter, only the flavour. Then the neck shows you the shape.'
   }[game.mode];
   $('q-help').innerHTML = h;
@@ -2138,6 +2149,36 @@ function newQuestion(){
     const p = randomPos();
     const iv = randOf([2,3,4,5,7,9,10,12].filter(x=>x<=12));
     game.q = Object.assign({}, p, {iv, targetPc:(p.pc+iv)%12});
+  } else if(game.mode==='echo'){
+    const len = {easy:3, core:4, all:5}[game.earset] || 4;
+    const rootPc = pcOf(PL.root), iv = SCALES[PL.scale].iv;
+    const set = new Set(iv.map(i=>(rootPc+i)%12));
+    let anchor = 1;
+    while(anchor < 12 && (t[0]+anchor)%12 !== rootPc) anchor++;
+    const top = Math.min(anchor+4, S.frets);
+    const pool = [];
+    for(let st=0; st<t.length; st++) for(let f=anchor; f<=top; f++)
+      if(set.has((t[st]+f)%12)) pool.push({s:st, f:f, midi:midiAt(st,f)});
+    pool.sort((a,b)=> a.midi-b.midi);
+    const uniq = [];
+    pool.forEach(n=>{ if(!uniq.length || uniq[uniq.length-1].midi !== n.midi) uniq.push(n); });
+    if(uniq.length < 3){ game.mode='name'; return newQuestion(); }
+    /* start on a root near the middle of the window, so the phrase has room to move
+       in both directions rather than clamping against the bottom */
+    const rootIdx = [];
+    uniq.forEach((n,ix)=>{ if(((n.midi%12)+12)%12 === rootPc) rootIdx.push(ix); });
+    let i = rootIdx.length ? rootIdx[Math.floor(rootIdx.length/2)] : Math.floor(uniq.length/2);
+    const seq = [uniq[i]];
+    for(let k=1;k<len;k++){
+      const step = randOf([-2,-1,-1,1,1,2]);
+      let j = i + step;
+      if(j < 0 || j >= uniq.length) j = i - step;          // bounce off the ends
+      j = Math.max(0, Math.min(uniq.length-1, j));
+      if(j === i) j = (i === 0) ? 1 : i - 1;               // never sit on the same note twice
+      i = Math.max(0, Math.min(uniq.length-1, j));
+      seq.push(uniq[i]);
+    }
+    game.q = {seq:seq, got:[], anchor:anchor, top:top, pool:uniq};
   } else if(game.mode==='read'){
     game.q = randomPos();
   } else if(game.mode==='playit'){
@@ -2189,6 +2230,20 @@ function drawQuestion(){
     fbG.set(q.s,q.f,'root', pretty(nameOf(q.pc)));
     P.innerHTML = `Click every other <em>${pretty(nameOf(q.pc))}</em> <span class="hint">— ${q.targets.size} to find</span>`;
   }
+  else if(game.mode==='echo'){
+    P.innerHTML = 'Play back the phrase — <em>' + q.seq.length + ' notes</em>, in order '
+      + '<span class="hint">· ' + pretty(PL.root) + ' ' + SCALES[PL.scale].n
+      + ', frets ' + q.anchor + '–' + q.top + '</span>';
+    $('q-ear').classList.remove('hide');
+    $('q-earhint').innerHTML = 'Click the notes on the neck. Replay as often as you like, or <button class="btn ghost" id="q-echo-give" style="padding:2px 8px;font-size:.8rem">show me</button>.';
+    $('q-answers').innerHTML = '';
+    q.pool.forEach(n=> fbG.set(n.s, n.f, 'ghost', pretty(nameOf((t[n.s]+n.f)%12, PL.root))));
+    fbG.paint(PL.root);
+    const give = $('q-echo-give');
+    if(give) give.onclick = ()=> $('q-reveal').onclick();
+    playEar(false);
+    return;
+  }
   else if(game.mode==='read'){
     P.innerHTML = 'What note is written here?';
     $('q-staff').classList.remove('hide');
@@ -2227,7 +2282,7 @@ function drawQuestion(){
     const art = /^[aeiou]/i.test(ivName) ? 'an' : 'a';
     P.innerHTML = `From this note, click ${art} <em>${ivName}</em> above <span class="hint">— any string</span>`;
   }
-  $('q-ear').classList.toggle('hide', game.mode!=='ear' && game.mode!=='chord');
+  $('q-ear').classList.toggle('hide', ['ear','chord','echo'].indexOf(game.mode)<0);
   $('q-listen').classList.toggle('hide', game.mode!=='playit');
   $('q-staff').classList.toggle('hide', game.mode!=='read');
   fbG.paint();
@@ -2235,6 +2290,10 @@ function drawQuestion(){
 function playEar(together){
   const q = game.q; if(!q) return;
   audio();
+  if(game.mode==='echo'){
+    q.seq.forEach((n,k)=> pluck(n.midi, k*(together ? 0.16 : 0.46), 1.3, .5));
+    return;
+  }
   if(game.mode==='chord'){
     if(!q.v) return;
     const idx=[]; for(let s=0;s<q.v.pick.length;s++) if(q.v.pick[s]>=0) idx.push(s);
@@ -2394,6 +2453,30 @@ function answerName(pc){
 function onBoardClick(s,f){
   if(!game.q || game.locked) return;
   const q=game.q, t=tuning(), pc=(t[s]+f)%12;
+  if(game.mode==='echo'){
+    const want = q.seq[q.got.length];
+    const midi = midiAt(s,f);
+    if(midi === want.midi){
+      q.got.push({s:s, f:f});
+      fbG.set(s, f, 'on', String(q.got.length));
+      fbG.paint(PL.root);
+      if(q.got.length === q.seq.length){
+        resolve(true, 'That is the phrase. ' + q.seq.map(n=> pretty(nameOf(((n.midi%12)+12)%12, PL.root))).join(' – '));
+      } else {
+        flash(q.got.length + ' of ' + q.seq.length + ' — keep going.', 'ok');
+      }
+    } else {
+      fbG.set(s, f, 'bad', pretty(nameOf(pc, PL.root)));
+      q.seq.forEach((n,k)=>{
+        if(k < q.got.length) return;
+        fbG.set(n.s, n.f, k===q.got.length ? 'root' : 'blue', String(k+1));
+      });
+      fbG.paint(PL.root);
+      resolve(false, 'Note ' + (q.got.length+1) + ' was '
+        + pretty(nameOf(((want.midi%12)+12)%12, PL.root)) + '. The rest of the phrase is numbered.');
+    }
+    return;
+  }
   if(game.mode==='find'){
     if(s!==q.s){ flash('Wrong string — you want string '+(t.length-q.s)+'.'); return; }
     const ok = pc===q.pc;
@@ -2438,7 +2521,9 @@ function resolve(ok, msg){
   game.total++; if(ok){ game.correct++; game.score+=game.mode==='octaves'?3:1; game.streak++; game.times.push(dt); }
   else game.streak=0;
   if(game.streak>stats.best) stats.best=game.streak;
-  if(game.mode==='playit'){
+  if(game.mode==='echo'){
+    /* nothing per-note to record; the mode counter below is the useful signal */
+  } else if(game.mode==='playit'){
     const nk = SHARP[game.q.pc];
     const rec = stats.byNote[nk] || (stats.byNote[nk]={ok:0,n:0});
     rec.n++; if(ok) rec.ok++;
@@ -2466,7 +2551,7 @@ function resolve(ok, msg){
   store.set('stats',stats);
   flash(msg, ok?'ok':'no');
   updateScore(); renderStats();
-  if(ok && ['ear','chord','playit','read'].indexOf(game.mode)<0) pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
+  if(ok && ['ear','chord','playit','read','echo'].indexOf(game.mode)<0) pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
   setTimeout(()=>{ if(game.locked) newQuestion(); }, ok?900:1900);
 }
 function renderStats(){
