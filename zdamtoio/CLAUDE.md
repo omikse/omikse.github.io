@@ -49,7 +49,12 @@ edits appear to do nothing. Same trap as `tools/pdf-json`.
    repo. `GEMINI_API_KEY` is a real secret and never goes in a file here.
 7. **Scope is the standard `100` papers only.** Everything else is an *arkusz
    dostosowany*; `sync.py` skips them.
-8. **Exams come from the pipeline, never from hand-written objects.** The
+8. **There are exactly two roles: admin and uczeń. There is no teacher.**
+   This is a product decision, not an omission — do not add a teacher tier, a
+   class, a group, or per-teacher seats, and do not describe the admin panel as
+   a "teacher view". Admin is the project owner; everyone else is a student.
+   Anything that would need a third role needs an explicit decision first.
+9. **Exams come from the pipeline, never from hand-written objects.** The
    original site carried three exams hardcoded into `index.html` in a different,
    ad-hoc shape (bare `questions[]` with a `rubric` string, essay topics as
    plain text). They were deleted, deliberately — they cannot be graded by
