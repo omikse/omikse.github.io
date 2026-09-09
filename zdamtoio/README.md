@@ -108,10 +108,18 @@ arkusz** at the foot of the sheet. The second says how many API calls it will
 cost before spending any — a podstawowa paper is about 23.
 
 Each question is headed the way CKE prints it: a lavender bar reading
-*Zadanie 3. (0–2)*, and out in the margin the examiner's stack — the number, the
-marks available, and an empty box. The box stays empty until that question is
-graded, then the points appear in it. The sizes and colours are measured off the
-rendered booklet, not chosen; see DOCUMENTATION.md §14 before touching them.
+*Zadanie 3. (0–2)*, and in the left margin the examiner's stack — the number,
+the marks available, and the box the score goes in.
+
+**That box is the button.** Click it and the question is marked; the score
+appears in the same place. It carries one of two marks, because there are two
+mechanisms: **klucz CKE** where the answer is compared against CKE's key (no
+model involved), and **punkt AI™** where a model does the grading — ours, not
+CKE's. The wypracowanie also keeps its labelled button at the foot of the card,
+since that one spends eight API calls.
+
+The sizes and colours are measured off the rendered booklet, not chosen; see
+DOCUMENTATION.md §14 before touching them.
 
 ## Grading, honestly
 

@@ -11,13 +11,13 @@
  */
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange }
-  from "./renderers.js?v=7a0ec9a4";
+  from "./renderers.js?v=3b7fb012";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=7a0ec9a4";
+         submitAttempt, startOver } from "./progress.js?v=3b7fb012";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=7a0ec9a4";
+  from "./grading.js?v=3b7fb012";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=7a0ec9a4";
+  from "./admin.js?v=3b7fb012";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -597,24 +597,30 @@ function renderCard(question) {
   const isEssay = question.type === "P-ESSAY";
   const aiGraded = !deterministic && !!renderer?.buildPrompt;
 
-  const buttonLabel = deterministic ? "Sprawdź"
-    : isEssay ? "Oceń wypracowanie (8 zapytań AI)"
-    : "Sprawdź (AI)";
+  const buttonLabel = isEssay ? "Oceń wypracowanie (8 zapytań AI)" : "";
 
   // Laid out like the printed arkusz: a lavender bar reading
-  // "Zadanie 3. (0–2)" across the text column, and in the right margin the
-  // examiner's stack — number, every attainable score, and an empty box for the
-  // mark. The app writes the awarded points into that box once it knows them.
+  // "Zadanie 3. (0–2)" across the text column, and beside it the examiner's
+  // stack — number, every attainable score, and the box the mark goes in.
+  //
+  // On paper that box is empty for the examiner to write in. Here it IS the
+  // marker: it carries the button, and the score it produces lands in the same
+  // place the button was.
   const maxPoints = Number(question.scoring?.max_points ?? 0);
   const range = scoreRange(maxPoints);
+  const gradeable = deterministic || aiGraded;
 
   card.innerHTML = `
     <header class="q-header">
       <div class="q-head-bar">Zadanie ${esc(question.number)}. (0–${esc(maxPoints)})</div>
-      <div class="q-score-stack" aria-hidden="true">
-        <div class="q-score-num">${esc(question.number)}.</div>
-        <div class="q-score-range">${esc(range)}</div>
-        <div class="q-score-box" data-score></div>
+      <div class="q-score-stack">
+        <div class="q-score-num" aria-hidden="true">${esc(question.number)}.</div>
+        <div class="q-score-range" aria-hidden="true">${esc(range)}</div>
+        ${gradeable
+          ? `<button type="button" class="q-score-box" data-score data-action="grade"
+                     title="${esc(gradeHint(deterministic, isEssay))}"
+                     aria-label="${esc(gradeHint(deterministic, isEssay))}">${gradeMark(deterministic)}</button>`
+          : `<div class="q-score-box" data-score></div>`}
       </div>
     </header>
     ${renderReference(question.reference_data)}
@@ -622,7 +628,7 @@ function renderCard(question) {
     <div class="q-answer">${answerHtml}</div>
     <div class="q-result"></div>
     <footer class="q-actions">
-      ${(deterministic || aiGraded) ? `<button type="button" data-action="grade">${esc(buttonLabel)}</button>` : ""}
+      ${isEssay ? `<button type="button" data-action="grade">${esc(buttonLabel)}</button>` : ""}
       ${adminMode ? `<button type="button" data-action="analyse">Analiza</button>` : ""}
     </footer>`;
 
@@ -632,7 +638,9 @@ function renderCard(question) {
   // away, not only after the student clicks Sprawdź again. Ask the renderer
   // rather than testing for grade_result: the essay keeps its result in
   // q.evaluation instead, so checking one field silently hid the scorecard.
-  const gradeBtn = card.querySelector('[data-action="grade"]');
+  // Both the margin box and the essay's footer button carry data-action="grade".
+  const triggers = [...card.querySelectorAll('[data-action="grade"]')];
+  const footBtn = card.querySelector('.q-actions [data-action="grade"]');
   const resultBox = card.querySelector(".q-result");
 
   // Every result goes through here, so the margin box can never fall out of
@@ -655,59 +663,67 @@ function renderCard(question) {
     return true;
   };
 
-  if (gradeBtn && deterministic) {
-    // P-TF and P-CHOICE compare against scoring.correct_answers — exact,
-    // instant, free, and never a model (CLAUDE.md rule 3).
-    gradeBtn.addEventListener("click", () => {
-      if (refuseIfLocked()) return;
-      renderer.collect(question, card);
-      question.grade_result = { ...renderer.grade(question), source: "auto" };
-      showResult(renderer.renderResult ? renderer.renderResult(question) : "");
-      persist();
-    });
-  }
+  // P-TF and P-CHOICE compare against scoring.correct_answers — exact, instant,
+  // free, and never a model (CLAUDE.md rule 3).
+  const gradeDeterministic = () => {
+    if (refuseIfLocked()) return;
+    renderer.collect(question, card);
+    question.grade_result = { ...renderer.grade(question), source: "auto" };
+    showResult(renderer.renderResult ? renderer.renderResult(question) : "");
+    persist();
+  };
 
-  if (gradeBtn && aiGraded) {
-    gradeBtn.addEventListener("click", async () => {
-      if (refuseIfLocked()) return;
-      renderer.collect(question, card);
+  const gradeWithAI = async () => {
+    if (refuseIfLocked()) return;
+    renderer.collect(question, card);
 
-      if (!isAnswered(question.user_answer)) {
-        resultBox.innerHTML = note("Najpierw odpowiedz na zadanie.");
-        return;
-      }
+    if (!isAnswered(question.user_answer)) {
+      resultBox.innerHTML = note("Najpierw odpowiedz na zadanie.");
+      return;
+    }
 
-      gradeBtn.disabled = true;
-      const label = gradeBtn.textContent;
-      try {
-        if (isEssay) {
-          // Eight calls spaced for the 5/min limit, so show movement.
-          resultBox.innerHTML = note("Ocenianie: 0/8 kryteriów…");
-          question.essay_grading = await gradeEssay(question, apiKey, (done, total) => {
-            gradeBtn.textContent = `Ocenianie… ${done}/${total}`;
-            resultBox.innerHTML = note(`Ocenianie: ${done}/${total} kryteriów…`);
-          });
-          applyEssayEvaluation(question);
-          showResult(renderer.renderResult(question));
-        } else {
-          resultBox.innerHTML = note("Ocenianie przez AI…");
-          question.grade_result = await gradeQuestion(question, apiKey);
-          showResult(renderer.renderResult ? renderer.renderResult(question) : "");
-          if (!question.grade_result.parsed_ok) {
-            resultBox.innerHTML += note("Nie udało się odczytać oceny z odpowiedzi modelu — "
-              + "surowa odpowiedź została zapisana.");
-          }
+    triggers.forEach(t => { t.disabled = true; });
+    const footLabel = footBtn?.textContent;
+    try {
+      if (isEssay) {
+        // Eight calls spaced for the 5/min limit, so show movement.
+        resultBox.innerHTML = note("Ocenianie: 0/8 kryteriów…");
+        paintScoreBox(question, card, "0/8");
+        question.essay_grading = await gradeEssay(question, apiKey, (done, total) => {
+          if (footBtn) footBtn.textContent = `Ocenianie… ${done}/${total}`;
+          paintScoreBox(question, card, `${done}/${total}`);
+          resultBox.innerHTML = note(`Ocenianie: ${done}/${total} kryteriów…`);
+        });
+        applyEssayEvaluation(question);
+        showResult(renderer.renderResult(question));
+      } else {
+        resultBox.innerHTML = note("Ocenianie przez AI…");
+        paintScoreBox(question, card, "…");
+        question.grade_result = await gradeQuestion(question, apiKey);
+        showResult(renderer.renderResult ? renderer.renderResult(question) : "");
+        if (!question.grade_result.parsed_ok) {
+          resultBox.innerHTML += note("Nie udało się odczytać oceny z odpowiedzi modelu — "
+            + "surowa odpowiedź została zapisana.");
         }
-        persist();     // the response is paid for; store it before anything else
-      } catch (err) {
-        // A failed call still cost quota, so say what happened rather than
-        // silently doing nothing.
-        resultBox.innerHTML = note(err instanceof GradingError ? err.message : String(err), true);
-      } finally {
-        gradeBtn.disabled = false;
-        gradeBtn.textContent = label;
       }
-    });
+      persist();     // the response is paid for; store it before anything else
+    } catch (err) {
+      // A failed call still cost quota, so say what happened rather than
+      // silently doing nothing.
+      resultBox.innerHTML = note(err instanceof GradingError ? err.message : String(err), true);
+      paintScoreBox(question, card);        // back to the mark, ready to retry
+    } finally {
+      triggers.forEach(t => { t.disabled = false; });
+      if (footBtn && footLabel !== undefined) footBtn.textContent = footLabel;
+      paintScoreBox(question, card);        // graded boxes re-disable themselves
+    }
+  };
+
+  // The box and (for the essay) the labelled footer button run the same path,
+  // so there is one grading routine per question however it was started.
+  if (deterministic || aiGraded) {
+    const run = deterministic ? gradeDeterministic : gradeWithAI;
+    triggers.forEach(t => t.addEventListener("click", run));
   }
 
   const analyseBtn = card.querySelector('[data-action="analyse"]');
@@ -829,10 +845,13 @@ function startClock() {
 
 /** Disable every input in the sheet — actually disabled, not merely dimmed. */
 function freezeSheet() {
+  // Answers only. Grading is NOT frozen: gradingLocked() already says a
+  // submitted attempt may be marked — that is the whole point of finishing —
+  // and disabling the buttons here contradicted it, leaving a student who had
+  // just ended their exam clicking a dead "Sprawdź". Each grade path calls
+  // refuseIfLocked() at click time, which is the single source of that rule.
   document.querySelectorAll("#exam-host input, #exam-host textarea, #exam-host select")
     .forEach(el => { el.disabled = true; });
-  document.querySelectorAll("#exam-host .q-actions button")
-    .forEach(btn => { btn.disabled = true; });
 }
 
 /**
@@ -963,16 +982,69 @@ async function retakeExam() {
  * Grading the whole sheet
  * ------------------------------------------------------------------ */
 
-/** Write the awarded points into the examiner box in the margin, as a marker
- *  would. Empty until the question has actually been graded. */
-function paintScoreBox(question, card) {
+/* What the marker button says before it has marked anything.
+ *
+ * Two marks, because there are two mechanisms and conflating them would be a
+ * lie to the student. P-TF and P-CHOICE are compared against
+ * scoring.correct_answers — CKE's own key, no model involved (CLAUDE.md rule 3)
+ * — so they say so. Everything else is graded by a model, which is ours, not
+ * CKE's; branding that "CKE" would imply the Komisja stands behind a score it
+ * has never seen.
+ *
+ * Change the wording here and it changes everywhere; nothing else spells it. */
+const GRADE_MARK = {
+  key: { top: "klucz", bottom: "CKE", tm: "" },
+  ai:  { top: "punkt", bottom: "AI",  tm: "™" },
+};
+
+function gradeMark(deterministic) {
+  const m = deterministic ? GRADE_MARK.key : GRADE_MARK.ai;
+  return `<span class="q-mark" aria-hidden="true"
+    ><span class="q-mark-top">${esc(m.top)}</span
+    ><span class="q-mark-bot">${esc(m.bottom)}<sup>${esc(m.tm)}</sup></span></span>`;
+}
+
+/** The accessible name and tooltip — says which mechanism, and what it costs. */
+function gradeHint(deterministic, isEssay) {
+  if (deterministic) return "Sprawdź — porównanie z kluczem odpowiedzi CKE, bez AI";
+  if (isEssay) return "Oceń wypracowanie — 8 zapytań do AI";
+  return "Sprawdź — ocena przez AI (1 zapytanie)";
+}
+
+/**
+ * Paint the margin box: the awarded points once they exist, otherwise whatever
+ * state the marker is in.
+ *
+ * On paper this box is where the examiner writes the score. Here the button
+ * that asks for the score occupies it until there is one, so the mark lands
+ * exactly where the student clicked.
+ */
+function paintScoreBox(question, card, state = null) {
   const box = card?.querySelector("[data-score]");
   if (!box) return;
+
   const points = question.grade_result?.points
     ?? question.evaluation?.totals?.official_points
     ?? null;
-  box.textContent = points === null ? "" : String(points);
-  box.classList.toggle("q-score-box-filled", points !== null);
+
+  if (points !== null) {
+    box.textContent = String(points);
+    box.classList.add("q-score-box-filled");
+    box.classList.remove("q-score-box-busy");
+    if ("disabled" in box) box.disabled = true;   // marked; nothing left to ask
+    return;
+  }
+
+  box.classList.remove("q-score-box-filled");
+  if (state) {
+    box.textContent = state;                       // "3/8" while the model works
+    box.classList.add("q-score-box-busy");
+  } else {
+    box.innerHTML = box.tagName === "BUTTON"
+      ? gradeMark(!!RENDERERS[question.type]?.grade)
+      : "";
+    box.classList.remove("q-score-box-busy");
+  }
 }
 
 /** Redraw one question's result box from whatever the renderer now reports. */

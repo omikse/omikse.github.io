@@ -28,6 +28,8 @@
      off the rendered page, the question bar is #d4b8ea where the scorecard is
      #e7ddf3. Two documents, two tints; don't collapse them into one. */
   --sc-lav-deep: #d4b8ea;
+  /* Scoring-stack gutter: 55px of stack + 30px clear, both measured. */
+  --q-gutter: 85px;
 }
 
 * { box-sizing: border-box; }
@@ -126,9 +128,15 @@ button:disabled { opacity: .45; cursor: not-allowed; }
    Question card
    ============================================================ */
 .q-card {
+  position: relative;                 /* the scoring stack is placed against it */
   border: 1px solid var(--q-border);
   border-radius: var(--q-radius);
   padding: var(--q-pad);
+  /* A left margin down the whole card, the way the paper runs one down the
+     page. The stack sits in it; everything else clears it. Putting the gutter
+     on the header alone is not enough — the stack is 121px tall and the header
+     is 28px, so it would land on the question text. */
+  padding-left: calc(28px + var(--q-gutter));
   background: var(--q-card-bg);
 }
 
@@ -143,9 +151,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
    The stack overhangs into the right margin the way it does on paper. Below
    640px there is no margin to overhang into, so it tucks back inside. */
 .q-header {
-  position: relative;
   margin-bottom: 14px;
-  padding-right: 85px;      /* the bar stops short of the stack, as on paper */
 }
 .q-head-bar {
   display: flex;            /* so the harness's type badge can sit right */
@@ -166,8 +172,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
    the bar. The box is the tall one because that is where a mark is written. */
 .q-score-stack {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 24px;                /* level with the bar: the card's padding-top */
+  left: 28px;
   width: 55px;
   border: 1.5px solid var(--sc-purple);
   border-radius: 2px;
@@ -201,11 +207,11 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   white-space: nowrap;
   padding: 0 2px;
 }
-/* Empty on purpose until the question is graded — this is where the mark goes.
-   A graded box also gets `.q-score-box-filled`. That class deliberately carries
-   no styling: the paper leaves the box plain whether or not a mark is in it.
-   It exists as a state hook for tests and selectors — don't delete the toggle
-   in exam.js on the grounds that nothing here uses it. */
+/* On paper this box is left empty for the examiner to write the score in.
+   Here it is the marker: the button lives in it, and the score it produces
+   replaces the button, so the mark appears exactly where it was asked for.
+
+   Three states — the mark (idle), progress (busy), the score (filled). */
 .q-score-box {
   height: 57px;
   background: #fff;
@@ -213,11 +219,70 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   font-weight: 800;
   font-size: 20px;
   color: var(--sc-purple);
+  /* button reset: it must look like a box on a form, not a browser control */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+button.q-score-box {
+  cursor: pointer;
+  transition: background-color .12s ease, color .12s ease;
+}
+button.q-score-box:hover:not(:disabled) { background: var(--sc-purple); color: #fff; }
+button.q-score-box:active:not(:disabled) { background: var(--sc-purple-dark); }
+button.q-score-box:focus-visible {
+  outline: 2px solid var(--sc-purple);
+  outline-offset: 2px;
+}
+/* Graded, or disabled in exam mode: a box with a number in it is not a button. */
+button.q-score-box:disabled { cursor: default; }
+button.q-score-box.q-score-box-filled { background: #fff; color: var(--sc-purple); }
+
+/* The mark. Two words stacked: what does the grading, and by whose authority.
+   Sized to the 55px box — see exam.js GRADE_MARK for why there are two. */
+.q-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1;
+}
+.q-mark-top {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: lowercase;
+  opacity: .75;
+}
+.q-mark-bot {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+}
+.q-mark-bot sup { font-size: 6px; font-weight: 700; vertical-align: super; }
+
+/* Waiting on the model: "3/8". Not a spinner — the count is the useful part. */
+.q-score-box-busy {
+  font-size: 13px;
+  font-weight: 700;
+  animation: q-score-pulse 1.1s ease-in-out infinite;
+}
+@keyframes q-score-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) {
+  .q-score-box-busy { animation: none; }
 }
 
 /* Under ~640 px there is no margin to hang the stack in, so it lies flat. */
 @media (max-width: 640px) {
-  .q-header { padding-right: 0; }
+  .q-card { padding-left: 28px; }
   .q-score-stack { position: static; width: 100%; display: flex; margin-top: 6px; }
   .q-score-stack > * { flex: 1; height: 30px; border-top: 0; border-left: 1.5px solid var(--sc-purple); }
   .q-score-stack > :first-child { border-left: 0; }
