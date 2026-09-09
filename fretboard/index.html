@@ -514,6 +514,9 @@ body.has-plan{padding-bottom:86px}
   .bar select{padding:6px 8px; min-width:78px}
   .seg button{padding:6px 9px; font-size:.86rem}
 }
+
+.fb .dot.nextbox{background:var(--violet); color:#170c2b}
+.fb .dot.shared{box-shadow:0 0 0 3px var(--blue), 0 1px 3px rgba(0,0,0,.45)}
 .hide{display:none !important}
 </style>
 </head>
@@ -1075,6 +1078,7 @@ body.has-plan{padding-bottom:86px}
     <label class="chk"><input type="checkbox" id="p-blues"> Add the blue note</label>
     <label class="chk"><input type="checkbox" id="p-rest"> Ghost the other positions</label>
     <label class="chk"><input type="checkbox" id="p-chord"> Ring the chord inside it</label>
+    <label class="chk"><input type="checkbox" id="p-join"> Show the next box too</label>
     <div class="f"><label for="p-seq">Sequence</label><select id="p-seq">
       <option value="straight" selected>Straight up</option>
       <option value="pairs">In pairs</option>
@@ -1098,6 +1102,8 @@ body.has-plan{padding-bottom:86px}
       <span><i style="background:var(--scale)"></i>Pentatonic tone</span>
       <span><i style="background:var(--blue)"></i>Blue note</span>
       <span><i style="background:transparent;box-shadow:0 0 0 2px var(--blue);border-radius:50%"></i>Note of the chord</span>
+      <span><i style="background:var(--violet)"></i>Next box</span>
+      <span><i style="background:var(--scale);box-shadow:0 0 0 2px var(--blue)"></i>Shared — the way across</span>
       <span class="hint" id="p-span"></span>
     </div>
   </div>
@@ -1112,7 +1118,9 @@ body.has-plan{padding-bottom:86px}
     <div class="card">
       <h3>The five boxes, and why they connect</h3>
       <p>The pentatonic has five notes, so it has exactly five ways to sit under your hand — one starting on each note of the scale. Play them in order up the neck and the last one is the first one again, twelve frets higher. Nothing else is hiding.</p>
-      <p>Each box overlaps the next by two notes on every string. That overlap is the door: whenever you land on a shared note you can step into the neighbouring shape without stopping. Practise the joins, not the boxes.</p>
+      <p>Each box shares exactly one note with the next on every string — six notes in all, and they are the door.
+      Land on one of them and you can step into the neighbouring shape without stopping. Tick <em>show the next box
+      too</em> and the shared notes are the ones with a ring: practise those, not the boxes.</p>
       <p class="hint">Box numbers here follow the usual convention: box 1 is the one whose root sits on the low E string, played with the first finger.</p>
     </div>
   </div>
@@ -1414,7 +1422,7 @@ const S = {
   sound: store.get('sound',true),
   theme: store.get('theme','dark'),
   eRoot:'A', eScale:'minPent', eLabels:'name', eGhost:false, eOct:false,
-  pRoot:'A', pType:'minor', pBox:1, pLabels:'name', pBlues:false, pRest:false, pChord:false,
+  pRoot:'A', pType:'minor', pBox:1, pLabels:'name', pBlues:false, pRest:false, pChord:false, pJoin:false,
   cofKey:'C', cofMinor:false,
   tKey:'C', tMode:'major',
 };
@@ -2510,6 +2518,7 @@ const fbP = new Fretboard('fb-pent');
   $('p-blues').onchange=e=>{ S.pBlues=e.target.checked; renderPent(); };
   $('p-rest').onchange=e=>{ S.pRest=e.target.checked; renderPent(); };
   $('p-chord').onchange=e=>{ S.pChord=e.target.checked; renderPent(); };
+  $('p-join').onchange=e=>{ S.pJoin=e.target.checked; renderPent(); };
   $('p-play').onclick = ()=>{
     const asc = [];
     for(let st=0; st<fbP.strings; st++){
@@ -2561,17 +2570,29 @@ function renderPent(){
 
   fbP.clear();
   let lo=99, hi=-1;
-  const inBox = new Set();
-  if(std && S.pBox>0){
-    // lowest fret on the low E string that carries the minor root (prefer 1..12)
-    let anchor = 0; while((t[0]+anchor)%12 !== minorPc) anchor++;
-    if(anchor===0) anchor=12;                    // keep the shape on the neck, not at the nut
-    const box = PENT_BOXES[S.pBox-1];
+  const inBox = new Set(), nextBox = new Set();
+  let anchor = 0;
+  const cellsOf = (boxNum)=>{
+    const out = new Set();
+    const box = PENT_BOXES[boxNum-1];
     for(let s=0;s<6;s++) for(const o of box.off[s]){
       let f = anchor + o;
       if(f>S.frets) f-=12;
       if(f<0 || f>S.frets) continue;
-      inBox.add(s+':'+f); lo=Math.min(lo,f); hi=Math.max(hi,f);
+      out.add(s+':'+f);
+    }
+    return out;
+  };
+  if(std && S.pBox>0){
+    // lowest fret on the low E string that carries the minor root (prefer 1..12)
+    while((t[0]+anchor)%12 !== minorPc) anchor++;
+    if(anchor===0) anchor=12;                    // keep the shape on the neck, not at the nut
+    cellsOf(S.pBox).forEach(k=>{ inBox.add(k); const f=+k.split(':')[1]; lo=Math.min(lo,f); hi=Math.max(hi,f); });
+    if(S.pJoin){
+      cellsOf(S.pBox===5 ? 1 : S.pBox+1).forEach(k=>{
+        nextBox.add(k);
+        const f=+k.split(':')[1]; lo=Math.min(lo,f); hi=Math.max(hi,f);
+      });
     }
   }
   for(let s=0;s<t.length;s++) for(let f=0;f<=S.frets;f++){
@@ -2579,9 +2600,12 @@ function renderPent(){
     const isBlue = S.pBlues && pc===bluePc;
     const member = set.has(pc) || isBlue;
     if(!member) continue;
-    const inside = (S.pBox===0 || !std) ? true : inBox.has(k) || (isBlue && f>=lo && f<=hi);
+    const inThis = inBox.has(k), inNext = nextBox.has(k);
+    const inside = (S.pBox===0 || !std) ? true : inThis || inNext || (isBlue && f>=lo && f<=hi);
     if(!inside){ if(S.pRest) fbP.set(s,f,'ghost', S.pLabels==='none'?'':lbl(pc)); continue; }
     let cls = pc===rootPc ? 'root' : (isBlue ? 'blue' : 'on');
+    if(S.pJoin && inNext && !inThis && pc!==rootPc && !isBlue) cls = 'nextbox';
+    if(S.pJoin && inThis && inNext) cls += ' shared';
     if(S.pChord && triadSet.has(pc)) cls += ' chordtone';
     fbP.set(s,f,cls,lbl(pc));
   }
@@ -2592,7 +2616,12 @@ function renderPent(){
   const notes = iv.map(i=>nameOf((rootPc+i)%12, S.pRoot));
   $('p-notes').innerHTML = notes.map((n,i)=>`<span class="pill ${i===0?'on':''}">${pretty(n)}<span style="opacity:.6;font-size:.85em"> ${IVL_SHORT[iv[i]]}</span></span>`).join('')
     + (S.pBlues? `<span class="pill" style="border-color:var(--blue);color:var(--blue)">${pretty(nameOf(bluePc,S.pRoot))} ${blueDeg}</span>`:'');
-  $('p-span').textContent = (std && S.pBox>0 && hi>=0) ? `Box ${S.pBox} · frets ${lo}–${hi}` : 'All positions across the neck';
+  const shared = [...inBox].filter(k=> nextBox.has(k)).length;
+  $('p-span').textContent = (std && S.pBox>0 && hi>=0)
+    ? (S.pJoin
+        ? `Boxes ${S.pBox} and ${S.pBox===5?1:S.pBox+1} · frets ${lo}–${hi} · ${shared} notes shared`
+        : `Box ${S.pBox} · frets ${lo}–${hi}`)
+    : 'All positions across the neck';
   $('p-blurb').textContent = S.pType==='minor'
     ? 'Five notes taken from the natural minor scale, dropping the 2nd and the ♭6 — the two notes most likely to clash. What is left cannot sound wrong over a minor or blues progression, which is why it is every guitarist’s first scale.'
     : 'The major scale minus its 4th and 7th — the two notes that create tension. What is left is pure consonance: bright, open, and impossible to sour over a major progression.';
