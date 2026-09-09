@@ -799,6 +799,7 @@ body.has-plan{padding-bottom:86px}
     <div class="f"><label for="ch-root">Root</label><select id="ch-root"></select></div>
     <div class="f"><label for="ch-qual">Chord</label><select id="ch-qual"></select></div>
     <div class="f"><label for="ch-max">Search</label><select id="ch-max"></select></div>
+    <label class="chk"><input type="checkbox" id="ch-fing" checked> Finger numbers</label>
     <label class="chk"><input type="checkbox" id="ch-inv"> Allow inversions (bass note other than the root)</label>
   </div>
 
@@ -828,7 +829,8 @@ body.has-plan{padding-bottom:86px}
       <ul class="tight">
         <li><b>×</b> above a string means don't play it; <b>○</b> means play it open.</li>
         <li>Orange dots are the root — the note the chord is named after. Get that one in the bass and the chord sounds settled.</li>
-        <li>An orange bar is a barre: one finger flattened across several strings.</li>
+        <li>An orange bar is a barre: one finger flattened across several strings — always the index, marked 1.</li>
+        <li>The number in each dot is which finger to use: 1 index, 2 middle, 3 ring, 4 little.</li>
         <li>The number on the left is which fret the top of the diagram is.</li>
         <li>Four-note chords often drop the fifth. It is the one note you can lose without changing what the chord is.</li>
       </ul>
@@ -2796,7 +2798,7 @@ const fbC = new Fretboard('fb-chord', {clickable:true});
 /* ============================================================
    CHORDS — search the neck for shapes a hand can actually hold
    ============================================================ */
-const CH = {root:'C', qual:'maj', maxFret:12, inversions:false, sel:0, list:[]};
+const CH = {root:'C', qual:'maj', maxFret:12, inversions:false, fingers:true, sel:0, list:[]};
 const CHORD_KEYS = ['maj','min','dim','aug','sus2','sus4','maj7','dom7','min7','m7b5','dim7','six','min6'];
 const CHORD_SUFFIX = {maj:'', min:'m', dim:'°', aug:'+', sus2:'sus2', sus4:'sus4',
   maj7:'maj7', dom7:'7', min7:'m7', m7b5:'m7♭5', dim7:'°7', six:'6', min6:'m6'};
@@ -2809,7 +2811,10 @@ function fingersFor(pick){
   const maxF = Math.max(...fretted.map(x=>x.f));
   const atMin = fretted.filter(x=>x.f===minF);
   let barre = null, fingers;
-  if(atMin.length>=2){
+  /* A barre is worth it when three or more strings share the lowest fret, or when
+     there are more notes than free fingers. Two strings at the same fret is just two
+     fingers — treating it as a barre is what turned D into a barre chord. */
+  if(atMin.length>=3 || (atMin.length>=2 && fretted.length>4)){
     const lo = Math.min(...atMin.map(x=>x.s)), hi = Math.max(...atMin.map(x=>x.s));
     // a barre only helps if nothing lower-fretted hides under it
     const blocked = pick.some((f,s)=> s>lo && s<hi && (f===0 || (f>0 && f<minF)));
@@ -2820,6 +2825,28 @@ function fingersFor(pick){
   }
   if(fingers===undefined) fingers = fretted.length;
   return {fingers, barre, span:maxF-minF};
+}
+
+/* Which finger goes where. A barre takes the index; everything else is numbered by
+   fret and then by string, which is how a hand naturally falls and reproduces the
+   standard fingerings for the open chords and the barre shapes alike. */
+function assignFingers(v){
+  const out = {};
+  const fretted = [];
+  for(let s=0;s<v.pick.length;s++) if(v.pick[s]>0) fretted.push({s:s, f:v.pick[s]});
+  if(!fretted.length) return out;
+  let rest = fretted;
+  if(v.barre){
+    rest = [];
+    fretted.forEach(x=>{
+      if(x.f === v.barre.fret && x.s >= v.barre.from && x.s <= v.barre.to) out[x.s] = 1;
+      else rest.push(x);
+    });
+  }
+  rest.sort((a,b)=> (a.f-b.f) || (a.s-b.s));
+  let next = v.barre ? 2 : 1;
+  rest.forEach(x=>{ if(next<=4) out[x.s] = next++; });
+  return out;
 }
 
 function findVoicings(rootName, qualKey, maxF, inv){
@@ -2940,7 +2967,10 @@ function chordSVG(v, rootName){
     const y = padT + 22*(v.barre.fret-base) + 11;
     const x1 = padL + 15*v.barre.to, x2 = padL + 15*v.barre.from;
     g += `<rect x="${Math.min(x1,x2)-5}" y="${y-5.5}" width="${Math.abs(x2-x1)+10}" height="11" rx="5.5" fill="var(--root)" opacity=".9"/>`;
+    if(CH.fingers) g += `<text x="${Math.min(x1,x2)-11}" y="${y+3.4}" font-size="9" font-weight="700"
+                          text-anchor="middle" fill="var(--muted)">1</text>`;
   }
+  const fing = CH.fingers ? assignFingers(v) : {};
   for(let s=0;s<n;s++){
     const x = padL + 15*s, f = v.pick[s];
     if(f<0){
@@ -2950,7 +2980,12 @@ function chordSVG(v, rootName){
     } else if(f>=base && f<base+rows){
       const y = padT + 22*(f-base) + 11;
       const isRoot = (t[s]+f)%12 === pcOf(rootName);
-      g += `<circle cx="${x}" cy="${y}" r="6.4" fill="${isRoot?'var(--root)':'var(--text)'}"/>`;
+      const onBarre = v.barre && f===v.barre.fret && s>=v.barre.from && s<=v.barre.to;
+      if(!onBarre) g += `<circle cx="${x}" cy="${y}" r="6.8" fill="${isRoot?'var(--root)':'var(--text)'}"/>`;
+      else if(isRoot) g += `<circle cx="${x}" cy="${y}" r="6.8" fill="var(--root)" stroke="var(--panel2)" stroke-width="1"/>`;
+      if(fing[s] && !onBarre)
+        g += `<text x="${x}" y="${y+3.2}" font-size="9" font-weight="700" text-anchor="middle"
+                fill="${isRoot?'var(--root-ink)':'var(--panel2)'}">${fing[s]}</text>`;
     }
   }
   return `<svg viewBox="0 0 ${padL*2+W} ${padT+H+10}" width="100%" role="img">${g}</svg>`;
@@ -3012,6 +3047,9 @@ function renderChords(){
       '<dl class="kv">'
     + '<dt>Shape</dt><dd class="mono">'+names.join('  ')+'</dd>'
     + '<dt>Fingers</dt><dd>'+(v.fingers||'none — all open')+(v.barre? ', barring fret '+v.barre.fret : '')+'</dd>'
+    + (function(){ const f=assignFingers(v); const names={1:'index',2:'middle',3:'ring',4:'little'};
+        const rows=[]; for(let st=0;st<t.length;st++) if(f[st]) rows.push(names[f[st]]+' on string '+(t.length-st)+', fret '+v.pick[st]);
+        return rows.length ? '<dt>Which finger</dt><dd>'+rows.join('; ')+'</dd>' : ''; })()
     + '<dt>Stretch</dt><dd>'+(v.span? (v.span+1)+' frets' : 'one fret')+'</dd>'
     + '<dt>Bass note</dt><dd>'+pretty(nameOf(v.bassPc, CH.root))+(v.bassPc===rootPc? ' — root position' : ' — an inversion')+'</dd>'
     + '<dt>Notes</dt><dd>'+(v.full? 'complete' : 'the fifth is left out, which is normal')+'</dd>'
@@ -3102,6 +3140,7 @@ function progressionsFor(sp, minor){
   $('ch-qual').onchange = e=>{ CH.qual=e.target.value; CH.sel=0; renderChords(); };
   $('ch-max').onchange = e=>{ CH.maxFret=+e.target.value; CH.sel=0; renderChords(); };
   $('ch-inv').onchange = e=>{ CH.inversions=e.target.checked; CH.sel=0; renderChords(); };
+  $('ch-fing').onchange = e=>{ CH.fingers=e.target.checked; renderChords(); };
   $('ch-grid').onclick = e=>{
     const b = e.target.closest('.chordcard'); if(!b) return;
     CH.sel = +b.dataset.i; renderChords(); strum(CH.list[CH.sel], true);

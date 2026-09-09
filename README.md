@@ -120,7 +120,13 @@ string order and stops insisting on a root in the bass on an instrument that has
 bass register. Switch the tuning to ukulele and it gives you `0003`, `0232`, `2010`
 and `2000` for C, G, F and Am. Diagrams follow the printed
 convention — low string on the left, root dots in orange, barres as bars, position
-number beside the top fret. Click one to strum it; the selected shape appears on a
+number beside the top fret — and each dot carries the finger that plays it. Fingering
+is derived, not stored: a barre takes the index, everything else is numbered by fret
+and then by string, and a barre is only used when three strings share the lowest fret
+or when there are more notes than free fingers. That last condition is what stops D
+coming out as a barre chord. The results match the chord book — C is ring, middle,
+index; D is index, middle, ring; F is index barre, middle, ring, little; Bm is the
+barre at the second fret with the little finger on the D string. Click one to strum it; the selected shape appears on a
 full neck with its notes named.
 
 ### Jam
