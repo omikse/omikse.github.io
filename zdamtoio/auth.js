@@ -12,7 +12,7 @@ import {
   doc, getDoc, setDoc, updateDoc, increment, serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-import { auth, db } from "./firebase.js?v=96e36edd";
+import { auth, db } from "./firebase.js?v=745491fa";
 
 const root = document.documentElement;
 
@@ -23,45 +23,30 @@ provider.setCustomParameters({ prompt: "select_account" });
  * Ekran logowania -- budowany w JS, żeby nie ruszać index.html
  * ------------------------------------------------------------------ */
 
-const gate = document.createElement("div");
-gate.id = "auth-gate-screen";
-// Klasa `hidden`, nie atrybut: `.flex` z Tailwinda wygrywa z [hidden],
-// więc atrybut nic by nie dał (tak samo robi #back-btn w index.html).
-gate.className = "hidden fixed inset-0 z-40 bg-slate-100 items-center justify-center p-4 flex";
-gate.innerHTML = `
-  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-10 max-w-md w-full text-center fade-in">
-    <div class="flex items-center justify-center gap-2 text-indigo-700 mb-6">
-      <span class="material-symbols-outlined text-4xl">school</span>
-      <div class="text-left">
-        <h2 class="font-bold leading-none text-xl">Matura Tutor</h2>
-        <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Symulacja &amp; Analiza AI</p>
-      </div>
-    </div>
+/* Logowanie jest opcjonalne. Bez konta aplikacja działa w całości — arkusze,
+   ocenianie zadań zamkniętych i AI — tyle że postęp nie jest nigdzie
+   zapisywany. Konto służy wyłącznie do tego, żeby wrócić do swoich odpowiedzi.
+   Dlatego zamiast ekranu blokującego jest przycisk w nagłówku. */
 
-    <h3 class="text-lg font-bold text-slate-800 mb-2">Zaloguj się, aby rozwiązywać arkusze</h3>
-    <p class="text-sm text-slate-500 mb-8">
-      Twoje konto pozwala zapisać postępy i wrócić do nich na innym urządzeniu.
-    </p>
+const slot = document.getElementById("auth-slot");
 
-    <button id="auth-signin-btn"
-      class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-semibold shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2">
-      <span class="material-symbols-outlined">login</span>
-      Zaloguj się przez Google
-    </button>
+const signInBtn = document.createElement("button");
+signInBtn.id = "auth-signin-btn";
+signInBtn.className = "hidden items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 "
+  + "text-white px-3 py-1.5 rounded-full text-xs font-semibold transition-colors";
+signInBtn.innerHTML = `<span class="material-symbols-outlined text-sm">login</span> Zaloguj się`;
 
-    <p id="auth-error" class="hidden text-xs text-red-600 mt-4"></p>
-  </div>
-`;
-document.body.appendChild(gate);
+const errorBox = document.createElement("p");
+errorBox.id = "auth-error";
+errorBox.className = "hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-50 "
+  + "border border-red-200 text-red-700 text-xs px-4 py-2 rounded-lg shadow";
+document.body.appendChild(errorBox);
 
-const signInBtn = gate.querySelector("#auth-signin-btn");
-const errorBox = gate.querySelector("#auth-error");
 
 /* ------------------------------------------------------------------ *
  * Chip użytkownika w nagłówku -- ten sam styl co pigułka „API”
  * ------------------------------------------------------------------ */
 
-const slot = document.getElementById("auth-slot");
 const chip = document.createElement("div");
 chip.className = "flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-full border border-slate-200 text-xs";
 chip.innerHTML = `
@@ -72,7 +57,7 @@ chip.innerHTML = `
     <span class="material-symbols-outlined text-sm">logout</span>
   </button>
 `;
-if (slot) slot.appendChild(chip);
+if (slot) { slot.appendChild(signInBtn); slot.appendChild(chip); }
 
 /* ------------------------------------------------------------------ *
  * Logowanie
@@ -110,14 +95,17 @@ chip.querySelector("#auth-signout").addEventListener("click", () => signOut(auth
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    root.classList.add("auth-gate");
     root.classList.remove("auth-unknown");
-    gate.classList.remove("hidden");
+    signInBtn.classList.remove("hidden");
+    signInBtn.classList.add("flex");
+    chip.classList.add("hidden");
     return;
   }
 
-  gate.classList.add("hidden");
-  root.classList.remove("auth-gate", "auth-unknown");
+  root.classList.remove("auth-unknown");
+  signInBtn.classList.add("hidden");
+  signInBtn.classList.remove("flex");
+  chip.classList.remove("hidden");
 
   chip.querySelector("#auth-avatar").src = user.photoURL || "";
   chip.querySelector("#auth-name").textContent = user.displayName || user.email || "";

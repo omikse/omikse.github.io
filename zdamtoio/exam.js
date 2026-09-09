@@ -10,11 +10,11 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=96e36edd";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=96e36edd";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=96e36edd";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=745491fa";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=745491fa";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=745491fa";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=96e36edd";
+  from "./admin.js?v=745491fa";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -268,6 +268,7 @@ onSaveState((state, detail) => {
     ? new Intl.DateTimeFormat("pl-PL", { timeStyle: "short" }).format(detail)
     : "";
   saveBadge = {
+    nosession: `<span class="text-slate-400">niezalogowany — postęp nie jest zapisywany</span>`,
     dirty:  `<span class="text-slate-400">niezapisane zmiany…</span>`,
     saving: `<span class="text-slate-400">zapisywanie…</span>`,
     saved:  `<span class="text-green-600 font-medium">zapisano ${esc(time)}</span>`,

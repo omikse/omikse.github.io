@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Styling for rendered questions; generated, see sync.py -->
-    <link rel="stylesheet" href="exam-styles.css?v=96e36edd">
+    <link rel="stylesheet" href="exam-styles.css?v=745491fa">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-serif { font-family: 'Lora', serif; }
@@ -36,10 +36,10 @@
         .markdown-body th, .markdown-body td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: left; }
         .markdown-body th { background-color: #f8fafc; font-weight: 600; }
 
-        /* Bramka logowania: chowa aplikację, zanim Firebase ustali sesję
-           (auth-unknown) i dopóki nikt nie jest zalogowany (auth-gate). */
-        .auth-unknown main, .auth-unknown #auth-slot { visibility: hidden; }
-        .auth-gate main, .auth-gate #auth-slot { display: none; }
+        /* Logowanie jest OPCJONALNE: aplikacja działa bez konta, a konto
+           służy tylko do zapisywania postępu. Ukrywamy wyłącznie chip
+           użytkownika, dopóki Firebase nie ustali sesji — żeby nie mrugał. */
+        .auth-unknown #auth-slot { visibility: hidden; }
     </style>
     <script>document.documentElement.classList.add('auth-unknown');</script>
 </head>
@@ -139,10 +139,10 @@
 </dialog>
 
 <!-- Arkusze, renderowanie i ocenianie -->
-<script type="module" src="exam.js?v=96e36edd"></script>
+<script type="module" src="exam.js?v=745491fa"></script>
 
 <!-- Logowanie Google + profil w Firestore -->
-<script type="module" src="auth.js?v=96e36edd"></script>
+<script type="module" src="auth.js?v=745491fa"></script>
 
 </body>
 </html>

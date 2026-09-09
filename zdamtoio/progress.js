@@ -18,7 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
 
-import { auth, db } from "./firebase.js?v=96e36edd";
+import { auth, db } from "./firebase.js?v=745491fa";
 
 const SAVE_DELAY_MS = 2000;
 
@@ -92,7 +92,9 @@ export async function startOrResume(examId, examName) {
  */
 export function save(payload) {
   if (!currentAttempt) {
-    setState("error", "brak sesji");     // signed out, or the attempt failed to open
+    // Signing in is optional, so having no attempt is the normal state for a
+    // logged-out visitor -- not an error. Say what it means, in grey.
+    setState("nosession");
     return;
   }
   pending = payload;
