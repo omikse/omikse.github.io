@@ -587,6 +587,30 @@ tbody tr.act td:first-child::after{content:''}
 #al-strip span.now i{color:var(--root-ink); opacity:.75}
 #al-progress{font-size:1rem; font-weight:600}
 #al-heardnow{color:var(--muted); font-size:.88rem}
+
+/* ---------- microphone check ---------- */
+#mic-setup{margin:0 0 14px}
+.meter{position:relative; height:22px; border-radius:7px; background:var(--panel2);
+  border:1px solid var(--line2); overflow:hidden; margin:10px 0 6px}
+.meter i{display:block; height:100%; width:0; background:var(--scale); transition:width .06s linear}
+.meter i.under{background:var(--line2)}
+.meter .gate{position:absolute; top:0; bottom:0; width:2px; background:var(--root)}
+.meter .lab{position:absolute; right:7px; top:3px; font-size:.7rem; color:var(--muted);
+  font-variant-numeric:tabular-nums}
+#mic-diag{font-size:.9rem; min-height:1.5em}
+#mic-diag b{color:var(--text)}
+
+/* ---------- recorder ---------- */
+#rec-btn.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
+#rec-strip{display:flex; gap:5px; overflow-x:auto; padding:8px 2px; min-height:46px; scrollbar-width:thin}
+#rec-strip span{flex:0 0 auto; width:34px; padding:5px 0; border-radius:7px; text-align:center;
+  background:var(--panel2); border:1px solid var(--line2); line-height:1.15}
+#rec-strip span b{display:block; font-size:.95rem}
+#rec-strip span i{display:block; font-style:normal; font-size:.58rem; color:var(--muted)}
+#rec-sheet{width:100%; min-height:150px; background:var(--panel2); color:var(--text);
+  border:1px solid var(--line2); border-radius:9px; padding:10px; resize:vertical;
+  font-family:ui-monospace,Consolas,monospace; font-size:.78rem; line-height:1.45; white-space:pre; overflow-x:auto}
+#rec-chords{font-size:.88rem; color:var(--muted); min-height:1.3em}
 .hide{display:none !important}
 </style>
 </head>
@@ -920,11 +944,33 @@ tbody tr.act td:first-child::after{content:''}
       <div class="seg" id="al-mode">
         <button data-m="mirror" aria-pressed="true">Watch me play</button>
         <button data-m="follow" aria-pressed="false">Follow a tune</button>
+        <button data-m="record" aria-pressed="false">Record me</button>
       </div>
     </div>
     <button class="btn primary" id="al-toggle" style="padding:10px 16px">● Start listening</button>
     <span class="hint" id="al-msg">The microphone is off.</span>
   </div>
+
+  <details class="card" id="mic-setup">
+    <summary><b>Not picking your guitar up?</b> <span class="hint">— check what the microphone is actually getting</span></summary>
+    <div class="meter"><i id="mic-bar"></i><span class="gate" id="mic-gatemark"></span><span class="lab" id="mic-lab"></span></div>
+    <div id="mic-diag" class="hint">Start listening and play a string. The bar is what the microphone hears; the
+    orange line is the level it needs to clear before anything is analysed.</div>
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:12px">
+      <span class="hint">Sensitivity</span>
+      <input type="range" id="mic-gain" min="1" max="8" step="0.5" value="1"
+             aria-label="Microphone sensitivity" style="flex:1; min-width:140px; accent-color:var(--root)">
+      <span class="mono hint" id="mic-gainv">1×</span>
+    </div>
+    <ul class="tight" style="margin:12px 0 0">
+      <li><b>Get closer.</b> Half a metre from the microphone beats two metres by more than any setting here.</li>
+      <li><b>Low notes are hardest.</b> The bottom two strings have the least energy up where a laptop microphone
+      hears well. If the top strings register and the bottom ones do not, that is why, not you.</li>
+      <li><b>Silence the room.</b> A fan or a fridge raises the floor the guitar has to clear. The gate adapts to it,
+      but a quiet room still wins.</li>
+      <li><b>Check the operating system's input level</b> too — if it is set low, raise it there rather than here.</li>
+    </ul>
+  </details>
 
   <div class="card">
     <div id="al-mirror">
@@ -934,6 +980,24 @@ tbody tr.act td:first-child::after{content:''}
         <button class="btn ghost" id="al-clear" style="margin-left:auto">Clear the trail</button>
       </div>
       <div id="al-trail"></div>
+    </div>
+
+    <div id="al-record" class="hide">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px">
+        <button class="btn primary" id="rec-btn" style="padding:10px 16px">● Record</button>
+        <button class="btn" id="rec-play">▶ Play it back</button>
+        <button class="btn" id="rec-copy">Copy the tab</button>
+        <button class="btn ghost" id="rec-clear">Clear</button>
+        <span class="hint" id="rec-count"></span>
+        <span class="hint" id="rec-msg"></span>
+      </div>
+      <div id="rec-strip"></div>
+      <div id="rec-chords" style="margin:6px 0 8px"></div>
+      <textarea id="rec-sheet" spellcheck="false" aria-label="Recorded tab"></textarea>
+      <p class="hint" style="margin:8px 0 0">Play single notes and this writes them down as tab, working out the
+      fingering as it goes. <b>Arpeggiate</b> a chord — one string at a time rather than strummed — and it will
+      recognise it and put the name above. A strum gives it six notes at once and it can only follow one, so that
+      is the one thing it cannot transcribe.</p>
     </div>
 
     <div id="al-follow" class="hide">
@@ -4175,7 +4239,7 @@ const TUNE = {on:false, stream:null, node:null, an:null, buf:null, raf:null,
 
 /* One microphone, shared by the tuner and the listening drill, reference counted so
    whichever finishes second is the one that releases it. */
-const MIC = {stream:null, an:null, buf:null, users:new Set(), asking:false};
+const MIC = {stream:null, an:null, buf:null, gainNode:null, gain:1, users:new Set(), asking:false};
 async function micAcquire(who){
   MIC.users.add(who);
   if(MIC.an) return MIC.an;
@@ -4192,17 +4256,20 @@ async function micAcquire(who){
   }
   MIC.asking = false;
   const src = ctx.createMediaStreamSource(MIC.stream);
+  MIC.gainNode = ctx.createGain();
+  MIC.gainNode.gain.value = MIC.gain || 1;
   MIC.an = ctx.createAnalyser();
-  MIC.an.fftSize = 2048;
+  MIC.an.fftSize = 4096;          // 2048 usable samples: enough cycles for a low E
   MIC.buf = new Float32Array(MIC.an.fftSize);
-  src.connect(MIC.an);            // deliberately not connected to the output
+  src.connect(MIC.gainNode).connect(MIC.an);   // deliberately not connected to the output
   return MIC.an;
 }
 function micRelease(who){
   MIC.users.delete(who);
   if(MIC.users.size) return;
   if(MIC.stream) MIC.stream.getTracks().forEach(t=>t.stop());
-  MIC.stream = null; MIC.an = null; MIC.buf = null;
+  MIC.stream = null; MIC.an = null; MIC.buf = null; MIC.gainNode = null;
+  PITCH.hist = []; PITCH.clarity = 0;
 }
 function micPitch(){
   if(!MIC.an || !actx) return -1;
@@ -4214,12 +4281,27 @@ function micPitch(){
    at twice the period a periodic signal correlates just as well — so this uses the
    cumulative mean normalised difference and takes the FIRST dip under a threshold
    rather than the deepest one, which is what keeps it on the fundamental. */
+const PITCH = {rms:0, clarity:0, floor:0.0015, hist:[], gate:0.0035, lastReason:''};
 function detectPitch(buf, sr){
-  const W = buf.length >> 1;
+  /* The window has to hold three or four cycles of the lowest note we care about.
+     A low E is 82 Hz — a 12 ms period — so 1024 samples (23 ms) gave YIN under two
+     cycles to work with and it missed them. 2048 samples is 46 ms, nearly four. */
+  const W = Math.min(2048, buf.length >> 1);
   let rms = 0;
   for(let i=0;i<W;i++) rms += buf[i]*buf[i];
   rms = Math.sqrt(rms/W);
-  if(rms < 0.009) return -1;
+  PITCH.rms = rms;
+
+  /* The gate follows the room instead of being a fixed number. A quiet acoustic on a
+     laptop microphone never got near the old 0.009 and simply went unheard. */
+  PITCH.hist.push(rms);
+  if(PITCH.hist.length > 90) PITCH.hist.shift();
+  if(PITCH.hist.length > 20){
+    const sorted = PITCH.hist.slice().sort((a,b)=> a-b);
+    PITCH.floor = sorted[Math.floor(sorted.length*0.2)] || 0.0015;
+  }
+  PITCH.gate = Math.max(0.0022, PITCH.floor * 2.5);
+  if(rms < PITCH.gate){ PITCH.clarity = 0; PITCH.lastReason = 'quiet'; return -1; }
 
   const maxLag = Math.min(W-1, Math.floor(sr/70));
   const minLag = Math.max(2, Math.floor(sr/1300));
@@ -4239,20 +4321,27 @@ function detectPitch(buf, sr){
     cm[tau] = running ? d[tau]*tau/running : 1;
   }
 
-  const THRESH = 0.12;
+  /* Try a strict threshold first, then a looser one, before falling back to the best
+     dip on offer. A weak or noisy signal often has no dip under 0.12 and was thrown
+     away even when the answer was obvious. */
   let tau = -1;
-  for(let t=minLag; t<=maxLag; t++){
-    if(cm[t] < THRESH){
-      while(t+1 <= maxLag && cm[t+1] < cm[t]) t++;
-      tau = t; break;
+  for(const TH of [0.12, 0.20]){
+    for(let t=minLag; t<=maxLag; t++){
+      if(cm[t] < TH){
+        while(t+1 <= maxLag && cm[t+1] < cm[t]) t++;
+        tau = t; break;
+      }
     }
+    if(tau >= 0) break;
   }
   if(tau < 0){
     let best = -1, bv = Infinity;
     for(let t=minLag; t<=maxLag; t++) if(cm[t] < bv){ bv = cm[t]; best = t; }
-    if(bv > 0.35) return -1;
+    if(bv > 0.45){ PITCH.clarity = 0; PITCH.lastReason = 'unclear'; return -1; }
     tau = best;
   }
+  PITCH.clarity = Math.max(0, Math.min(1, 1 - cm[tau]));
+  PITCH.lastReason = 'ok';
 
   let refined = tau;
   if(tau > minLag && tau < maxLag){
@@ -5249,7 +5338,8 @@ async function alStart(){
   $('al-toggle').textContent = '■ Stop listening';
   $('al-toggle').classList.add('on');
   $('al-msg').textContent = AL.mode==='mirror'
-    ? 'Play anything. Nothing is recorded or sent anywhere.'
+    ? 'Play anything. Nothing leaves the page.'
+    : AL.mode==='record' ? 'Press record, then play. Nothing leaves the page.'
     : 'Play the highlighted note when you are ready — it waits for you.';
   alLoop();
 }
@@ -5258,6 +5348,7 @@ function alStop(){
   if(AL.raf) cancelAnimationFrame(AL.raf);
   AL.raf = null;
   micRelease('along');
+  if(REC.on) recStop();
   $('al-toggle').textContent = '● Start listening';
   $('al-toggle').classList.remove('on');
   $('al-msg').textContent = 'The microphone is off.';
@@ -5295,11 +5386,35 @@ function alLoop(){
     if(AL.mode === 'mirror'){
       AL.trail.push(midi);
       if(AL.trail.length > 10) AL.trail.shift();
+    } else if(AL.mode === 'record'){
+      recNote(midi);
     } else {
       alHeardInFollow(midi);
     }
   }
   renderAlong();
+  renderMicMeter();
+}
+
+function renderMicMeter(){
+  const bar = $('mic-bar'); if(!bar) return;
+  const scale = v => Math.min(1, Math.sqrt(Math.max(0, v) / 0.25));   // a bit of curve, quiet end readable
+  const pct = scale(PITCH.rms)*100, gate = scale(PITCH.gate)*100;
+  bar.style.width = pct.toFixed(1) + '%';
+  bar.classList.toggle('under', PITCH.rms < PITCH.gate);
+  $('mic-gatemark').style.left = gate.toFixed(1) + '%';
+  $('mic-lab').textContent = PITCH.rms.toFixed(4);
+  const d = $('mic-diag');
+  if(!AL.on){ d.className = 'hint'; return; }
+  d.className = '';
+  if(PITCH.lastReason === 'quiet')
+    d.innerHTML = 'Below the gate — <b>too quiet to analyse</b>. Play louder, move closer, or raise the sensitivity.';
+  else if(PITCH.lastReason === 'unclear')
+    d.innerHTML = 'Loud enough, but <b>no clear pitch</b> in it. That is usually a chord rather than one note, a very '
+      + 'short pluck, or room noise competing with the guitar.';
+  else
+    d.innerHTML = 'Hearing <b>' + (AL.heard>=0 ? pitchName(AL.heard) : '—') + '</b>, confidence '
+      + Math.round(PITCH.clarity*100) + '%. Anything over about 70% is solid.';
 }
 
 function alHeardInFollow(midi){
@@ -5336,12 +5451,27 @@ function alPlayTune(from){
 
 function renderAlong(){
   const t = tuning();
-  const mirror = AL.mode === 'mirror';
+  const mirror = AL.mode === 'mirror', rec = AL.mode === 'record';
   $('al-mirror').classList.toggle('hide', !mirror);
-  $('al-follow').classList.toggle('hide', mirror);
+  $('al-record').classList.toggle('hide', !rec);
+  $('al-follow').classList.toggle('hide', mirror || rec);
 
   fbA.clear();
 
+  if(rec){
+    /* the neck shows where it thinks your hand is, same as the mirror */
+    if(AL.heard >= 0){
+      const pcs = ((AL.heard % 12) + 12) % 12;
+      const here = REC.lastPos;
+      if(here) fbA.set(here.s, here.f, 'root', pretty(nameOf(pcs)));
+      alPositions(AL.heard).forEach(p=>{
+        if(here && p.s===here.s && p.f===here.f) return;
+        fbA.set(p.s, p.f, 'on', pretty(nameOf(pcs)));
+      });
+    }
+    fbA.paint();
+    return;
+  }
   if(mirror){
     if(AL.heard >= 0){
       const pcs = ((AL.heard % 12) + 12) % 12;
@@ -5403,8 +5533,11 @@ function renderAlong(){
     AL.mode = b.dataset.m;
     [...e.currentTarget.children].forEach(x=> x.setAttribute('aria-pressed', String(x===b)));
     if(AL.mode === 'follow' && !AL.notes.length) alLoadTune();
+    if(AL.mode !== 'record' && REC.on) recStop();
     $('al-msg').textContent = AL.on
-      ? (AL.mode==='mirror' ? 'Play anything.' : 'Play the highlighted note when you are ready.')
+      ? (AL.mode==='mirror' ? 'Play anything.'
+        : AL.mode==='record' ? 'Press record, then play.'
+        : 'Play the highlighted note when you are ready.')
       : 'The microphone is off.';
     renderAlong();
   };
@@ -5418,8 +5551,141 @@ function renderAlong(){
     if(AL.idx >= AL.notes.length) alFinish(); else renderAlong();
   };
   $('al-clear').onclick = ()=>{ AL.trail = []; renderAlong(); };
+  $('mic-gain').oninput = e=>{
+    MIC.gain = +e.target.value;
+    $('mic-gainv').textContent = MIC.gain + '\u00d7';
+    if(MIC.gainNode) MIC.gainNode.gain.value = MIC.gain;
+    PITCH.hist = [];                       // the floor has to be relearned at the new level
+  };
   $('al-why').textContent = TUNES[0].why;
   alLoadTune();
+})();
+
+/* ============================================================
+   RECORD — capture what you play and write it down
+   ============================================================ */
+const REC = {on:false, events:[], t0:0, lastPos:null};
+
+/* Where was the hand? Same rule the rest of the view uses: nearest to the last note. */
+function recPlace(midi){
+  const opts = alPositions(midi);
+  if(!opts.length) return null;
+  const p = REC.lastPos;
+  opts.sort((a,b)=> p ? (Math.abs(a.f-p.f)+Math.abs(a.s-p.s)*0.7) - (Math.abs(b.f-p.f)+Math.abs(b.s-p.s)*0.7)
+                      : a.f - b.f);
+  REC.lastPos = opts[0];
+  return opts[0];
+}
+
+function recStart(){
+  REC.on = true; REC.events = []; REC.t0 = performance.now(); REC.lastPos = null;
+  $('rec-btn').textContent = '■ Stop recording';
+  $('rec-btn').classList.add('on');
+  renderRecord();
+}
+function recStop(){
+  REC.on = false;
+  $('rec-btn').textContent = '● Record';
+  $('rec-btn').classList.remove('on');
+  store.set('rec', REC.events);
+  renderRecord();
+}
+function recNote(midi){
+  if(!REC.on) return;
+  const p = recPlace(midi);
+  if(!p) return;
+  REC.events.push({midi:midi, s:p.s, f:p.f, t:Math.round(performance.now() - REC.t0)});
+  renderRecord();
+}
+
+/* Notes that arrive close together are probably one gesture. Three or more distinct
+   pitch classes inside a window, and the chord finder run backwards will name it. */
+function inferChords(evs){
+  const out = [];
+  let i = 0;
+  while(i < evs.length){
+    let j = i, pcs = new Set([((evs[i].midi%12)+12)%12]);
+    /* An arpeggio is fast; a melody is not. Notes half a second apart are a tune being
+       played, and calling C-G-A a chord because they happened to be consecutive is how
+       the first version labelled Twinkle as Am7/C. */
+    while(j+1 < evs.length && evs[j+1].t - evs[j].t < 350
+          && evs[j+1].t - evs[i].t < 1600 && (j+1-i) < 6){
+      j++; pcs.add(((evs[j].midi%12)+12)%12);
+    }
+    if(pcs.size >= 3){
+      const group = evs.slice(i, j+1).slice().sort((a,b)=> a.midi-b.midi);
+      const cands = identifyChord(group.map(e=> ((e.midi%12)+12)%12), ((group[0].midi%12)+12)%12);
+      if(cands.length) out.push({at:i, name: idName(cands[0], ((group[0].midi%12)+12)%12)});
+      i = j+1;
+    } else i++;
+  }
+  return out;
+}
+
+/* Six lines of ASCII tab, low string at the bottom, the way it is always printed. */
+function toTab(evs){
+  const t = tuning(), n = t.length;
+  if(!evs.length) return '';
+  const chords = inferChords(evs);
+  const chordAt = {};
+  chords.forEach(c=> chordAt[c.at] = c.name);
+
+  const W = 3;
+  const label = s => (pretty(nameOf(midiAt(s,0)%12)) + ' ').slice(0,2);
+  const rows = [];
+  for(let s=n-1; s>=0; s--) rows.push(label(s) + '|');
+  let head = '   ';
+  evs.forEach((ev, idx)=>{
+    for(let s=n-1, r=0; s>=0; s--, r++){
+      const cell = (s === ev.s) ? String(ev.f) : '';
+      rows[r] += (cell ? '-' + cell : '-').padEnd(W, '-');
+    }
+    const name = chordAt[idx];
+    head = head.padEnd(3 + idx*W, ' ');
+    if(name) head = head.slice(0, 3 + idx*W) + name;
+    if((idx+1) % 8 === 0) for(let r=0;r<rows.length;r++) rows[r] += '|';
+  });
+  for(let r=0;r<rows.length;r++) rows[r] += '-|';
+  return (head.trim() ? head + '\n' : '') + rows.join('\n');
+}
+
+function recPlayback(){
+  if(!REC.events.length) return;
+  audio();
+  const t0 = REC.events[0].t;
+  REC.events.forEach(ev=> pluck(ev.midi, (ev.t - t0)/1000, 1.6, .45));
+}
+
+function renderRecord(){
+  const n = REC.events.length;
+  const secs = n ? ((REC.events[n-1].t)/1000).toFixed(1) : '0.0';
+  $('rec-count').textContent = n ? (n + (n===1?' note':' notes') + ' over ' + secs + ' seconds') : 'Nothing recorded yet.';
+  $('rec-sheet').value = toTab(REC.events);
+  const chords = inferChords(REC.events);
+  $('rec-chords').textContent = chords.length
+    ? 'Chords recognised: ' + chords.map(c=>c.name).join(', ')
+    : (n >= 3 ? 'No chords recognised — arpeggiate one, a string at a time, and it will name it.' : '');
+  const strip = $('rec-strip');
+  strip.innerHTML = REC.events.slice(-24).map(ev=>
+    '<span><b>' + ev.f + '</b><i>' + (tuning().length - ev.s) + '</i></span>').join('');
+  if(strip.lastElementChild && strip.lastElementChild.scrollIntoView)
+    strip.lastElementChild.scrollIntoView({block:'nearest', inline:'end'});
+}
+
+(function initRecord(){
+  const saved = store.get('rec', null);
+  if(Array.isArray(saved) && saved.length) REC.events = saved;
+  $('rec-btn').onclick = ()=> REC.on ? recStop() : recStart();
+  $('rec-clear').onclick = ()=>{ REC.events=[]; REC.lastPos=null; store.del('rec'); renderRecord(); };
+  $('rec-play').onclick = recPlayback;
+  $('rec-copy').onclick = ()=>{
+    $('rec-sheet').select();
+    const msg = ok=>{ $('rec-msg').textContent = ok ? 'Copied.' : 'Select the box and copy it yourself.'; };
+    if(navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText($('rec-sheet').value).then(()=>msg(true), ()=>msg(false));
+    else msg(false);
+  };
+  renderRecord();
 })();
 
 /* ============================================================

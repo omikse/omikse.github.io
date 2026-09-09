@@ -126,7 +126,7 @@ diminished scales; the pentatonics and blues scales; and twenty-one chord types
 usable as arpeggios.
 
 ### Play along
-The microphone as an input device rather than a test. Two modes.
+The microphone as an input device rather than a test. Three modes.
 
 **Watch me play** listens continuously and shows what it heard on the neck — the note
 name and how many cents off, the position you most likely used, and every other place
@@ -145,6 +145,12 @@ what a microphone can actually follow. The fingering is derived rather than stor
 each note it takes every position that could play it and picks whichever is nearest the
 last one, so the tune stays under your hand — and it re-derives itself if you change
 tuning.
+
+**Record me** writes down what you play as ASCII tab, working out the fingering as it
+goes, with playback and a copy button. Notes that arrive fast enough to be one gesture
+— under 350 ms apart — are run through the chord finder backwards, so an arpeggiated
+G gets named above the tab. A strum cannot be transcribed: six strings at once give
+monophonic detection one ambiguous pitch, and the view says so rather than guessing.
 
 Telling two of the same note apart is the interesting part, since the pitch does not
 change when you re-pluck. It watches the loudness for a fresh attack instead, and
@@ -325,11 +331,22 @@ can read whatever is actually sounding.
 The context is created on the first note, not on load, so autoplay policy is satisfied.
 
 ### Pitch detection
-`detectPitch(buffer, sampleRate)` implements YIN over a 1024-sample window, bounded
-to lags between 70 Hz and 1300 Hz. Tested against synthesised tones at every open
-string frequency, pure and with eight harmonics: exact to 0.0 cents, and within
-about 7 cents with 5% white noise added. Roughly 1.3 ms a call, run 20 times a
-second.
+`detectPitch(buffer, sampleRate)` implements YIN over a 2048-sample window, bounded to
+lags between 70 Hz and 1300 Hz. The window length matters more than anything else: a
+low E is 82 Hz, a 12 ms period, so the original 1024 samples gave YIN under two cycles
+and it missed the bottom strings. 2048 samples is 46 ms, nearly four cycles.
+
+The noise gate follows the room rather than being a fixed number — the twentieth
+percentile of recent frames, times 2.5 — because a quiet acoustic on a laptop
+microphone never cleared the old fixed threshold and was discarded before analysis
+even began. Two threshold passes, 0.12 then 0.20, before falling back to the best dip
+available.
+
+Measured against synthesised plucks at every open-string frequency: detected 6 times
+out of 6 at every amplitude from 0.004 to 0.06, exact to a tenth of a cent once the
+signal is reasonable, and zero false positives over fifty frames of noise alone.
+About 3.6 ms a call while a note is sounding and 0.02 ms when it is not, since the
+gate returns before the expensive part.
 
 ### Chord search
 `findVoicings(root, quality, maxFret, allowInversions)` returns scored, playable
