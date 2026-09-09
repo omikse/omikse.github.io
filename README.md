@@ -135,6 +135,13 @@ index; D is index, middle, ring; F is index barre, middle, ring, little; Bm is t
 barre at the second fret with the little finger on the D string. Click one to strum it; the selected shape appears on a
 full neck with its notes named.
 
+It runs backwards too. Put a shape you have stumbled onto on the second neck —
+one fret per string, click again to mute — and it names it, using the same rule in
+reverse: every note you are playing must belong to the chord, every note the chord
+needs must be sounding, and the fifth is optional. `332010` comes back as C/G,
+correctly spotted as an inversion, and `022000` as Em with a note that it could
+equally be called G6/E, because it can.
+
 ### Jam
 A backing track that loops, with a scale drawn over the whole neck. Pick a key and
 a progression — I–V–vi–IV, ii–V–I, I–vi–IV–V, a twelve-bar blues, or three minor

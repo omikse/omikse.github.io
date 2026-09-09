@@ -833,6 +833,20 @@ body.has-plan{padding-bottom:86px}
     all the notes the chord needs, fits under four fingers, and spans no more than four frets. Click one to hear it.</p>
   </div>
 
+  <div class="card" id="id-card">
+    <h3>Or go the other way: name a shape</h3>
+    <p class="hint" style="margin-bottom:10px">Stumbled onto something and want to know what it is? Put it on this neck
+    — one fret per string, click the same spot again to mute that string — and it will tell you.</p>
+    <div class="fbwrap"><div class="fb" id="fb-identify"></div></div>
+    <div class="quick" style="margin-top:10px">
+      <button id="id-fromfinder">Load the shape above</button>
+      <button class="ghost" id="id-clear">Clear</button>
+      <span class="hint" style="align-self:center">Shape: <span class="mono" id="id-shape">× × × × × ×</span></span>
+    </div>
+    <div class="sep"></div>
+    <div id="id-result"></div>
+  </div>
+
   <div class="grid">
     <div class="card">
       <h3>On the neck</h3>
@@ -1787,7 +1801,7 @@ function showView(v){
     b.setAttribute('aria-selected', String(on));
     if(on && b.scrollIntoView) b.scrollIntoView({block:'nearest', inline:'nearest'});
   });
-  if(v==='chords') renderChords();
+  if(v==='chords'){ renderChords(); renderIdentify(); }
   if(v==='rhythm') renderRhythm();
   if(v==='jam') renderJam();
   if(v==='pent') renderPent();
@@ -1815,7 +1829,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
   $('g-sound').checked = S.sound;
   document.documentElement.dataset.theme = S.theme;
 
-  const relayout = ()=>{ [fbG,fbP,fbW,fbC,fbJ,fbH].forEach(fb=> fb && fb.layout()); redrawAll(); };
+  const relayout = ()=>{ [fbG,fbP,fbW,fbC,fbJ,fbH,fbI].forEach(fb=> fb && fb.layout()); redrawAll(); };
   tu.onchange = e=>{ S.tuningName=e.target.value; store.set('tuning',S.tuningName); relayout(); game.strings.clear(); gameStrings(); };
   $('g-frets').onchange = e=>{ S.frets=+e.target.value; store.set('frets',S.frets); relayout(); gameLayout(); };
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
@@ -1831,7 +1845,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
     document.documentElement.dataset.theme = S.theme; store.set('theme',S.theme);
   };
 })();
-function redrawAll(){ renderChords(); renderJam(); renderRhythm(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
+function redrawAll(){ renderChords(); renderIdentify(); renderJam(); renderRhythm(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
 
 function fillRoots(sel, val){
   ROOT_CHOICES.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=pretty(r); sel.appendChild(o); });
@@ -4341,6 +4355,114 @@ function renderNotation(){
   el.innerHTML = notationSVG([PL.A, PL.B], PL.root);
 }
 
+const fbI = new Fretboard('fb-identify', {clickable:true});
+/* ============================================================
+   NAME THAT SHAPE — the chord finder run backwards
+   ============================================================ */
+const ID = {pick:[], };
+
+function identifyChord(pcs, bassPc){
+  const set = new Set(pcs);
+  if(!set.size) return [];
+  const out = [];
+  for(let root=0; root<12; root++){
+    for(let ki=0; ki<CHORD_KEYS.length; ki++){
+      const k = CHORD_KEYS[ki], iv = SCALES[k].iv;
+      const chordPcs = iv.map(i=>(root+i)%12);
+      const chordSet = new Set(chordPcs);
+      let strayed = false;
+      set.forEach(pc=>{ if(!chordSet.has(pc)) strayed = true; });
+      if(strayed) continue;                       // a note that is not in the chord rules it out
+      /* every tone the chord needs must be sounding; the fifth is optional once the
+         chord has four or more notes, exactly as it is when building one */
+      const ess = iv.filter(i=> !(iv.length>=4 && i===7)).map(i=>(root+i)%12);
+      if(!ess.every(pc=> set.has(pc))) continue;
+      const present = chordPcs.filter(pc=> set.has(pc)).length;
+      const missing = iv.length - present;
+      const inverted = bassPc != null && bassPc !== root;
+      out.push({
+        root: root, k: k, missing: missing, inverted: inverted,
+        score: -missing*3 - (inverted ? 2.5 : 0) - ki*0.12 - iv.length*0.15
+      });
+    }
+  }
+  out.sort((a,b)=> b.score - a.score);
+  return out.slice(0, 6);
+}
+
+function idName(c, bassPc){
+  const base = pretty(SHARP[c.root]) + (CHORD_SUFFIX[c.k] || '');
+  return c.inverted ? base + '/' + pretty(SHARP[bassPc]) : base;
+}
+
+function renderIdentify(){
+  const t = tuning(), n = t.length;
+  if(ID.pick.length !== n) ID.pick = new Array(n).fill(-1);
+
+  fbI.clear();
+  const sounding = [];
+  for(let s=0;s<n;s++){
+    const f = ID.pick[s];
+    if(f < 0) continue;
+    sounding.push({s:s, f:f, midi:midiAt(s,f), pc:(t[s]+f)%12});
+    fbI.set(s, f, 'on', pretty(nameOf((t[s]+f)%12)));
+  }
+  fbI.paint();
+
+  $('id-shape').textContent = ID.pick.map(f=> f<0 ? '×' : f).join('  ');
+
+  if(!sounding.length){
+    $('id-result').innerHTML = '<p class="hint" style="margin:0">Click the neck to put a finger down — one fret per string. '
+      + 'Click the same spot again to mute that string. Whatever you build, this names it.</p>';
+    return;
+  }
+
+  sounding.sort((a,b)=> a.midi - b.midi);
+  const bassPc = sounding[0].pc;
+  const pcs = sounding.map(x=>x.pc);
+  const uniq = [...new Set(pcs)];
+  const cands = identifyChord(pcs, bassPc);
+
+  let html = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'
+    + uniq.map(pc=> '<span class="pill '+(pc===bassPc?'on':'')+'">'+pretty(nameOf(pc))+'</span>').join('')
+    + '</div>';
+
+  if(!cands.length){
+    html += '<p style="margin:0"><b>That is not a chord anyone has a name for.</b> '
+      + uniq.length + ' different notes, and no common chord contains all of them. '
+      + 'Mute a string and try again — often one note is the whole problem.</p>';
+  } else {
+    const best = cands[0];
+    html += '<div class="name" style="font-size:1.9rem;font-weight:700;letter-spacing:-.02em;margin-bottom:4px">'
+      + idName(best, bassPc) + '</div>';
+    html += '<p class="hint" style="margin:0 0 10px">' + SCALES[best.k].n
+      + (best.inverted ? ' — an inversion, with ' + pretty(nameOf(bassPc)) + ' in the bass rather than the root' : ' in root position')
+      + (best.missing ? ' — the fifth is not being played, which is normal' : '')
+      + '.</p>';
+    if(cands.length > 1){
+      html += '<p class="hint" style="margin:0">Could also be called: '
+        + cands.slice(1).map(c=> '<b style="color:var(--text)">'+idName(c, bassPc)+'</b>').join(', ')
+        + '. Which name is right depends on what the music around it is doing.</p>';
+    }
+  }
+  $('id-result').innerHTML = html;
+}
+
+(function initIdentify(){
+  fbI.onCell = (s,f)=>{
+    ID.pick[s] = (ID.pick[s] === f) ? -1 : f;
+    renderIdentify();
+  };
+  $('id-clear').onclick = ()=>{ ID.pick = new Array(tuning().length).fill(-1); renderIdentify(); };
+  $('id-fromfinder').onclick = ()=>{
+    const v = CH.list[CH.sel];
+    if(!v) return;
+    ID.pick = v.pick.slice();
+    renderIdentify();
+    $('id-card').scrollIntoView({block:'center'});
+  };
+})();
+
 /* ============================================================
    shareable state in the URL
    ============================================================ */
@@ -4806,7 +4928,7 @@ function plLoop(on){
   });
 })();
 
-renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam(); renderRhythm();
+renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam(); renderRhythm(); renderIdentify();
 document.querySelectorAll('table').forEach(tb=>{
   if(tb.parentElement && tb.parentElement.classList.contains('tscroll')) return;
   const w = document.createElement('div'); w.className = 'tscroll';
