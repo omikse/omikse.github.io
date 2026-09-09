@@ -10,15 +10,16 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=e08e004e";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=e08e004e";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=e08e004e";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=96e36edd";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=96e36edd";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=96e36edd";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=e08e004e";
+  from "./admin.js?v=96e36edd";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
 let catalog = {};     // catalog/{examId} — what students are allowed to see
+let adminMode = false; // admins get the per-question analysis button
 
 /* ------------------------------------------------------------------ *
  * Gemini API key (per student, in localStorage)
@@ -389,6 +390,102 @@ function persist() {
  * Rendering
  * ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ *
+ * Analiza — admin-only look inside one question
+ * ------------------------------------------------------------------ */
+
+/* The pipeline's own debug harness (tools/pdf-json/app.js) has "Pokaż prompt"
+ * and "Pokaż JSON" buttons on every card; porting the renderer here dropped
+ * them. This puts them back for admins, because when a grade looks wrong the
+ * only useful questions are "what exactly was sent" and "what exactly came
+ * back", and both were previously invisible. */
+
+let analysisDialog = null;
+
+function buildAnalysisDialog() {
+  const dlg = document.createElement("dialog");
+  dlg.id = "analysis-modal";
+  dlg.className = "backdrop:bg-slate-900/50 rounded-2xl p-0 w-full max-w-4xl shadow-2xl";
+  dlg.innerHTML = `
+    <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+      <div>
+        <h3 class="text-lg font-bold text-slate-800">Analiza zadania</h3>
+        <p id="an-sub" class="text-xs text-slate-500 font-mono"></p>
+      </div>
+      <button id="an-close" class="text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="flex gap-2 px-5 pt-4">
+      <button data-pane="prompt" class="an-tab px-3 py-1.5 text-xs font-semibold rounded-lg">Prompt</button>
+      <button data-pane="json"   class="an-tab px-3 py-1.5 text-xs font-semibold rounded-lg">JSON zadania</button>
+      <button data-pane="raw"    class="an-tab px-3 py-1.5 text-xs font-semibold rounded-lg">Odpowiedź AI</button>
+      <button id="an-copy" class="ml-auto px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">Kopiuj</button>
+    </div>
+    <div class="p-5">
+      <pre id="an-content" class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-[11px] leading-relaxed overflow-auto max-h-[60vh] whitespace-pre-wrap font-mono text-slate-700"></pre>
+    </div>`;
+  document.body.appendChild(dlg);
+
+  dlg.querySelector("#an-close").addEventListener("click", () => dlg.close());
+  dlg.querySelector("#an-copy").addEventListener("click", async () => {
+    const btn = dlg.querySelector("#an-copy");
+    try {
+      await navigator.clipboard.writeText(dlg.querySelector("#an-content").textContent);
+      btn.textContent = "Skopiowano";
+    } catch {
+      btn.textContent = "Nie udało się";
+    }
+    setTimeout(() => { btn.textContent = "Kopiuj"; }, 1500);
+  });
+  return dlg;
+}
+
+function paintAnalysis(panes, active) {
+  const dlg = analysisDialog;
+  dlg.querySelectorAll(".an-tab").forEach(b => {
+    const on = b.dataset.pane === active;
+    b.className = "an-tab px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors "
+      + (on ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100");
+  });
+  dlg.querySelector("#an-content").textContent = panes[active];
+}
+
+function openAnalysis(question) {
+  if (!analysisDialog) analysisDialog = buildAnalysisDialog();
+  const renderer = RENDERERS[question.type];
+
+  // For the essay this is all eight per-criterion prompts, each with its own
+  // header — exactly what the eight separate calls send.
+  let prompt = "(ten typ nie ma promptu — oceniany przez porównanie)";
+  try {
+    if (renderer?.buildPrompt) prompt = renderer.buildPrompt(question);
+  } catch (err) {
+    prompt = "Błąd budowania promptu: " + err.message;
+  }
+
+  const raw = question.grade_result?.raw
+    ?? (question.essay_grading?.ai_raw_responses
+        ? Object.entries(question.essay_grading.ai_raw_responses)
+            .map(([id, text]) => `=== KRYTERIUM ${id} ===\n${text}`).join("\n\n")
+        : null);
+
+  const panes = {
+    prompt,
+    json: JSON.stringify(question, null, 2),
+    raw: raw || "(brak — zadanie nie było jeszcze oceniane przez AI)",
+  };
+
+  analysisDialog.querySelector("#an-sub").textContent =
+    `${question.id || question.number} · ${question.type} · ${question.scoring?.max_points ?? "?"} pkt`;
+
+  analysisDialog.querySelectorAll(".an-tab").forEach(b => {
+    b.onclick = () => paintAnalysis(panes, b.dataset.pane);
+  });
+  paintAnalysis(panes, "prompt");
+  analysisDialog.showModal();
+}
+
 /* Small inline notice inside a question card. */
 function note(text, bad = false) {
   return `<div class="q-result-box${bad ? " result-error" : ""}">${esc(text)}</div>`;
@@ -467,6 +564,7 @@ function renderCard(question) {
     <div class="q-result"></div>
     <footer class="q-actions">
       ${(deterministic || aiGraded) ? `<button type="button" data-action="grade">${esc(buttonLabel)}</button>` : ""}
+      ${adminMode ? `<button type="button" data-action="analyse">Analiza</button>` : ""}
     </footer>`;
 
   if (renderer?.mount) renderer.mount(question, card);
@@ -529,6 +627,14 @@ function renderCard(question) {
         gradeBtn.disabled = false;
         gradeBtn.textContent = label;
       }
+    });
+  }
+
+  const analyseBtn = card.querySelector('[data-action="analyse"]');
+  if (analyseBtn) {
+    analyseBtn.addEventListener("click", () => {
+      renderer?.collect?.(question, card);   // analyse what is on screen right now
+      openAnalysis(question);
     });
   }
 
@@ -606,6 +712,7 @@ async function init() {
     renderHistory();
     catalog = await loadCatalog();
     const admin = await isAdmin();
+    adminMode = admin;
     renderMenu(admin);
     await mountAdminButton({
       examIndex, catalog, describeExam,

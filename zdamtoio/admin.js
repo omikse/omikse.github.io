@@ -25,8 +25,8 @@ import {
   query, orderBy, limit,
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-import { auth, db } from "./firebase.js?v=e08e004e";
-import { esc } from "./renderers.js?v=e08e004e";
+import { auth, db } from "./firebase.js?v=96e36edd";
+import { esc } from "./renderers.js?v=96e36edd";
 
 let adminCache = null;
 let ctx = null;          // { examIndex, catalog, describeExam, onCatalogChange }
