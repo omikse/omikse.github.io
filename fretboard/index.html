@@ -764,6 +764,10 @@ body.has-plan{padding-bottom:86px}
     </div>
     <div class="timerbar" id="q-bar" style="visibility:hidden"><i></i></div>
     <div class="sep"></div>
+    <div class="note hide" id="q-soundwarn" style="border-left-color:var(--root);margin:0 0 12px">
+      <b style="color:var(--root)">Sound is off.</b> This drill is entirely about listening, so there is nothing to
+      go on with the sound muted. <button class="btn" id="q-soundon" style="margin-left:8px">Turn the sound on</button>
+    </div>
     <div class="prompt" id="q-prompt" role="status" aria-live="polite">Pick a mode and press <em>Start</em>.</div>
     <div class="hide" id="q-staff" style="margin:6px 0 2px"></div>
     <div class="earbox hide" id="q-listen">
@@ -1871,7 +1875,7 @@ document.addEventListener('keydown', e=>{
   $('g-frets').onchange = e=>{ S.frets=+e.target.value; store.set('frets',S.frets); relayout(); gameLayout(); };
   $('g-acc').onchange = e=>{ S.acc=e.target.value; store.set('acc',S.acc); redrawAll(); };
   $('g-lefty').onchange = e=>{ S.lefty=e.target.checked; store.set('lefty',S.lefty); relayout(); };
-  $('g-sound').onchange = e=>{ S.sound=e.target.checked; store.set('sound',S.sound); if(S.sound) audio(); };
+  $('g-sound').onchange = e=>{ S.sound=e.target.checked; store.set('sound',S.sound); if(S.sound) audio(); soundWarning(); };
   $('g-settings').onclick = ()=>{
     const h = document.querySelector('header');
     const open = h.classList.toggle('setup-open');
@@ -2013,6 +2017,11 @@ stats.extraSeen = stats.extraSeen || {};
     if(game.q) newQuestion(); updateHelp(); renderStats();
   };
   $('q-earset').onchange = e=>{ game.earset=e.target.value; if(['ear','chord','echo'].indexOf(game.mode)>=0 && game.q) newQuestion(); };
+  $('q-soundon').onclick = ()=>{
+    S.sound = true; $('g-sound').checked = true; store.set('sound', true);
+    audio(); soundWarning();
+    if(game.q && ['ear','chord','echo'].indexOf(game.mode)>=0) playEar(false);
+  };
   $('q-mic').onclick = ()=> game.mic ? micOff() : micOn();
   $('q-reveal').onclick = ()=>{
     if(!game.q || game.locked) return;
@@ -2068,7 +2077,13 @@ function gameStrings(){
   }
 }
 function gameLayout(){ fbG.layout(); fbH.layout(); renderHeat(); if($('q-strings').children.length!==tuning().length) gameStrings(); if(game.q) drawQuestion(); }
+function soundWarning(){
+  const needsEars = ['ear','chord','echo'].indexOf(game.mode) >= 0;
+  const w = $('q-soundwarn');
+  if(w) w.classList.toggle('hide', !(needsEars && !S.sound));
+}
 function updateHelp(){
+  soundWarning();
   const h = {
     name:'A dot appears on the neck — name it. Keys <code>1</code>–<code>=</code> answer, <code>Space</code> for the next question.',
     find:'You are given a note and a string — click the right fret. <code>Space</code> skips.',
@@ -2291,6 +2306,7 @@ function drawQuestion(){
   }
   $('q-ear').classList.toggle('hide', ['ear','chord','echo'].indexOf(game.mode)<0);
   $('q-listen').classList.toggle('hide', game.mode!=='playit');
+  soundWarning();
   $('q-staff').classList.toggle('hide', game.mode!=='read');
   fbG.paint();
 }
@@ -3160,6 +3176,9 @@ function chordSVG(v, rootName){
   const lo = fretted.length ? Math.min(...fretted) : 1;
   const base = fretted.length && (lo>1 || v.span>0 && lo>1) ? Math.max(1, lo) : 1;
   const rows = 4;
+  /* A left-handed chord book mirrors its diagrams, and so does the neck above, so
+     these have to mirror with it or they contradict each other. */
+  const sx = i => padL + 15*(S.lefty ? (n-1-i) : i);
   const W = 15*(n-1), H = 22*rows;
   const padL = 12, padT = 20;
   let g = '';
@@ -3178,14 +3197,14 @@ function chordSVG(v, rootName){
   // barre
   if(v.barre && v.barre.fret>=base && v.barre.fret<base+rows){
     const y = padT + 22*(v.barre.fret-base) + 11;
-    const x1 = padL + 15*v.barre.to, x2 = padL + 15*v.barre.from;
+    const x1 = sx(v.barre.to), x2 = sx(v.barre.from);
     g += `<rect x="${Math.min(x1,x2)-5}" y="${y-5.5}" width="${Math.abs(x2-x1)+10}" height="11" rx="5.5" fill="var(--root)" opacity=".9"/>`;
     if(CH.fingers) g += `<text x="${Math.min(x1,x2)-11}" y="${y+3.4}" font-size="9" font-weight="700"
                           text-anchor="middle" fill="var(--muted)">1</text>`;
   }
   const fing = CH.fingers ? assignFingers(v) : {};
   for(let s=0;s<n;s++){
-    const x = padL + 15*s, f = v.pick[s];
+    const x = sx(s), f = v.pick[s];
     if(f<0){
       g += `<text x="${x}" y="${padT-6}" font-size="10" fill="var(--muted)" text-anchor="middle">×</text>`;
     } else if(f===0){
@@ -3256,6 +3275,7 @@ function renderChords(){
 
   const names = [];
   for(let s=0;s<t.length;s++) names.push(v.pick[s]<0 ? '×' : String(v.pick[s]));
+  if(S.lefty) names.reverse();
   $('ch-detail').innerHTML =
       '<dl class="kv">'
     + '<dt>Shape</dt><dd class="mono">'+names.join('  ')+'</dd>'
@@ -4583,7 +4603,8 @@ function renderIdentify(){
   }
   fbI.paint();
 
-  $('id-shape').textContent = ID.pick.map(f=> f<0 ? '×' : f).join('  ');
+  const shapeTxt = ID.pick.map(f=> f<0 ? '×' : f);
+  $('id-shape').textContent = (S.lefty ? shapeTxt.slice().reverse() : shapeTxt).join('  ');
 
   if(!sounding.length){
     $('id-result').innerHTML = '<p class="hint" style="margin:0">Click the neck to put a finger down — one fret per string. '
