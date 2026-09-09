@@ -4669,21 +4669,30 @@ function applyHash(){
   const p = new URLSearchParams(h);
   hashLock = true;
   try{
-    if(p.has('t')){ const k = TUNE_KEYS[+p.get('t')]; if(k){ S.tuningName=k; $('g-tuning').value=k; } }
-    if(p.has('f')){ S.frets = +p.get('f'); $('g-frets').value = String(S.frets); }
-    if(p.has('a')){ S.acc = p.get('a'); $('g-acc').value = S.acc; }
-    if(p.has('L')){ S.lefty = true; $('g-lefty').checked = true; }
+    /* A link describes a whole setup, so anything the link leaves out is at its
+       default — not left at whatever this browser happened to have. Without this a
+       shared link lands on top of the reader's saved capo and tuning and shows them
+       something the sender never saw. */
+    const tn = TUNE_KEYS[p.has('t') ? +p.get('t') : 0] || TUNE_KEYS[0];
+    S.tuningName = tn; $('g-tuning').value = tn;
+    S.frets = p.has('f') ? +p.get('f') : 15;   $('g-frets').value = String(S.frets);
+    S.acc   = p.has('a') ? p.get('a') : 'auto'; $('g-acc').value = S.acc;
+    S.lefty = p.has('L');                       $('g-lefty').checked = S.lefty;
+
     if(p.has('r')){ PL.root = p.get('r'); $('w-root').value = PL.root; }
     if(p.has('s') && SCALES[p.get('s')]){ PL.scale = p.get('s'); $('w-scale').value = PL.scale; }
-    if(p.has('c')){ PL.capo = Math.max(0, Math.min(12, +p.get('c'))); $('w-capo').value = String(PL.capo); }
-    if(p.has('cr')){ CH.root = p.get('cr'); $('ch-root').value = CH.root; }
-    if(p.has('cq') && SCALES[p.get('cq')]){ CH.qual = p.get('cq'); $('ch-qual').value = CH.qual; }
-    if(p.has('l')){
-      PL.labels = p.get('l');
-      [...$('w-labels').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.l===PL.labels)));
-    }
+    PL.capo = p.has('c') ? Math.max(0, Math.min(12, +p.get('c'))) : 0;
+    $('w-capo').value = String(PL.capo);
+    PL.labels = p.has('l') ? p.get('l') : 'name';
+    [...$('w-labels').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.l===PL.labels)));
+
+    CH.root = p.has('cr') ? p.get('cr') : 'C';
+    CH.qual = (p.has('cq') && SCALES[p.get('cq')]) ? p.get('cq') : 'maj';
+    CH.sel = 0;
+    $('ch-root').value = CH.root; $('ch-qual').value = CH.qual;
+
     [fbG,fbP,fbW,fbC,fbJ,fbH,fbI].forEach(fb=> fb && fb.layout());
-    if(p.has('t')){ game.strings.clear(); gameStrings(); }
+    game.strings.clear(); gameStrings();
     const v = p.get('v');
     showView(VIEWS.indexOf(v)>=0 ? v : 'play');
   } finally { hashLock = false; }
@@ -4693,53 +4702,66 @@ function applyHash(){
 function saveWork(){
   store.set('work', {
     pl:{root:PL.root, scale:PL.scale, labels:PL.labels, capo:PL.capo, ghost:PL.ghost, timbre:PL.timbre, win:PL.win},
-    ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions},
-    jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums},
-    met:{bpm:MET.bpm, beats:MET.beats, ramp:MET.ramp, rampBy:MET.rampBy, rampEvery:MET.rampEvery, rampTo:MET.rampTo},
+    ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions, fingers:CH.fingers},
+    jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums, useRh:JAM.useRh},
     rh:{pat:RH.pat.join(''), bpm:RH.bpm, root:RH.root, qual:RH.qual, click:RH.click, mode:RH.mode, pick:RH.pick},
+    met:{bpm:MET.bpm, beats:MET.beats, ramp:MET.ramp, rampBy:MET.rampBy, rampEvery:MET.rampEvery, rampTo:MET.rampTo},
     game:{mode:game.mode, hi:game.hi, naturals:game.naturals, focus:game.focus, earset:game.earset}
   });
 }
 function loadWork(){
   const w = store.get('work', null); if(!w) return;
   try{
-    if(w.pl){ Object.assign(PL, w.pl);
+    if(w.pl){
+      Object.assign(PL, w.pl);
       $('w-root').value=PL.root; $('w-scale').value=PL.scale; $('w-capo').value=String(PL.capo);
       $('w-ghost').checked=PL.ghost; $('pl-win').value=String(PL.win);
       [...$('w-labels').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.l===PL.labels)));
       [...$('pl-timbre').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.t===PL.timbre)));
     }
-    if(w.ch){ Object.assign(CH, w.ch);
+    if(w.ch){
+      Object.assign(CH, w.ch);
       $('ch-root').value=CH.root; $('ch-qual').value=CH.qual;
-      $('ch-max').value=String(CH.maxFret); $('ch-inv').checked=CH.inversions; }
-    if(w.jam){ Object.assign(JAM, w.jam);
+      $('ch-max').value=String(CH.maxFret); $('ch-inv').checked=CH.inversions;
+      if($('ch-fing')) $('ch-fing').checked = CH.fingers !== false;
+    }
+    if(w.jam){
+      Object.assign(JAM, w.jam);
       $('jam-key').value=JAM.key; $('jam-minor').checked=JAM.minor;
       $('jam-bpm').value=String(JAM.bpm); $('jam-bpmv').textContent=String(JAM.bpm);
       $('jam-drums').value=JAM.drums;
+      if($('jam-rh')) $('jam-rh').checked = !!JAM.useRh;
       const progs = jamProgs();
       $('jam-prog').innerHTML='';
-      progs.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.n; $('jam-prog').appendChild(o); });
+      progs.forEach((pr,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=pr.n; $('jam-prog').appendChild(o); });
       if(JAM.prog>=progs.length) JAM.prog=0;
       $('jam-prog').value=String(JAM.prog);
-      $('jam-scale').value=JAM.scale; }
-    if(w.rh){ RH.pat = (w.rh.pat||'x-xx-xxx').split(''); RH.bpm=w.rh.bpm||88;
-      RH.root=w.rh.root||'G'; RH.qual=w.rh.qual||'maj'; RH.click=w.rh.click!==false;
+      $('jam-scale').value=JAM.scale;
+    }
+    if(w.rh){
+      RH.pat = (w.rh.pat||'x-xx-xxx').split(''); RH.bpm = w.rh.bpm||88;
+      RH.root = w.rh.root||'G'; RH.qual = w.rh.qual||'maj'; RH.click = w.rh.click!==false;
       $('rh-root').value=RH.root; $('rh-qual').value=RH.qual; $('rh-click').checked=RH.click;
       $('rh-bpm').value=String(RH.bpm); $('rh-bpmv').textContent=String(RH.bpm);
       if(w.rh.mode) RH.mode = w.rh.mode;
       if(Array.isArray(w.rh.pick)) RH.pick = w.rh.pick;
-      [...$('rh-mode').children].forEach(x=> x.setAttribute('aria-pressed', String(x.dataset.m===RH.mode))); }
-    if(w.met){ Object.assign(MET, w.met);
+      [...$('rh-mode').children].forEach(x=> x.setAttribute('aria-pressed', String(x.dataset.m===RH.mode)));
+    }
+    if(w.met){
+      Object.assign(MET, w.met);
       $('met-bpm').value=String(MET.bpm); $('met-bpmv').textContent=String(MET.bpm);
       $('met-sig').value=String(MET.beats); metDots();
       $('met-ramp').checked = !!MET.ramp;
       $('met-rampby').value = String(MET.rampBy);
       $('met-rampevery').value = String(MET.rampEvery);
-      $('met-rampto').value = String(MET.rampTo); }
-    if(w.game){ Object.assign(game, w.game); $('q-focus').checked = !!game.focus;
+      $('met-rampto').value = String(MET.rampTo);
+    }
+    if(w.game){
+      Object.assign(game, w.game); $('q-focus').checked = !!game.focus;
       $('q-mode').value=game.mode; $('q-hi').value=String(game.hi);
-      $('q-natural').checked=game.naturals; $('q-earset').value=game.earset;
-      $('q-earset-wrap').classList.toggle('hide', game.mode!=='ear'); }
+      $('q-natural').checked=game.naturals; fillEarSet(); $('q-earset').value=game.earset;
+      $('q-earset-wrap').classList.toggle('hide', ['ear','chord','echo'].indexOf(game.mode)<0);
+    }
   }catch(e){}
 }
 
