@@ -372,6 +372,31 @@ details[open] summary{margin-bottom:8px}
 .days i{flex:1; height:26px; border-radius:5px; background:var(--panel2); border:1px solid var(--line2);
   display:flex; align-items:center; justify-content:center; font-size:.6rem; color:var(--faint)}
 .days i.on{background:var(--scale); border-color:var(--scale); color:var(--scale-ink); font-weight:700}
+
+/* ---------- tuner ---------- */
+#tu-toggle.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
+.dial{margin-top:14px}
+.dial .read{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.dial .note{font-size:2.6rem; font-weight:700; letter-spacing:-.03em; line-height:1; min-width:2.4em}
+.dial .hz{font-variant-numeric:tabular-nums; color:var(--muted); font-size:.88rem}
+.dial.intune .note{color:var(--scale)}
+.dial.flat .note, .dial.sharp .note{color:var(--root)}
+.gauge{position:relative; height:34px; margin:12px 0 6px; border-radius:8px;
+  background:linear-gradient(90deg, color-mix(in srgb,var(--rose) 22%, var(--panel2)) 0%,
+    var(--panel2) 38%, color-mix(in srgb,var(--scale) 30%, var(--panel2)) 50%,
+    var(--panel2) 62%, color-mix(in srgb,var(--rose) 22%, var(--panel2)) 100%);
+  border:1px solid var(--line2); overflow:hidden}
+.gauge .mid{position:absolute; left:50%; top:0; bottom:0; width:2px; background:var(--scale); opacity:.8}
+.gauge .tick{position:absolute; top:0; bottom:0; width:1px; background:var(--line2)}
+.gauge .needle{position:absolute; top:2px; bottom:2px; width:4px; margin-left:-2px; border-radius:3px;
+  background:var(--text); transition:left .09s linear; box-shadow:0 0 8px rgba(0,0,0,.5)}
+.dial.intune .gauge .needle{background:var(--scale)}
+.gauge .lab{position:absolute; bottom:2px; font-size:.6rem; color:var(--muted)}
+#tu-refs{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+#tu-refs button{background:var(--panel2); border:1px solid var(--line2); color:var(--text);
+  font:inherit; font-size:.85rem; padding:8px 12px; border-radius:9px; cursor:pointer}
+#tu-refs button:hover{background:var(--raise)}
+#tu-refs button b{color:var(--muted); font-size:.72rem; margin-right:4px}
 .hide{display:none !important}
 </style>
 </head>
@@ -413,6 +438,32 @@ details[open] summary{margin-bottom:8px}
   <div class="note" style="margin:18px 0 14px"><b>A note is a wave.</b> Click any fret — the neck plays it and draws it below.
   Go twelve frets higher on the same string and the wave has exactly twice as many humps. Pick up the capo at the nut and
   drop it anywhere on the neck to move where “zero” is.</div>
+
+  <details class="card" id="tu-card" style="margin:0 0 14px">
+    <summary><b>Tune up first</b> <span class="hint">— an out-of-tune guitar teaches you the wrong notes</span></summary>
+    <div style="margin-top:12px">
+      <button class="btn primary" id="tu-toggle">● Turn on the tuner</button>
+      <span class="hint" id="tu-msg" style="margin-left:10px">Uses your microphone, in the page only — nothing is recorded or sent anywhere.</span>
+      <div class="dial hide" id="tu-dial">
+        <div class="read">
+          <span class="note" id="tu-note">—</span>
+          <span class="hz" id="tu-hz"></span>
+        </div>
+        <div class="gauge">
+          <div class="tick" style="left:25%"></div><div class="tick" style="left:75%"></div>
+          <div class="mid"></div>
+          <div class="needle" id="tu-needle" style="left:50%"></div>
+          <span class="lab" style="left:6px">flat</span>
+          <span class="lab" style="right:6px">sharp</span>
+        </div>
+        <div id="tu-str" class="hint"></div>
+      </div>
+      <div class="sep"></div>
+      <h3 style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 2px">Or tune by ear</h3>
+      <p class="hint" style="margin:6px 0 0">Play a string and match it. Listen for the wobble between the two notes slowing down — when it stops, you are in tune.</p>
+      <div id="tu-refs"></div>
+    </div>
+  </details>
 
   <div class="bar" style="margin:0 0 14px">
     <div class="f"><label for="w-root">Root</label><select id="w-root"></select></div>
@@ -1384,6 +1435,7 @@ function showView(v){
   plLoop(v==='play');
   if(typeof stopSequence==='function') stopSequence();
   if(v!=='jam' && typeof JAM!=='undefined' && JAM.playing) jamStop();
+  if(v!=='play' && typeof TUNE!=='undefined' && TUNE.on) tunerStop();
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) showView(b.dataset.v); });
@@ -2724,6 +2776,189 @@ function metTick(){
     $('jam-scale').value = JAM.scale;
   }
   autoScale();
+})();
+
+/* ============================================================
+   TUNER — pitch detection from the microphone
+   ============================================================ */
+const TUNE = {on:false, stream:null, node:null, an:null, buf:null, raf:null,
+              hz:0, cents:0, midi:0, quiet:true, hold:0, lastGood:0};
+
+/* YIN pitch detection. Plain autocorrelation happily locks onto a subharmonic —
+   at twice the period a periodic signal correlates just as well — so this uses the
+   cumulative mean normalised difference and takes the FIRST dip under a threshold
+   rather than the deepest one, which is what keeps it on the fundamental. */
+function detectPitch(buf, sr){
+  const W = buf.length >> 1;
+  let rms = 0;
+  for(let i=0;i<W;i++) rms += buf[i]*buf[i];
+  rms = Math.sqrt(rms/W);
+  if(rms < 0.009) return -1;
+
+  const maxLag = Math.min(W-1, Math.floor(sr/70));
+  const minLag = Math.max(2, Math.floor(sr/1300));
+
+  const d = new Float32Array(maxLag+1);
+  for(let tau=1; tau<=maxLag; tau++){
+    let sum = 0;
+    for(let i=0;i<W;i++){ const diff = buf[i] - buf[i+tau]; sum += diff*diff; }
+    d[tau] = sum;
+  }
+
+  const cm = new Float32Array(maxLag+1);
+  cm[0] = 1;
+  let running = 0;
+  for(let tau=1; tau<=maxLag; tau++){
+    running += d[tau];
+    cm[tau] = running ? d[tau]*tau/running : 1;
+  }
+
+  const THRESH = 0.12;
+  let tau = -1;
+  for(let t=minLag; t<=maxLag; t++){
+    if(cm[t] < THRESH){
+      while(t+1 <= maxLag && cm[t+1] < cm[t]) t++;
+      tau = t; break;
+    }
+  }
+  if(tau < 0){
+    let best = -1, bv = Infinity;
+    for(let t=minLag; t<=maxLag; t++) if(cm[t] < bv){ bv = cm[t]; best = t; }
+    if(bv > 0.35) return -1;
+    tau = best;
+  }
+
+  let refined = tau;
+  if(tau > minLag && tau < maxLag){
+    const s0 = cm[tau-1], s1 = cm[tau], s2 = cm[tau+1];
+    const denom = 2*(2*s1 - s2 - s0);
+    if(denom) refined = tau + (s2 - s0)/denom;
+  }
+  return sr/refined;
+}
+
+function freqToNote(hz){
+  const m = 69 + 12*Math.log2(hz/440);
+  const near = Math.round(m);
+  return {midi:near, cents:Math.round((m-near)*100)};
+}
+/* Which open string is this trying to be? Answer in cents, so a badly flat low E
+   still reads as a flat low E rather than as a sharp D sharp. */
+function stringTarget(hz){
+  const t = tuning();
+  let best = null;
+  for(let s=0;s<t.length;s++){
+    const f0 = midiToFreq(midiAt(s,0));
+    const cents = 1200*Math.log2(hz/f0);
+    if(!best || Math.abs(cents) < Math.abs(best.cents)) best = {s:s, cents:cents, f0:f0};
+  }
+  return best;
+}
+
+async function tunerStart(){
+  if(TUNE.on) return;
+  const ctx = audio(); if(!ctx) return;
+  $('tu-msg').textContent = 'Asking for the microphone…';
+  try{
+    TUNE.stream = await navigator.mediaDevices.getUserMedia({
+      audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}
+    });
+  }catch(e){
+    $('tu-msg').innerHTML = 'No microphone — ' + (e && e.name==='NotAllowedError'
+      ? 'permission was declined. You can still use the reference tones below.'
+      : 'this browser would not give one. The reference tones below still work.');
+    return;
+  }
+  TUNE.node = ctx.createMediaStreamSource(TUNE.stream);
+  TUNE.an = ctx.createAnalyser();
+  TUNE.an.fftSize = 2048;
+  TUNE.buf = new Float32Array(TUNE.an.fftSize);
+  TUNE.node.connect(TUNE.an);          // note: not connected to the output, so no feedback
+  TUNE.on = true;
+  $('tu-toggle').textContent = '■ Stop the tuner';
+  $('tu-toggle').classList.add('on');
+  $('tu-msg').textContent = 'Play one string at a time.';
+  $('tu-dial').classList.remove('hide');
+  tunerLoop();
+}
+function tunerStop(){
+  TUNE.on = false;
+  if(TUNE.raf) cancelAnimationFrame(TUNE.raf);
+  TUNE.raf = null;
+  if(TUNE.stream) TUNE.stream.getTracks().forEach(t=>t.stop());
+  TUNE.stream = null; TUNE.node = null; TUNE.an = null;
+  $('tu-toggle').textContent = '● Turn on the tuner';
+  $('tu-toggle').classList.remove('on');
+  $('tu-msg').textContent = 'The microphone is off.';
+  $('tu-dial').classList.add('hide');
+}
+let tunerFrame = 0;
+function tunerLoop(){
+  if(!TUNE.on) return;
+  TUNE.raf = requestAnimationFrame(tunerLoop);
+  if((tunerFrame++ % 3) !== 0) return;          // ~20 readings a second is plenty
+  TUNE.an.getFloatTimeDomainData(TUNE.buf);
+  const hz = detectPitch(TUNE.buf, actx.sampleRate);
+  const now = performance.now();
+  if(hz > 0){
+    TUNE.hz = hz; TUNE.lastGood = now;
+    const {midi, cents} = freqToNote(hz);
+    TUNE.midi = midi; TUNE.cents = cents;
+    renderTuner(true);
+  } else if(now - TUNE.lastGood > 900){
+    renderTuner(false);
+  }
+}
+function renderTuner(live){
+  const dial = $('tu-dial');
+  if(!live){
+    $('tu-note').textContent = '—';
+    $('tu-hz').textContent = 'listening';
+    $('tu-str').textContent = '';
+    $('tu-needle').style.left = '50%';
+    dial.classList.remove('sharp','flat','intune');
+    return;
+  }
+  const t = tuning();
+  const tgt = stringTarget(TUNE.hz);
+  const onString = Math.abs(tgt.cents) <= 180;
+  const cents = onString ? Math.round(tgt.cents) : TUNE.cents;
+  const inTune = Math.abs(cents) <= 5;
+
+  if(onString){
+    const m = midiAt(tgt.s, 0);
+    $('tu-note').textContent = pretty(nameOf(((m%12)+12)%12)) + (Math.floor(m/12)-1);
+    $('tu-str').innerHTML = 'String <b>' + (t.length-tgt.s) + '</b> — '
+      + (inTune ? 'in tune.' : (cents < 0
+          ? 'flat by ' + Math.abs(cents) + ' cents, tune it <b>up</b>.'
+          : 'sharp by ' + cents + ' cents, tune it <b>down</b>.'));
+  } else {
+    $('tu-note').textContent = pretty(nameOf(((TUNE.midi%12)+12)%12)) + (Math.floor(TUNE.midi/12)-1);
+    $('tu-str').innerHTML = 'Not near any open string — the closest is <b>'
+      + (t.length-tgt.s) + '</b> (' + pretty(nameOf(t[tgt.s])) + ').';
+  }
+  $('tu-hz').textContent = TUNE.hz.toFixed(1) + ' Hz · ' + (cents>0?'+':'') + cents + ' cents';
+  $('tu-needle').style.left = (50 + Math.max(-49, Math.min(49, cents))) + '%';
+  dial.classList.toggle('intune', inTune);
+  dial.classList.toggle('sharp', cents > 5);
+  dial.classList.toggle('flat', cents < -5);
+}
+
+(function initTuner(){
+  const refs = $('tu-refs');
+  const build = ()=>{
+    const t = tuning();
+    refs.innerHTML = '';
+    for(let s=t.length-1;s>=0;s--){
+      const b = document.createElement('button');
+      b.innerHTML = '<b>' + (t.length-s) + '</b> ' + pretty(nameOf(t[s]));
+      b.onclick = ()=>{ audio(); pluck(midiAt(s,0), 0, 3.0, .5); };
+      refs.appendChild(b);
+    }
+  };
+  build();
+  $('g-tuning').addEventListener('change', build);
+  $('tu-toggle').onclick = ()=> TUNE.on ? tunerStop() : tunerStart();
 })();
 
 /* ============================================================
