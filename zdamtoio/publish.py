@@ -29,6 +29,34 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PAGES = Path(os.environ.get("PAGES_REPO", r"E:\Files\Coding\2026\omikse.github.io"))
 DEST = PAGES / "zdamtoio"
+PIPELINE = HERE.parent / "tools" / "pdf-json"
+
+
+def reindex():
+    """Rebuild exams/index.json from whatever is sitting in exams/.
+
+    Adding an exam is meant to be "drop the folder into exams/ and publish" --
+    no admin panel, no upload form. That cannot work on its own, because a
+    static host cannot list a directory: the browser has no way to discover
+    files, so something must write a manifest.
+
+    This is that step, and it runs automatically on every publish. The grouping
+    rules are NOT reimplemented here -- pipeline/assemble.py already knows that
+    P1 + P2 of one variant and date are a single 60-point exam and R0 stands
+    alone, so it is imported. Two copies of that logic would drift.
+    """
+    if not (PIPELINE / "pipeline" / "assemble.py").is_file():
+        return None                        # pipeline absent; keep the manifest as-is
+    sys.path.insert(0, str(PIPELINE))
+    try:
+        from pipeline.assemble import build_index
+        from pipeline.common import write_json
+    finally:
+        sys.path.pop(0)
+
+    index = build_index(HERE)
+    write_json(HERE / "exams" / "index.json", index)
+    return [e["id"] for e in index.get("exams", [])]
 
 # Never mirrored: local noise with no business on a web server.
 EXCLUDE_DIRS = {"__pycache__", ".git", ".claude", "node_modules"}
@@ -157,6 +185,12 @@ def main():
 
     if not DEST.parent.is_dir():
         sys.exit(f"Pages repo not found at {PAGES}\nSet PAGES_REPO to override.")
+
+    ids = reindex()
+    if ids is None:
+        print("  index    (pominięty — brak pdf-json obok)")
+    else:
+        print(f"  index    {len(ids)} arkusz(y): {', '.join(ids)}")
 
     version, stamped = stamp_version(args.dry_run)
     print(f"  version {version}" + (f" — restamped {', '.join(stamped)}" if stamped else " (unchanged)"))

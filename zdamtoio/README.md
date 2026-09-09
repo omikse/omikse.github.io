@@ -52,6 +52,29 @@ That pulls `renderers.js`, `styles.css` and every in-scope booklet with its
 images. Those files are **derived** — editing them here is pointless, the next
 sync overwrites them. Fix things in `pdf-json` instead.
 
+### Adding one exam by hand
+
+Drop the folder into `exams/` and publish. Nothing else:
+
+```
+exams/MPOP-R0-100-2205/
+    MPOP-R0-100-2205.json     # named after the folder
+    assets/                   # optional, only if the paper has images
+```
+
+`publish.py` rebuilds `exams/index.json` from whatever is in `exams/`, so the
+sheet appears in the menu on its own. There is no upload form and no "add exam"
+button in the admin panel — the folder *is* the interface.
+
+The manifest exists because **a static host cannot list a directory**: the
+browser has no way to discover files, so something has to write down what is
+there. That something runs on every publish, not on the server.
+
+Two things the folder name has to get right, because the app reads meaning from
+it: `<SUBJECT>-<LEVEL>-<VARIANT>-<SESSION>`, and only the standard `100`
+variant is listed. `P1` + `P2` of one variant and date are joined into a single
+60-point exam; `R0` stands alone.
+
 ## Deploying
 
 ```bash

@@ -54,7 +54,13 @@ edits appear to do nothing. Same trap as `tools/pdf-json`.
    class, a group, or per-teacher seats, and do not describe the admin panel as
    a "teacher view". Admin is the project owner; everyone else is a student.
    Anything that would need a third role needs an explicit decision first.
-9. **Exams come from the pipeline, never from hand-written objects.** The
+9. **Adding an exam = dropping a folder into `exams/`, then `publish.py`.**
+   No upload form, no admin-panel button. `publish.py` rebuilds
+   `exams/index.json` by scanning the folder, reusing `build_index` from
+   `pipeline/assemble.py` rather than reimplementing the P1+P2 grouping. The
+   manifest is unavoidable: a static host cannot list a directory, so the
+   browser cannot discover files by itself.
+10. **Exams come from the pipeline, never from hand-written objects.** The
    original site carried three exams hardcoded into `index.html` in a different,
    ad-hoc shape (bare `questions[]` with a `rubric` string, essay topics as
    plain text). They were deleted, deliberately — they cannot be graded by
