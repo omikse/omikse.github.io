@@ -2024,7 +2024,7 @@ stats.extraSeen = stats.extraSeen || {};
     }
     const t = tuning();
     fbG.clear();
-    for(const st of game.strings) for(let f=0; f<=fbG.frets; f++)
+    for(const st of activeStrings()) for(let f=0; f<=fbG.frets; f++)
       if((t[st]+f)%12 === game.q.pc) fbG.set(st, f, 'root', pretty(nameOf(game.q.pc)));
     fbG.paint();
     resolve(false, 'That is where ' + pretty(nameOf(game.q.pc)) + ' lives. Play one of them.');
@@ -2091,8 +2091,15 @@ function updateScore(){
   $('q-avg').textContent = avg? avg.toFixed(1)+'s' : '—';
 }
 function randOf(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+/* The selected strings can outlive the tuning that produced them — a share link can
+   swap a six-string guitar for a ukulele underneath them — so never trust the set. */
+function activeStrings(){
+  const n = tuning().length;
+  const ok = [...game.strings].filter(s=> s >= 0 && s < n);
+  return ok.length ? ok : Array.from({length:n}, (_,i)=> i);
+}
 function randomPos(minFret=0){
-  const ss=[...game.strings], t=tuning();
+  const ss=activeStrings(), t=tuning();
   const span = Math.min(game.hi, S.frets);
   const cands = [];
   for(const s of ss) for(let f=minFret; f<=span; f++){
@@ -2141,7 +2148,7 @@ function newQuestion(){
   } else if(game.mode==='octaves'){
     const p = randomPos();
     const targets=[];
-    for(const s of game.strings) for(let f=0;f<=Math.min(game.hi,S.frets);f++)
+    for(const s of activeStrings()) for(let f=0;f<=Math.min(game.hi,S.frets);f++)
       if((t[s]+f)%12===p.pc && !(s===p.s && f===p.f)) targets.push(s+':'+f);
     if(!targets.length) return newQuestion();
     game.q = Object.assign({}, p, {targets:new Set(targets)});
@@ -2201,7 +2208,7 @@ function newQuestion(){
       const p = randomPos(), iv = randOf(set);
       const hiMidi = midiAt(p.s,p.f) + iv;
       let spot = null;
-      for(const ss of game.strings) for(let x=0;x<=Math.min(game.hi,S.frets);x++)
+      for(const ss of activeStrings()) for(let x=0;x<=Math.min(game.hi,S.frets);x++)
         if(midiAt(ss,x)===hiMidi){ spot = {s:ss,f:x}; break; }
       if(spot) q = {s:p.s, f:p.f, pc:p.pc, iv, hi:spot};
     }
@@ -2348,7 +2355,7 @@ function listenLoop(){
     if(now - game.heldSince > 120){
       const t = tuning();
       fbG.clear();
-      for(const st of game.strings) for(let f=0; f<=fbG.frets; f++)
+      for(const st of activeStrings()) for(let f=0; f<=fbG.frets; f++)
         if((t[st]+f)%12 === game.q.pc) fbG.set(st, f, 'on', pretty(nameOf(game.q.pc)));
       fbG.paint();
       resolve(true, 'Heard it — ' + pretty(nameOf(game.q.pc)) + '. Every place it lives is lit up.');
@@ -2505,7 +2512,7 @@ function onBoardClick(s,f){
     const ok = pc===q.targetPc;
     fbG.set(s,f, ok?'on':'bad', pretty(nameOf(pc)));
     if(!ok){
-      for(const ss of game.strings) for(let x=0;x<=fbG.frets;x++)
+      for(const ss of activeStrings()) for(let x=0;x<=fbG.frets;x++)
         if((t[ss]+x)%12===q.targetPc) fbG.set(ss,x,'ghost',pretty(nameOf(q.targetPc)));
       fbG.set(q.s,q.f,'target','R');
     }
@@ -4203,7 +4210,7 @@ function buildPlan(minutes){
         $('q-mode').value='name'; game.mode='name';
         $('q-natural').checked = true; game.naturals = true;
         $('q-focus').checked = true; game.focus = true;
-        game.strings = new Set([0,1]);
+        game.strings = new Set(tuning().length > 2 ? [0,1] : [0]);
         [...$('q-strings').children].forEach(b=> b.setAttribute('aria-pressed', String(+b.dataset.s<=1)));
         fillEarSet(); updateHelp(); newQuestion();
       }
@@ -4262,6 +4269,16 @@ function buildPlan(minutes){
          showView('game');
          $('q-mode').value='playit'; game.mode='playit';
          fillEarSet(); updateHelp(); newQuestion();
+       }},
+      {k:'echo', t:'Work a phrase out by ear', m:4,
+       why:'A few notes play and you find them on the neck. This is the skill every other drill here is feeding.',
+       go:()=>{
+         showView('game');
+         $('q-mode').value='echo'; game.mode='echo';
+         game.earset = seen('echo') < 15 ? 'easy' : 'core';
+         fillEarSet(); $('q-earset').value = game.earset;
+         $('q-earset-wrap').classList.remove('hide');
+         updateHelp(); newQuestion();
        }},
       {k:'_pent', t:'One pentatonic box, said out loud', m:4,
        why:'Play the shape and name every note as you land on it. Slow, and the fastest thing you can do.',
@@ -4665,7 +4682,8 @@ function applyHash(){
       PL.labels = p.get('l');
       [...$('w-labels').children].forEach(b=> b.setAttribute('aria-pressed', String(b.dataset.l===PL.labels)));
     }
-    [fbG,fbP,fbW].forEach(fb=> fb && fb.layout());
+    [fbG,fbP,fbW,fbC,fbJ,fbH,fbI].forEach(fb=> fb && fb.layout());
+    if(p.has('t')){ game.strings.clear(); gameStrings(); }
     const v = p.get('v');
     showView(VIEWS.indexOf(v)>=0 ? v : 'play');
   } finally { hashLock = false; }
