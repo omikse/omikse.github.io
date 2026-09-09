@@ -657,6 +657,14 @@ body.has-plan{padding-bottom:86px}
     <div class="ratio" id="pl-ratio"></div>
   </div>
 
+  <div class="card">
+    <h3>The same note, three ways</h3>
+    <p class="hint" style="margin-bottom:10px">A dot on a string, a number on a tab stave, a blob on a staff.
+    Guitar music is written an octave above where it sounds — that is what the little <b>8</b> under the clef means,
+    and why the low E ends up three ledger lines below the staff rather than off the bottom of the page.</p>
+    <div id="pl-staff"></div>
+  </div>
+
   <div class="grid" style="margin-top:16px">
     <div class="scope">
       <h3>What one string is really doing</h3>
@@ -700,6 +708,9 @@ body.has-plan{padding-bottom:86px}
         <option value="ear">Hear the interval</option>
         <option value="chord">Hear the chord</option>
       </optgroup>
+      <optgroup label="Read music">
+        <option value="read">Read the note</option>
+      </optgroup>
       <optgroup label="With the guitar in your hands">
         <option value="playit">Play it — I listen</option>
       </optgroup>
@@ -729,6 +740,7 @@ body.has-plan{padding-bottom:86px}
     <div class="timerbar" id="q-bar" style="visibility:hidden"><i></i></div>
     <div class="sep"></div>
     <div class="prompt" id="q-prompt" role="status" aria-live="polite">Pick a mode and press <em>Start</em>.</div>
+    <div class="hide" id="q-staff" style="margin:6px 0 2px"></div>
     <div class="earbox hide" id="q-listen">
       <button class="big" id="q-mic">● Turn on the microphone</button>
       <span class="hint" id="q-heard">Nothing yet.</span>
@@ -1963,6 +1975,7 @@ function updateHelp(){
     octaves:'One position is shown. Click every other place that same note appears in range.',
     interval:'The orange ring is the reference note. Click the note the given interval above it, on any string.',
     ear:'Two notes play, low then high. Name the distance between them — then the neck shows you where they were.',
+    read:'One note on the staff. Name it. Guitar music is written an octave above where it sounds, so the low E sits three ledger lines below the staff.',
     playit:'Find the note on your guitar and play it. The app listens through the microphone and moves on when it hears the right pitch, in any octave.',
     chord:'A chord is strummed. Say what kind it is — the root does not matter, only the flavour. Then the neck shows you the shape.'
   }[game.mode];
@@ -2035,6 +2048,8 @@ function newQuestion(){
     const p = randomPos();
     const iv = randOf([2,3,4,5,7,9,10,12].filter(x=>x<=12));
     game.q = Object.assign({}, p, {iv, targetPc:(p.pc+iv)%12});
+  } else if(game.mode==='read'){
+    game.q = randomPos();
   } else if(game.mode==='playit'){
     game.q = randomPos();
     game.heardPc = -1; game.heldSince = 0;
@@ -2084,6 +2099,14 @@ function drawQuestion(){
     fbG.set(q.s,q.f,'root', pretty(nameOf(q.pc)));
     P.innerHTML = `Click every other <em>${pretty(nameOf(q.pc))}</em> <span class="hint">— ${q.targets.size} to find</span>`;
   }
+  else if(game.mode==='read'){
+    P.innerHTML = 'What note is written here?';
+    $('q-staff').classList.remove('hide');
+    $('q-staff').innerHTML = notationSVG([{s:q.s, f:q.f, midi:midiAt(q.s,q.f)}], null, {noTab:true});
+    buildNoteButtons(pc=> answerRead(pc));
+    fbG.paint();
+    return;
+  }
   else if(game.mode==='playit'){
     P.innerHTML = 'Play <em>' + pretty(nameOf(q.pc)) + '</em> on your guitar '
       + '<span class="hint">— any string, any octave</span>';
@@ -2116,6 +2139,7 @@ function drawQuestion(){
   }
   $('q-ear').classList.toggle('hide', game.mode!=='ear' && game.mode!=='chord');
   $('q-listen').classList.toggle('hide', game.mode!=='playit');
+  $('q-staff').classList.toggle('hide', game.mode!=='read');
   fbG.paint();
 }
 function playEar(together){
@@ -2181,6 +2205,21 @@ function listenLoop(){
       resolve(true, 'Heard it — ' + pretty(nameOf(game.q.pc)) + '. Every place it lives is lit up.');
     }
   } else game.heldSince = 0;
+}
+function answerRead(pc){
+  const q = game.q, ok = pc === q.pc;
+  [...$('q-answers').children].forEach(b=>{
+    if(+b.dataset.pc===q.pc) b.classList.add('right');
+    else if(+b.dataset.pc===pc && !ok) b.classList.add('wrong');
+  });
+  $('q-staff').innerHTML = notationSVG([{s:q.s, f:q.f, midi:midiAt(q.s,q.f)}], null, {});
+  const t = tuning();
+  fbG.clear();
+  fbG.set(q.s, q.f, 'root', pretty(nameOf(q.pc)));
+  fbG.paint();
+  pluck(midiAt(q.s,q.f), 0, 1.6, .45);
+  resolve(ok, ok ? ('Yes — ' + pretty(nameOf(q.pc)) + ', written an octave up.')
+                 : ('That is ' + pretty(nameOf(q.pc)) + '. The tab and the neck show where it lives.'));
 }
 function buildQualButtons(){
   const A = $('q-answers'); A.innerHTML=''; A.classList.add('ivl');
@@ -2334,7 +2373,7 @@ function resolve(ok, msg){
   store.set('stats',stats);
   flash(msg, ok?'ok':'no');
   updateScore(); renderStats();
-  if(ok && game.mode!=='ear' && game.mode!=='chord' && game.mode!=='playit') pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
+  if(ok && ['ear','chord','playit','read'].indexOf(game.mode)<0) pluck(midiAt(game.q.s,game.q.f),0,.9,.4);
   setTimeout(()=>{ if(game.locked) newQuestion(); }, ok?900:1900);
 }
 function renderStats(){
@@ -4030,6 +4069,109 @@ function planStop(finished){
 })();
 
 /* ============================================================
+   NOTATION — the same note as a dot on a string, a number on a tab
+   stave and a blob on a staff, so the three stop being separate things
+   ============================================================ */
+const STAFF_LETTERS = ['C','D','E','F','G','A','B'];
+
+/* Guitar music is written an octave above where it sounds, which is why the clef
+   carries a small 8 underneath. Everything below works in written pitch. */
+function writtenStep(midi, ctxRoot){
+  const w = midi + 12;
+  const name = nameOf(((w % 12) + 12) % 12, ctxRoot);
+  const letter = name[0];
+  const acc = name.slice(1);
+  const octave = Math.floor(w / 12) - 1;
+  return {step: STAFF_LETTERS.indexOf(letter) + 7*octave, acc: acc, letter: letter, octave: octave};
+}
+
+function notationSVG(slots, ctxRoot, opts){
+  opts = opts || {};
+  const showTab = opts.noTab !== true;
+  const t = tuning(), n = t.length;
+  /* A bass is written in bass clef; everything else in treble with the little 8.
+     Both sound an octave below what is written, which is why writtenStep adds 12. */
+  const lowest = Math.min.apply(null, t.map((_,i)=> midiAt(i,0)));
+  const bassClef = lowest < 40;
+  const bottomStep = bassClef ? 18 : 30;            // G2 or E4 on the bottom line
+  const clefChar = bassClef ? '\u{1D122}' : '\u{1D11E}';
+
+  const gap = 9, halfGap = gap/2;
+  const steps = slots.filter(Boolean).map(sl=> writtenStep(sl.midi, ctxRoot).step);
+  const minStep = steps.length ? Math.min.apply(null, steps.concat([bottomStep])) : bottomStep;
+  const maxStep = steps.length ? Math.max.apply(null, steps.concat([bottomStep+8])) : bottomStep+8;
+  const above = Math.max(0, maxStep - (bottomStep+8)) * halfGap + 14;
+  const below = Math.max(0, bottomStep - minStep) * halfGap;
+
+  const topY = above;
+  const staffBottom = topY + 4*gap;
+  const tabTop = staffBottom + Math.max(26, below + 16);
+  const tabGap = 7;
+  const H = showTab ? tabTop + (n-1)*tabGap + 18 : staffBottom + Math.max(20, below + 14);
+  const W = 66 + slots.length*64 + 14;
+  const yOf = step => staffBottom - (step - bottomStep)*halfGap;
+
+  let g = '';
+  for(let i=0;i<5;i++){
+    const y = topY + i*gap;
+    g += `<line x1="10" y1="${y}" x2="${W-8}" y2="${y}" stroke="var(--line2)" stroke-width="1"/>`;
+  }
+  if(showTab) for(let i=0;i<n;i++){
+    const y = tabTop + i*tabGap;
+    g += `<line x1="10" y1="${y}" x2="${W-8}" y2="${y}" stroke="var(--line2)" stroke-width="1"/>`;
+  }
+  g += `<text x="18" y="${bassClef ? topY + 2*gap + 4 : staffBottom - 2}" font-size="${bassClef?34:46}"
+          fill="var(--text)" font-family="'Segoe UI Symbol','Noto Music','Apple Symbols',serif">${clefChar}</text>`;
+  g += `<text x="${bassClef?40:32}" y="${staffBottom + 13}" font-size="11" fill="var(--muted)" text-anchor="middle">8</text>`;
+  if(showTab) g += `<text x="24" y="${tabTop + (n-1)*tabGap/2 + 4}" font-size="13" font-weight="700"
+          fill="var(--muted)" text-anchor="middle" letter-spacing="1">TAB</text>`;
+
+  slots.forEach((sl, i)=>{
+    if(!sl) return;
+    const x = 66 + i*64;
+    const col = i === 0 ? 'var(--blue)' : 'var(--root)';
+    const {step, acc} = writtenStep(sl.midi, ctxRoot);
+    const y = yOf(step);
+
+    for(let s2 = bottomStep-2; s2 >= step; s2 -= 2)
+      g += `<line x1="${x-11}" y1="${yOf(s2)}" x2="${x+11}" y2="${yOf(s2)}" stroke="var(--line2)" stroke-width="1"/>`;
+    for(let s2 = bottomStep+10; s2 <= step; s2 += 2)
+      g += `<line x1="${x-11}" y1="${yOf(s2)}" x2="${x+11}" y2="${yOf(s2)}" stroke="var(--line2)" stroke-width="1"/>`;
+
+    if(acc){
+      const ch = acc === '#' ? '\u266f' : '\u266d';
+      g += `<text x="${x-13}" y="${y+5}" font-size="17" fill="${col}" text-anchor="middle">${ch}</text>`;
+    }
+    const up = step < bottomStep + 4;
+    g += `<line x1="${x + (up?5.6:-5.6)}" y1="${y}" x2="${x + (up?5.6:-5.6)}" y2="${y + (up?-27:27)}"
+            stroke="${col}" stroke-width="1.6"/>`;
+    g += `<ellipse cx="${x}" cy="${y}" rx="5.6" ry="4.1" fill="${col}" transform="rotate(-18 ${x} ${y})"/>`;
+
+    if(showTab){
+      const ty = tabTop + (n-1-sl.s)*tabGap;
+      g += `<rect x="${x-9}" y="${ty-7}" width="18" height="14" fill="var(--panel)"/>`;
+      g += `<text x="${x}" y="${ty+4.5}" font-size="12.5" font-weight="700" fill="${col}" text-anchor="middle"
+              font-family="ui-monospace,Consolas,monospace">${sl.f}</text>`;
+      g += `<text x="${x}" y="${H-4}" font-size="10" fill="var(--muted)" text-anchor="middle">${pitchName(sl.midi)}</text>`;
+    }
+  });
+
+  const labels = slots.filter(Boolean).map((sl,i)=> (i===0?'A: ':'B: ') + pitchName(sl.midi)).join(', ');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" role="img"
+            aria-label="${bassClef?'Bass':'Treble'} clef, sounding an octave lower, with tablature. ${labels || 'nothing loaded'}">${g}</svg>`;
+}
+
+function renderNotation(){
+  const el = $('pl-staff'); if(!el) return;
+  const slots = [PL.A, PL.B].filter(Boolean);
+  if(!slots.length){
+    el.innerHTML = '<p class="hint" style="margin:0">Play a note and it appears here as written music and as tab.</p>';
+    return;
+  }
+  el.innerHTML = notationSVG([PL.A, PL.B], PL.root);
+}
+
+/* ============================================================
    shareable state in the URL
    ============================================================ */
 const TUNE_KEYS = Object.keys(TUNINGS);
@@ -4395,7 +4537,7 @@ function renderPlay(){
 
   $('pl-slotA').innerHTML = slotCard(PL.A,'A — blue');
   $('pl-slotB').innerHTML = slotCard(PL.B,'B — orange');
-  renderRatio(); drawWave(); drawHarm();
+  renderRatio(); drawWave(); drawHarm(); renderNotation();
 
   const opens = t.map(function(v){ return pretty(nameOf((v+PL.capo)%12, PL.root)); }).join(' ');
   $('w-capotext').textContent = PL.capo

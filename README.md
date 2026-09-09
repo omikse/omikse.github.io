@@ -61,11 +61,17 @@ The neck sits in the middle; everything else is arranged around it.
   within 180 cents, so a badly flat low E reads as a flat low E and not as a sharp
   D♯. Nothing is recorded or sent anywhere. Reference tones are there if you would
   rather tune by ear.
+- **Notation and tab.** Whatever you play appears on a staff and a tab stave side by
+  side, so the dot on a string, the number on the tab and the blob on the staff stop
+  being three separate things. Guitar music is written an octave above where it sounds
+  — the little 8 under the clef — which is why the low E lands three ledger lines below
+  the staff rather than off the page. It picks a bass clef for bass tunings and grows
+  the gap between the staves so ledger lines never collide with the tab.
 - **Left panel** names the current scale, spells it correctly for the key, gives its formula
   and character, and lists every root position on every string.
 
 ### Drills
-Seven drills, all scored, with per-note accuracy kept in `localStorage`:
+Eight drills, all scored, with per-note accuracy kept in `localStorage`:
 
 | Mode | What it asks |
 |---|---|
@@ -76,6 +82,7 @@ Seven drills, all scored, with per-note accuracy kept in `localStorage`:
 | Hear the interval | Two notes play, low then high — name the distance by ear |
 | Hear the chord | A chord is strummed — say what kind it is |
 | Play it | You are given a note — play it on the guitar and the app listens |
+| Read the note | One note on a staff — name it |
 
 The two ear modes are what diagrams cannot teach. Pick how many intervals are
 in play (three, seven or all twelve); after you answer it shows where the two notes
