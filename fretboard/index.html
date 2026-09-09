@@ -524,6 +524,16 @@ body.has-plan{padding-bottom:86px}
 
 .fb .dot.nextbox{background:var(--violet); color:#170c2b}
 .fb .dot.shared{box-shadow:0 0 0 3px var(--blue), 0 1px 3px rgba(0,0,0,.45)}
+.tempo-row{display:flex; align-items:center; gap:10px; flex:1 1 170px; min-width:0}
+.tempo-row input[type=range]{flex:1; min-width:0}
+@media(max-width:430px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .tempo-row{flex:1 1 100%}
+  .learn-mid{grid-template-columns:minmax(0,1fr)}
+  .chgrid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
+  .roman{grid-template-columns:repeat(auto-fit,minmax(56px,1fr))}
+  .score{gap:12px}
+}
 .hide{display:none !important}
 </style>
 </head>
@@ -922,7 +932,7 @@ body.has-plan{padding-bottom:86px}
       </div>
     </div>
     <label class="chk"><input type="checkbox" id="rh-click" checked> Click on the beat</label>
-    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:170px">
+    <div class="tempo-row">
       <span class="hint">Tempo</span>
       <input type="range" id="rh-bpm" aria-label="Tempo in beats per minute" min="45" max="160" value="88" step="1" style="flex:1;accent-color:var(--root)">
       <span class="mono hint" id="rh-bpmv">88</span>
@@ -1021,7 +1031,7 @@ body.has-plan{padding-bottom:86px}
   <div class="card">
     <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
       <button class="btn primary" id="jam-play" style="padding:11px 18px;font-size:1rem">▶ Play the loop</button>
-      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:180px">
+      <div class="tempo-row">
         <span class="hint">Tempo</span>
         <input type="range" id="jam-bpm" aria-label="Tempo in beats per minute" min="50" max="160" value="90" step="2" style="flex:1;accent-color:var(--root)">
         <span class="mono hint" id="jam-bpmv">90</span>
@@ -1060,7 +1070,7 @@ body.has-plan{padding-bottom:86px}
         <option value="4" selected>4 beats</option><option value="3">3 beats</option>
         <option value="6">6 beats</option><option value="2">2 beats</option>
       </select></div>
-      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:170px">
+      <div class="tempo-row">
         <span class="hint">Tempo</span>
         <input type="range" id="met-bpm" aria-label="Metronome tempo in beats per minute" min="40" max="200" value="90" step="1" style="flex:1;accent-color:var(--root)">
         <span class="mono hint" id="met-bpmv">90</span>
