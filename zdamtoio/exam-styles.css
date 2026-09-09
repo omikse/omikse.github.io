@@ -24,6 +24,10 @@
   --sc-lav: #e7ddf3;
   --sc-lav-line: #c9b6e4;
   --sc-red: #c00000;
+  /* The arkusz prints a deeper lavender than the zasady table does — sampled
+     off the rendered page, the question bar is #d4b8ea where the scorecard is
+     #e7ddf3. Two documents, two tints; don't collapse them into one. */
+  --sc-lav-deep: #d4b8ea;
 }
 
 * { box-sizing: border-box; }
@@ -128,43 +132,91 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   background: var(--q-card-bg);
 }
 
-/* The header is a row of the examiner's form: a solid purple number block and
-   a bordered points box on a lavender ground. Same tokens as the scorecard
-   (--sc-*), so the sheet a student writes on and the table they are marked
-   against read as one document rather than two designs. */
+/* The header copies the printed arkusz rather than inventing a layout.
+   On paper each zadanie opens with a lavender bar reading "Zadanie 3. (0–2)"
+   across the text column, and out in the right margin the examiner gets a
+   three-cell stack: the question number on solid purple, every attainable
+   score below it on lavender, and an empty bordered box to write the mark in.
+   Colours are sampled from the rendered page images (exams/<id>/img/arkusz),
+   not guessed: bar and range #d4b8ea, number cell #6f2f9f.
+
+   The stack overhangs into the right margin the way it does on paper. Below
+   640px there is no margin to overhang into, so it tucks back inside. */
 .q-header {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  margin-bottom: 18px;
-  border: 1.5px solid var(--sc-purple);
-  border-radius: 4px;
-  background: var(--sc-lav);
-  overflow: hidden;
+  position: relative;
+  margin-bottom: 14px;
+  padding-right: 85px;      /* the bar stops short of the stack, as on paper */
 }
-.q-number {
+.q-head-bar {
+  display: flex;            /* so the harness's type badge can sit right */
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  box-sizing: border-box;
+  background: var(--sc-lav-deep);
+  color: var(--q-ink);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 4px 12px 4px 4px;   /* flush left with the prompt, as on paper */
+}
+
+/* The examiner's stack: number / attainable scores / empty box.
+   Cell heights hold the printed proportions — measured off p007.png at 200 dpi,
+   the bar is 42 px and the three cells 41 / 53 / 83, i.e. 1 : 1.3 : 2 against
+   the bar. The box is the tall one because that is where a mark is written. */
+.q-score-stack {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55px;
+  border: 1.5px solid var(--sc-purple);
+  border-radius: 2px;
+  overflow: hidden;
+  line-height: 1;
+  text-align: center;
+}
+.q-score-num,
+.q-score-range,
+.q-score-box {
   display: grid;
   place-items: center;
-  min-width: 92px;
-  padding: 9px 12px;
+  box-sizing: border-box;
+}
+.q-score-num {
+  height: 28px;
   background: var(--sc-purple);
   color: #fff;
   font-weight: 800;
-  font-size: 15px;
-  letter-spacing: .01em;
-}
-/* Points sit in a square box like the ones on the form, not a soft pill. */
-.q-points {
-  margin: 6px 8px 6px auto;
-  display: grid;
-  place-items: center;
-  padding: 3px 10px;
-  background: #fff;
-  border: 2px solid var(--sc-purple);
-  color: var(--q-ink);
-  font-weight: 700;
   font-size: 13px;
+}
+.q-score-range {
+  height: 36px;
+  background: var(--sc-lav-deep);
+  color: var(--sc-purple-dark, var(--sc-purple));
+  font-weight: 600;
+  border-top: 1.5px solid var(--sc-purple);
+  /* "0–1–2–3–4–5" on a 52 px cell: shrink rather than wrap or spill. */
+  font-size: 11px;
+  letter-spacing: -.02em;
   white-space: nowrap;
+  padding: 0 2px;
+}
+/* Empty on purpose until the question is graded — this is where the mark goes. */
+.q-score-box {
+  height: 57px;
+  background: #fff;
+  border-top: 1.5px solid var(--sc-purple);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--sc-purple);
+}
+
+/* Under ~640 px there is no margin to hang the stack in, so it lies flat. */
+@media (max-width: 640px) {
+  .q-header { padding-right: 0; }
+  .q-score-stack { position: static; width: 100%; display: flex; margin-top: 6px; }
+  .q-score-stack > * { flex: 1; height: 30px; border-top: 0; border-left: 1.5px solid var(--sc-purple); }
+  .q-score-stack > :first-child { border-left: 0; }
 }
 
 /* Action buttons, in the same purple. */
@@ -217,7 +269,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   border-radius: 6px;
 }
 
-.q-prompt { font-weight: 600; line-height: 1.4; margin: 14px 0; }
+.q-prompt { font-weight: 700; line-height: 1.4; margin: 14px 0; }
 
 /* reference materials */
 .q-reference { margin: 6px 0 4px; }

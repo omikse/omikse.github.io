@@ -10,14 +10,14 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay }
-  from "./renderers.js?v=a0ea3e42";
+import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange }
+  from "./renderers.js?v=74cbff08";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=a0ea3e42";
+         submitAttempt, startOver } from "./progress.js?v=74cbff08";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=a0ea3e42";
+  from "./grading.js?v=74cbff08";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=a0ea3e42";
+  from "./admin.js?v=74cbff08";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -601,10 +601,21 @@ function renderCard(question) {
     : isEssay ? "Oceń wypracowanie (8 zapytań AI)"
     : "Sprawdź (AI)";
 
+  // Laid out like the printed arkusz: a lavender bar reading
+  // "Zadanie 3. (0–2)" across the text column, and in the right margin the
+  // examiner's stack — number, every attainable score, and an empty box for the
+  // mark. The app writes the awarded points into that box once it knows them.
+  const maxPoints = Number(question.scoring?.max_points ?? 0);
+  const range = scoreRange(maxPoints);
+
   card.innerHTML = `
     <header class="q-header">
-      <span class="q-number">Zadanie ${esc(question.number)}</span>
-      <span class="q-points">${esc(points)} pkt</span>
+      <div class="q-head-bar">Zadanie ${esc(question.number)}. (0–${esc(maxPoints)})</div>
+      <div class="q-score-stack" aria-hidden="true">
+        <div class="q-score-num">${esc(question.number)}.</div>
+        <div class="q-score-range">${esc(range)}</div>
+        <div class="q-score-box" data-score></div>
+      </div>
     </header>
     ${renderReference(question.reference_data)}
     <p class="q-prompt">${esc(question.question || "")}</p>
@@ -621,13 +632,20 @@ function renderCard(question) {
   // away, not only after the student clicks Sprawdź again. Ask the renderer
   // rather than testing for grade_result: the essay keeps its result in
   // q.evaluation instead, so checking one field silently hid the scorecard.
-  if (renderer?.renderResult) {
-    const restored = renderer.renderResult(question);
-    if (restored) card.querySelector(".q-result").innerHTML = restored;
-  }
-
   const gradeBtn = card.querySelector('[data-action="grade"]');
   const resultBox = card.querySelector(".q-result");
+
+  // Every result goes through here, so the margin box can never fall out of
+  // step with the text below it — one path, not four.
+  const showResult = html => {
+    resultBox.innerHTML = html || "";
+    paintScoreBox(question, card);
+  };
+
+  if (renderer?.renderResult) {
+    const restored = renderer.renderResult(question);
+    if (restored) showResult(restored);
+  }
 
   // One guard for both grade paths: an exam is not a place to check answers.
   const refuseIfLocked = () => {
@@ -644,7 +662,7 @@ function renderCard(question) {
       if (refuseIfLocked()) return;
       renderer.collect(question, card);
       question.grade_result = { ...renderer.grade(question), source: "auto" };
-      resultBox.innerHTML = renderer.renderResult ? renderer.renderResult(question) : "";
+      showResult(renderer.renderResult ? renderer.renderResult(question) : "");
       persist();
     });
   }
@@ -670,11 +688,11 @@ function renderCard(question) {
             resultBox.innerHTML = note(`Ocenianie: ${done}/${total} kryteriów…`);
           });
           applyEssayEvaluation(question);
-          resultBox.innerHTML = renderer.renderResult(question);
+          showResult(renderer.renderResult(question));
         } else {
           resultBox.innerHTML = note("Ocenianie przez AI…");
           question.grade_result = await gradeQuestion(question, apiKey);
-          resultBox.innerHTML = renderer.renderResult ? renderer.renderResult(question) : "";
+          showResult(renderer.renderResult ? renderer.renderResult(question) : "");
           if (!question.grade_result.parsed_ok) {
             resultBox.innerHTML += note("Nie udało się odczytać oceny z odpowiedzi modelu — "
               + "surowa odpowiedź została zapisana.");
@@ -945,12 +963,26 @@ async function retakeExam() {
  * Grading the whole sheet
  * ------------------------------------------------------------------ */
 
+/** Write the awarded points into the examiner box in the margin, as a marker
+ *  would. Empty until the question has actually been graded. */
+function paintScoreBox(question, card) {
+  const box = card?.querySelector("[data-score]");
+  if (!box) return;
+  const points = question.grade_result?.points
+    ?? question.evaluation?.totals?.official_points
+    ?? null;
+  box.textContent = points === null ? "" : String(points);
+  box.classList.toggle("q-score-box-filled", points !== null);
+}
+
 /** Redraw one question's result box from whatever the renderer now reports. */
 function paintResult(question) {
   const card = document.querySelector(
     `.q-card[data-question-id="${CSS.escape(String(question.id || question.number))}"]`);
+  if (!card) return;
+  paintScoreBox(question, card);
   const renderer = RENDERERS[question.type];
-  if (!card || !renderer?.renderResult) return;
+  if (!renderer?.renderResult) return;
   card.querySelector(".q-result").innerHTML = renderer.renderResult(question) || "";
 }
 

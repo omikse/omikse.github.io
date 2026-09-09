@@ -107,6 +107,12 @@ Two ways to be marked: **Sprawdź** under each question, or **Sprawdź cały
 arkusz** at the foot of the sheet. The second says how many API calls it will
 cost before spending any — a podstawowa paper is about 23.
 
+Each question is headed the way CKE prints it: a lavender bar reading
+*Zadanie 3. (0–2)*, and out in the margin the examiner's stack — the number, the
+marks available, and an empty box. The box stays empty until that question is
+graded, then the points appear in it. The sizes and colours are measured off the
+rendered booklet, not chosen; see DOCUMENTATION.md §14 before touching them.
+
 ## Grading, honestly
 
 - **Closed questions** (`P-TF`, `P-CHOICE`) — graded by comparison in the

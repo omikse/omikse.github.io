@@ -33,6 +33,20 @@ export function esc(value) {
     .replaceAll('"', "&quot;");
 }
 
+/**
+ * The score range printed in the margin box: "0–1–2" for a 2-point
+ * question, exactly as CKE lists every attainable mark.
+ *
+ * Capped at five, because the wypracowanie is worth 35 and "0–1–...–35"
+ * is not what the essay sheet prints — it prints the span. No question on
+ * these papers is worth 6..34, so the cap only ever catches the essay.
+ */
+export function scoreRange(maxPoints) {
+  const max = Number(maxPoints) || 0;
+  if (max > 5) return `0–${max}`;
+  return Array.from({ length: max + 1 }, (_, i) => i).join("–");
+}
+
 /** Strip // and /* *​/ comments so .jsonc files parse with JSON.parse. */
 export function stripJsonc(text) {
   return text
