@@ -534,6 +534,13 @@ body.has-plan{padding-bottom:86px}
   .roman{grid-template-columns:repeat(auto-fit,minmax(56px,1fr))}
   .score{gap:12px}
 }
+
+#jam-custom{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px;
+  padding-top:12px; border-top:1px solid var(--line)}
+#jam-chords-in{flex:1 1 260px; min-width:0; font-family:ui-monospace,Consolas,monospace}
+#jam-parse{font-size:.84rem}
+#jam-parse b{color:var(--text)}
+#jam-parse .bad{color:var(--rose)}
 .hide{display:none !important}
 </style>
 </head>
@@ -1046,6 +1053,13 @@ body.has-plan{padding-bottom:86px}
     </div>
     <div id="jam-chords"></div>
     <div id="jam-now" role="status" aria-live="polite"></div>
+
+    <div id="jam-custom">
+      <label class="chk" style="padding:0" for="jam-chords-in">Or type a song's chords</label>
+      <input type="text" id="jam-chords-in" placeholder="G D Em C   ·   Am F C G   ·   D A7 D" aria-label="Chord progression to loop">
+      <button class="btn" id="jam-use">Loop these</button>
+      <span id="jam-parse" class="hint"></span>
+    </div>
   </div>
 
   <div class="card">
@@ -3437,7 +3451,7 @@ const fbJ = new Fretboard('fb-jam', {clickable:true});
    ============================================================ */
 const JAM = {
   key:'A', minor:false, prog:0, bpm:90, playing:false,
-  scale:'minPent', target:true, drums:'straight', useRh:false,
+  scale:'minPent', target:true, drums:'straight', useRh:false, custom:null,
   steps:[], idx:0, nextTime:0, timer:null, cur:-1, voicings:[]
 };
 const JAM_SCALES = ['minPent','majPent','blues','minor','major','dorian','mixolydian','majBlues'];
@@ -3452,6 +3466,39 @@ function jamSuggest(name){
   if(/ii/.test(name)) return 'major';
   return 'majPent';
 }
+/* Read a progression the way someone would write it down: "G D Em C", "Am F C G7".
+   Two beats a chord if there are more than four, otherwise a bar each. */
+const CHORD_SUFFIX_IN = {
+  '':'maj', 'maj':'maj', 'M':'maj',
+  'm':'min', 'min':'min', '-':'min',
+  'maj7':'maj7', 'M7':'maj7', 'ma7':'maj7',
+  '7':'dom7', 'dom7':'dom7',
+  'm7':'min7', 'min7':'min7', '-7':'min7',
+  'dim':'dim', 'o':'dim', 'sus2':'sus2', 'sus4':'sus4', 'sus':'sus4',
+  'aug':'aug', '+':'aug', '6':'six', 'm6':'min6',
+  'm7b5':'m7b5', 'ø':'m7b5', 'dim7':'dim7', 'o7':'dim7',
+  'add9':'add9', '9':'dom9', 'maj9':'maj9', 'M9':'maj9', 'm9':'min9',
+  '7sus4':'sus47', '6/9':'six9', '7#9':'sharp9'
+};
+function parseProgression(txt){
+  const words = String(txt||'').replace(/[|,]/g,' ').trim().split(/\s+/).filter(Boolean);
+  if(!words.length) return {steps:[], bad:[]};
+  const steps = [], bad = [];
+  words.forEach(w=>{
+    const m = w.match(/^([A-Ga-g])([#b\u266f\u266d]?)(.*)$/);
+    if(!m){ bad.push(w); return; }
+    const root = m[1].toUpperCase() + (m[2]==='\u266f' ? '#' : m[2]==='\u266d' ? 'b' : m[2]);
+    let suf = m[3].trim();
+    if(suf === 'maj' || suf === 'M') suf = '';
+    const qual = CHORD_SUFFIX_IN[suf];
+    if(!qual || ROOT_CHOICES.indexOf(root) < 0){ bad.push(w); return; }
+    steps.push({root:root, qual:qual, label: pretty(root) + (CHORD_SUFFIX[qual] || ''), bars:1});
+  });
+  const bars = steps.length > 4 ? 0.5 : 1;
+  steps.forEach(st=> st.bars = bars);
+  return {steps:steps, bad:bad};
+}
+
 function jamStop(){
   JAM.playing = false;
   if(JAM.timer) clearTimeout(JAM.timer);
@@ -3462,8 +3509,9 @@ function jamStop(){
 }
 function jamStart(){
   const ctx = audio(); if(!ctx) return;
-  const progs = jamProgs();
-  const p = progs[Math.min(JAM.prog, progs.length-1)];
+  const p = JAM.custom && JAM.custom.length
+    ? {n:'your chords', steps:JAM.custom, why:''}
+    : jamProgs()[Math.min(JAM.prog, jamProgs().length-1)];
   JAM.steps = p.steps;
   JAM.voicings = [];
   let prev = null;
@@ -3543,7 +3591,9 @@ function jamTick(){
 
 function renderJam(){
   const progs = jamProgs();
-  const p = progs[Math.min(JAM.prog, progs.length-1)];
+  const p = (JAM.custom && JAM.custom.length)
+    ? {n:'your chords', steps:JAM.custom, why:'Your own progression, looping. The scale below is a guess — change it if it does not fit.'}
+    : progs[Math.min(JAM.prog, progs.length-1)];
   const t = tuning();
   const rootPc = pcOf(JAM.key);
   const def = SCALES[JAM.scale];
@@ -3680,14 +3730,54 @@ function metTick(){
 
   const restartIfPlaying = ()=>{ if(JAM.playing){ jamStop(); jamStart(); } else renderJam(); };
 
-  $('jam-key').onchange = e=>{ JAM.key=e.target.value; fillProgs(); autoScale(); restartIfPlaying(); };
-  $('jam-minor').onchange = e=>{ JAM.minor=e.target.checked; JAM.prog=0; fillProgs(); autoScale(); restartIfPlaying(); };
+  $('jam-key').onchange = e=>{ JAM.key=e.target.value; JAM.steps=[]; JAM.cur=-1; fillProgs(); autoScale(); restartIfPlaying(); };
+  $('jam-minor').onchange = e=>{ JAM.minor=e.target.checked; JAM.prog=0; JAM.steps=[]; JAM.cur=-1; fillProgs(); autoScale(); restartIfPlaying(); };
   $('jam-prog').onchange = e=>{ JAM.prog=+e.target.value; autoScale(); restartIfPlaying(); };
   $('jam-scale').onchange = e=>{ JAM.scale=e.target.value; renderJam(); };
   $('jam-target').onchange = e=>{ JAM.target=e.target.checked; renderJam(); };
   $('jam-bpm').oninput = e=>{ JAM.bpm=+e.target.value; $('jam-bpmv').textContent=e.target.value; };
   $('jam-bpm').onchange = ()=>{ if(JAM.playing){ jamStop(); jamStart(); } };
   $('jam-play').onclick = ()=> JAM.playing ? jamStop() : jamStart();
+  const useTyped = ()=>{
+    const {steps, bad} = parseProgression($('jam-chords-in').value);
+    if(!steps.length){
+      JAM.custom = null;
+      $('jam-parse').innerHTML = bad.length
+        ? '<span class="bad">Could not read ' + bad.map(b=>'\u201c'+b+'\u201d').join(', ') + '.</span> Try things like G, Em, A7, Cmaj7, Dsus4.'
+        : 'Type some chords and they will loop instead of the progression above.';
+      renderJam(); return;
+    }
+    JAM.custom = steps;
+    /* guess a key from the first chord and pick a scale that fits it */
+    const first = steps[0];
+    JAM.key = first.root; $('jam-key').value = JAM.key;
+    JAM.minor = ['min','min7','min9','madd9','min6'].indexOf(first.qual) >= 0;
+    $('jam-minor').checked = JAM.minor;
+    JAM.scale = JAM.minor ? 'minPent' : 'majPent';
+    $('jam-scale').value = JAM.scale;
+    $('jam-parse').innerHTML = 'Looping <b>' + steps.map(x=>pretty(x.label)).join(' ') + '</b>'
+      + (steps[0].bars < 1 ? ', two beats each' : ', a bar each')
+      + (bad.length ? ' <span class="bad">(skipped ' + bad.join(', ') + ')</span>' : '')
+      + '. Clear the box to go back to the list.';
+    if(JAM.playing) jamStop();
+    renderJam();
+    jamStart();
+  };
+  $('jam-use').onclick = useTyped;
+  $('jam-chords-in').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); useTyped(); } });
+  $('jam-chords-in').addEventListener('input', ()=>{
+    if($('jam-chords-in').value.trim()) return;
+    JAM.custom = null; JAM.steps = []; JAM.cur = -1; $('jam-parse').textContent = '';
+    if(JAM.playing){ jamStop(); }
+    renderJam();
+  });
+  $('jam-prog').addEventListener('change', ()=>{
+    /* the onchange property handler above has already run and rendered, so anything
+       cleared here needs its own repaint */
+    JAM.steps = []; JAM.cur = -1;
+    if(JAM.custom){ JAM.custom = null; $('jam-chords-in').value=''; $('jam-parse').textContent=''; }
+    renderJam();
+  });
   $('jam-drums').onchange = e=>{ JAM.drums=e.target.value; };
   $('jam-rh').onchange = e=>{ JAM.useRh=e.target.checked; };
 
@@ -4754,7 +4844,7 @@ function saveWork(){
   store.set('work', {
     pl:{root:PL.root, scale:PL.scale, labels:PL.labels, capo:PL.capo, ghost:PL.ghost, timbre:PL.timbre, win:PL.win},
     ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions, fingers:CH.fingers},
-    jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums, useRh:JAM.useRh},
+    jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums, useRh:JAM.useRh, typed:$('jam-chords-in') ? $('jam-chords-in').value : ''},
     rh:{pat:RH.pat.join(''), bpm:RH.bpm, root:RH.root, qual:RH.qual, click:RH.click, mode:RH.mode, pick:RH.pick},
     met:{bpm:MET.bpm, beats:MET.beats, ramp:MET.ramp, rampBy:MET.rampBy, rampEvery:MET.rampEvery, rampTo:MET.rampTo},
     game:{mode:game.mode, hi:game.hi, naturals:game.naturals, focus:game.focus, earset:game.earset}
@@ -4788,6 +4878,11 @@ function loadWork(){
       if(JAM.prog>=progs.length) JAM.prog=0;
       $('jam-prog').value=String(JAM.prog);
       $('jam-scale').value=JAM.scale;
+      if(w.jam.typed && $('jam-chords-in')){
+        $('jam-chords-in').value = w.jam.typed;
+        const parsed = parseProgression(w.jam.typed);
+        if(parsed.steps.length) JAM.custom = parsed.steps;
+      }
     }
     if(w.rh){
       RH.pat = (w.rh.pat||'x-xx-xxx').split(''); RH.bpm = w.rh.bpm||88;

@@ -168,6 +168,12 @@ A backing track that loops, with a scale drawn over the whole neck. Pick a key a
 a progression — I–V–vi–IV, ii–V–I, I–vi–IV–V, a twelve-bar blues, or three minor
 ones — set a tempo, and play over it.
 
+You can also just type the chords of whatever you are learning — `G D Em C`,
+`Am F C G7`, `E|A|B7|E` — and it loops those instead, picking real voicings for
+them and guessing a key and scale from the first chord. It reads sharps, flats,
+sevenths, sus, dim, add9 and the rest, splits on bars or commas, and tells you
+which words it could not read rather than quietly dropping them.
+
 The part that teaches: while a chord is sounding, the scale notes that belong to
 *that* chord get a blue ring. Landing on those is the difference between noodling
 over a progression and playing with it, and the ring makes it something you can
