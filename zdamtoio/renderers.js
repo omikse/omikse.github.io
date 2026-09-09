@@ -661,6 +661,14 @@ const PEssay = {
     const content = root.querySelector("[data-essay-content]");
     q.user_answer.selected_topic_id = topic ? topic.value : "";
     q.user_answer.content = content ? content.value : "";
+
+    // word_count is not cosmetic: gating_rules zero every composition and
+    // language criterion below the minimum length, so leaving it at 0 would
+    // score every essay as if it were empty. (DOCUMENTATION §15 roadmap #6.)
+    q.user_answer.word_count = (q.user_answer.content.trim().match(/\S+/g) || []).length;
+    if (typeof q.user_answer.has_specific_learning_difficulties !== "boolean") {
+      q.user_answer.has_specific_learning_difficulties = false;
+    }
   },
 
   // The essay is graded with up to 8 separate AI calls (one per criterion),
@@ -1241,6 +1249,174 @@ export function renderEssayScorecard(ev = {}) {
 /* ------------------------------------------------------------------ */
 /* Registry — the single source the shell looks up.                    */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/* P-ESSAY — deterministic aggregator: raw AI values -> examiner table */
+/* ------------------------------------------------------------------ */
+
+/* Closes the loop described in P-ESSAY_projekt_oceniania.md §18-21: the model
+ * reports only raw observations (error counts, a classification letter, a base
+ * score), and THIS decides how many points that is worth. No model ever
+ * produces a total — the matrix, the thresholds and the gating rules do, and
+ * all three are read from the exam JSON rather than hardcoded, so a paper whose
+ * rubric shifts between years still scores by its own rules.
+ *
+ * Output feeds renderEssayScorecard() unchanged: raw_table_fill holds what was
+ * assessed, effective_table_fill holds what actually counts after gating (the
+ * greyed-out cells on the printed form), and totals separates the diagnostic
+ * sum from the official one.
+ */
+
+const ESSAY_ALL_CRITERIA = ["1", "2", "3a", "3b", "3c", "4a", "4b", "4c"];
+
+/** `{min, max}` where a null/absent max means "and upwards". */
+function inCountRange(count, range) {
+  if (!range) return false;
+  const min = range.min ?? 0;
+  const max = range.max;
+  return count >= min && (max === null || max === undefined || count <= max);
+}
+
+function byCount(list, count) {
+  return (list || []).find(entry => inCountRange(count, entry.error_count));
+}
+
+function resolvePath(path, ctx) {
+  return String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), ctx);
+}
+
+function gatingHolds(condition, ctx) {
+  const actual = resolvePath(condition.field, ctx);
+  switch (condition.operator) {
+    case "equals":       return actual === condition.value;
+    case "not_equals":   return actual !== condition.value;
+    case "less_than":    return Number(actual) < Number(condition.value);
+    case "greater_than": return Number(actual) > Number(condition.value);
+    default:             return false;
+  }
+}
+
+/**
+ * Turn the eight raw per-criterion AI results into an `evaluation` object.
+ * Pure and deterministic: same inputs, same table, every time.
+ */
+export function aggregateEssay(question, aiResults = {}) {
+  const scoring = question?.scoring?.scoring_criteria || {};
+  const criteria = scoring.criteria || {};
+  const common = scoring.common || {};
+  const stored = question?.user_answer || {};
+  const sld = stored.has_specific_learning_difficulties === true;
+
+  // The word count decides whether the composition and language criteria are
+  // scored at all, so derive it from the text rather than trusting a stored
+  // number: answers saved before collect() started writing it carry 0, which
+  // would silently zero six criteria on a perfectly long essay.
+  const content = String(stored.content || "");
+  const counted = (content.trim().match(/\S+/g) || []).length;
+  const answer = { ...stored, word_count: content.trim() ? counted : Number(stored.word_count ?? 0) };
+
+  const raw = {};
+
+  raw["1"] = {
+    points: Number(aiResults["1"]?.points ?? 0),
+    zero_reasons: aiResults["1"]?.zero_reasons || {},
+  };
+
+  // 2 — base score minus one point per factual error, never below the floor.
+  const adjust = criteria["2"]?.factual_error_adjustment || {};
+  const base = Number(aiResults["2"]?.base_points_before_factual_errors ?? 0);
+  const factual = Number(aiResults["2"]?.factual_error_count ?? 0);
+  const deducted = adjust.enabled === false
+    ? base
+    : base - factual * Number(adjust.deduction_per_error ?? 1);
+  raw["2"] = {
+    base_points_before_factual_errors: base,
+    factual_error_count: factual,
+    final_points: Math.max(Number(adjust.minimum_points ?? 0), deducted),
+  };
+
+  // 3a — the classification letter the examiner circles maps to points.
+  const cls3a = String(aiResults["3a"]?.classification || "").toUpperCase();
+  const rule3a = (criteria["3a"]?.rules || [])
+    .find(r => String(r.classification).toUpperCase() === cls3a);
+  raw["3a"] = { classification: cls3a, points: Number(rule3a?.points ?? 0) };
+
+  const cohesion = Number(aiResults["3b"]?.cohesion_error_count ?? 0);
+  raw["3b"] = {
+    cohesion_error_count: cohesion,
+    points: Number(byCount(criteria["3b"]?.rules, cohesion)?.points ?? 0),
+  };
+
+  raw["3c"] = { points: Number(aiResults["3c"]?.points ?? 0) };
+
+  // 4a — range x error count, straight off the printed matrix.
+  const range = String(aiResults["4a"]?.language_range || "");
+  const langErrors = Number(aiResults["4a"]?.language_error_count ?? 0);
+  const cell = (criteria["4a"]?.matrix || [])
+    .find(m => m.range === range && inCountRange(langErrors, m.error_count));
+  raw["4a"] = {
+    classification: cell?.classification || "",
+    language_error_count: langErrors,
+    points: Number(cell?.points ?? 0),
+  };
+
+  // 4b / 4c — thresholds, using the dyslexia column when it applies.
+  for (const [id, countKey] of [["4b", "orthographic_error_count"],
+                                ["4c", "punctuation_error_count"]]) {
+    const count = Number(aiResults[id]?.[countKey] ?? 0);
+    const thresholds = criteria[id]?.thresholds || {};
+    const list = sld && thresholds.specific_learning_difficulties
+      ? thresholds.specific_learning_difficulties
+      : thresholds.standard;
+    raw[id] = { [countKey]: count, points: Number(byCount(list, count)?.points ?? 0) };
+  }
+
+  /* ---- gating: which of those actually count ---- */
+
+  const assessed = id => (id === "2" ? raw["2"].final_points : raw[id].points);
+
+  const effective = {};
+  ESSAY_ALL_CRITERIA.forEach(id => {
+    effective[id] = { counted: true, display_state: "counted", points: assessed(id) };
+  });
+
+  // Conditions address either a criterion's assessed values ("2.final_points")
+  // or the answer itself ("user_answer.word_count"), so both are in scope.
+  const context = { ...raw, user_answer: answer };
+  const applied = [];
+
+  for (const rule of common.gating_rules || []) {
+    if (!gatingHolds(rule.condition || {}, context)) continue;
+    applied.push(rule.id);
+    const effect = rule.effect || {};
+    // `evaluate_only` keeps target_criteria and zeroes the rest; every other
+    // action zeroes what it targets.
+    const zeroed = effect.action === "evaluate_only"
+      ? (effect.set_zero_for || [])
+      : (effect.target_criteria || []);
+    zeroed.forEach(id => {
+      if (!effective[id]) return;
+      effective[id] = {
+        counted: false,
+        display_state: "greyed_out",
+        points: Number(effect.value ?? 0),
+      };
+    });
+  }
+
+  const sum = fn => ESSAY_ALL_CRITERIA.reduce((total, id) => total + Number(fn(id) || 0), 0);
+
+  return {
+    raw_table_fill: raw,
+    effective_table_fill: effective,
+    totals: {
+      raw_diagnostic_points: sum(assessed),
+      official_points: sum(id => effective[id].points),
+      max_points: Number(question?.scoring?.max_points ?? 35),
+    },
+    applied_gating_rules: applied,
+  };
+}
 
 export const RENDERERS = {
   "P-TEXT": PText,

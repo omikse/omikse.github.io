@@ -82,9 +82,11 @@ def main():
     if not index_src.is_file():
         sys.exit(f"missing {index_src}\nRun `python -m pipeline index` in pdf-json first.")
 
+    # The manifest is deliberately NOT copied: publish.py rebuilds it by
+    # scanning exams/, so copying the pipeline's version over the top would
+    # delete any exam dropped in by hand. It silently did exactly that once.
+    # The pipeline's copy is still read, to know which booklets to pull.
     index = read_json(index_src)
-    total += copy_file(index_src, HERE / "exams" / "index.json")
-    print(f"  {'exams/index.json':24} <- exams/index.json")
 
     kept = skipped = 0
     for exam in index.get("exams", []):
@@ -105,6 +107,14 @@ def main():
 
     print(f"\nSynced {kept} booklet(s), {total / 1024 / 1024:.2f} MB"
           + (f", skipped {skipped} out of scope" if skipped else ""))
+
+    # Leave the manifest describing what is actually on disk here, including
+    # anything added by hand -- the same rebuild publish.py performs, so the
+    # two paths always agree.
+    from publish import reindex
+    ids = reindex()
+    if ids is not None:
+        print(f"Manifest: {len(ids)} arkusz(y) — {', '.join(ids)}")
 
 
 if __name__ == "__main__":

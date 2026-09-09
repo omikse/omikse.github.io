@@ -10,11 +10,12 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=daf02fb4";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=daf02fb4";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=daf02fb4";
+import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay }
+  from "./renderers.js?v=2886e41b";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=2886e41b";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=2886e41b";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=daf02fb4";
+  from "./admin.js?v=2886e41b";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -318,6 +319,7 @@ async function loadExam(examId) {
       if (grades[qid] !== undefined) q.grade_result = grades[qid];
       if (essay?.ai_grading_history && q.type === "P-ESSAY") {
         q.essay_grading = essay.ai_grading_history;
+        applyEssayEvaluation(q);      // rebuilds q.evaluation for the scorecard
       }
     }
 
@@ -487,56 +489,34 @@ function openAnalysis(question) {
   analysisDialog.showModal();
 }
 
+/* Turn the stored raw per-criterion values into the examiner's table.
+ *
+ * Deliberately recomputed from ai_raw_results rather than read back from the
+ * stored table: the aggregation is deterministic and free, so a correction to
+ * the matrix or the gating rules fixes old attempts too, instead of leaving
+ * them frozen with a score the current rules would not give.
+ *
+ * The computed table is also written into the history object, which is what
+ * P-ESSAY_projekt_oceniania.md §22 asks to store — the same three fields that
+ * were deliberately left empty until the aggregator existed. */
+function applyEssayEvaluation(question) {
+  const history = question.essay_grading;
+  if (!history?.ai_raw_results || !Object.keys(history.ai_raw_results).length) return;
+
+  const evaluation = aggregateEssay(question, history.ai_raw_results);
+  question.evaluation = evaluation;
+
+  history.raw_table_fill = evaluation.raw_table_fill;
+  history.effective_table_fill = evaluation.effective_table_fill;
+  history.totals = evaluation.totals;
+  history.applied_gating_rules = evaluation.applied_gating_rules;
+}
+
 /* Small inline notice inside a question card. */
 function note(text, bad = false) {
   return `<div class="q-result-box${bad ? " result-error" : ""}">${esc(text)}</div>`;
 }
 
-/* Raw per-criterion values from the essay grading run.
- *
- * TEMPORARY. The real display is renderEssayScorecard() in renderers.js, which
- * needs q.evaluation — the examiner's table produced by the deterministic
- * aggregator (matrix, thresholds, gating rules). That aggregator is roadmap
- * item #2 and does not exist, so there is no official score to show and this
- * says so rather than inventing one. When the aggregator lands, delete this and
- * call the scorecard. */
-function renderEssayDiagnostics(history = {}) {
-  const raw = history.ai_raw_results || {};
-  const failed = history.failed_criteria || [];
-  const names = {
-    "1": "Spełnienie formalnych warunków polecenia",
-    "2": "Kompetencje literackie i kulturowe",
-    "3a": "Struktura wypowiedzi", "3b": "Spójność wypowiedzi", "3c": "Styl wypowiedzi",
-    "4a": "Zakres i poprawność środków językowych",
-    "4b": "Poprawność ortograficzna", "4c": "Poprawność interpunkcyjna",
-  };
-
-  const failure = Object.fromEntries(
-    failed.map(f => (typeof f === "string" ? [f, ""] : [f.id, f.error || ""])));
-
-  const rows = Object.keys(names).map(id => {
-    const v = raw[id];
-    const body = v
-      ? esc(Object.entries(v)
-          .filter(([, x]) => typeof x !== "object")
-          .map(([k, x]) => `${k}: ${x}`).join(", ")) || "—"
-      : id in failure
-        ? `<em>${esc(failure[id] || "nie udało się ocenić")}</em>`
-        : `<em>brak</em>`;
-    return `<tr><td><strong>${esc(id)}</strong></td><td>${esc(names[id])}</td><td>${body}</td></tr>`;
-  }).join("");
-
-  return `
-    <div class="q-result-box result-ai">
-      <div class="result-points">Ocena diagnostyczna — <strong>nie jest to wynik oficjalny</strong></div>
-      <div class="result-expl">
-        Model ocenił każde kryterium osobno. Przeliczenie tych wartości na punkty
-        według tabeli egzaminatora (matryca, progi, reguły zerowania) nie jest
-        jeszcze zaimplementowane, więc suma punktów nie jest tu pokazywana.
-      </div>
-      <table class="essay-raw"><tbody>${rows}</tbody></table>
-    </div>`;
-}
 
 function renderCard(question) {
   const renderer = RENDERERS[question.type];
@@ -576,9 +556,12 @@ function renderCard(question) {
   if (renderer?.mount) renderer.mount(question, card);
 
   // A grade restored from a previous session should be on screen straight
-  // away, not only after the student clicks Sprawdź again.
-  if (question.grade_result && renderer?.renderResult) {
-    card.querySelector(".q-result").innerHTML = renderer.renderResult(question);
+  // away, not only after the student clicks Sprawdź again. Ask the renderer
+  // rather than testing for grade_result: the essay keeps its result in
+  // q.evaluation instead, so checking one field silently hid the scorecard.
+  if (renderer?.renderResult) {
+    const restored = renderer.renderResult(question);
+    if (restored) card.querySelector(".q-result").innerHTML = restored;
   }
 
   const gradeBtn = card.querySelector('[data-action="grade"]');
@@ -614,7 +597,8 @@ function renderCard(question) {
             gradeBtn.textContent = `Ocenianie… ${done}/${total}`;
             resultBox.innerHTML = note(`Ocenianie: ${done}/${total} kryteriów…`);
           });
-          resultBox.innerHTML = renderEssayDiagnostics(question.essay_grading);
+          applyEssayEvaluation(question);
+          resultBox.innerHTML = renderer.renderResult(question);
         } else {
           resultBox.innerHTML = note("Ocenianie przez AI…");
           question.grade_result = await gradeQuestion(question, apiKey);
