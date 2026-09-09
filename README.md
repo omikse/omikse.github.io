@@ -6,6 +6,12 @@ no network calls. Open it and it works.
 
 **Live:** https://omikse.github.io/fretboard/
 
+**Contents** — [A guided session](#a-guided-session) · [Learn](#learn) · [Drills](#drills) ·
+[Chords](#chords) · [Rhythm](#rhythm) · [Jam](#jam) · [Pentatonics](#pentatonics) ·
+[Circle](#circle) · [Theory](#theory) · [Global settings](#global-settings) ·
+[How the code is arranged](#how-the-code-is-arranged) · [Running it](#running-it) ·
+[A practice order that works](#a-practice-order-that-works)
+
 ---
 
 ## What is in it
@@ -235,6 +241,8 @@ Kept in `localStorage`, applied to every view:
   flip with it
 - **Sound** — on/off
 - **Theme** — light and dark
+- **Keyboard** — alt+1 to alt+8 switch views; the tab strip takes arrow keys once
+  focused; every fretboard can be walked with the arrows and played with Enter
 - **Share** — copies a link that encodes the view, root, scale, capo, labels,
   chord, tuning, fret count, accidentals and handedness, so you can send someone
   a setup rather than a list of instructions

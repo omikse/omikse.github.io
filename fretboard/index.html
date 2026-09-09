@@ -536,19 +536,19 @@ body.has-plan{padding-bottom:86px}
     <label class="chk"><input type="checkbox" id="g-lefty"> Left-handed</label>
     <label class="chk"><input type="checkbox" id="g-sound" checked> Sound</label>
     </div>
-    <button class="btn ghost" id="g-settings" aria-expanded="false" aria-controls="gset">Setup</button>
+    <button class="btn ghost" id="g-settings" aria-expanded="false" aria-controls="gset" title="Tuning, frets, accidentals, handedness">Setup</button>
     <button class="btn ghost" id="g-share" title="Copy a link to exactly this setup">Share</button>
     <button class="btn ghost" id="g-theme" title="Toggle theme">◐</button>
   </div>
   <nav id="tabs" role="tablist">
-    <button role="tab" data-v="play" aria-selected="true">Learn</button>
-    <button role="tab" data-v="game" aria-selected="false">Drills</button>
-    <button role="tab" data-v="chords" aria-selected="false">Chords</button>
-    <button role="tab" data-v="rhythm" aria-selected="false">Rhythm</button>
-    <button role="tab" data-v="jam" aria-selected="false">Jam</button>
-    <button role="tab" data-v="pent" aria-selected="false">Pentatonics</button>
-    <button role="tab" data-v="circle" aria-selected="false">Circle</button>
-    <button role="tab" data-v="theory" aria-selected="false">Theory</button>
+    <button role="tab" data-v="play" title="Start here — tune up, see what a note is, and explore the neck" aria-selected="true">Learn</button>
+    <button role="tab" data-v="game" title="Eight drills: name notes, find them, train your ear, read notation, or play into the microphone" aria-selected="false">Drills</button>
+    <button role="tab" data-v="chords" title="Find any chord shape, name one you stumbled on, and work out where the capo goes" aria-selected="false">Chords</button>
+    <button role="tab" data-v="rhythm" title="Strumming and fingerpicking patterns, and the chord-change drill" aria-selected="false">Rhythm</button>
+    <button role="tab" data-v="jam" title="A backing track that loops, with a scale to solo over it" aria-selected="false">Jam</button>
+    <button role="tab" data-v="pent" title="The five pentatonic boxes, and how they join up" aria-selected="false">Pentatonics</button>
+    <button role="tab" data-v="circle" title="Keys, their chords, and progressions you can hear" aria-selected="false">Circle</button>
+    <button role="tab" data-v="theory" title="The reference: intervals, scales, harmony, and the neck’s own logic" aria-selected="false">Theory</button>
   </nav>
 </header>
 
@@ -1834,6 +1834,24 @@ function showView(v){
   window.scrollTo({top:0,behavior:'instant'});
 }
 $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) showView(b.dataset.v); });
+/* alt+1..8 jumps between views; arrow keys walk the tab strip once it has focus */
+document.addEventListener('keydown', e=>{
+  if(e.altKey && !e.ctrlKey && !e.metaKey && e.key>='1' && e.key<='8'){
+    const v = VIEWS[+e.key - 1];
+    if(v){ e.preventDefault(); showView(v); }
+    return;
+  }
+  const tabs = [...$('tabs').children];
+  const i = tabs.indexOf(document.activeElement);
+  if(i < 0) return;
+  let n = null;
+  if(e.key==='ArrowRight') n = (i+1) % tabs.length;
+  else if(e.key==='ArrowLeft') n = (i-1+tabs.length) % tabs.length;
+  else if(e.key==='Home') n = 0;
+  else if(e.key==='End') n = tabs.length-1;
+  if(n===null) return;
+  e.preventDefault(); tabs[n].focus(); showView(tabs[n].dataset.v);
+});
 
 (function initGlobals(){
   const tu = $('g-tuning');
