@@ -8,7 +8,7 @@ no network calls. Open it and it works.
 
 ---
 
-## The seven views
+## The eight views
 
 Every neck in the app is keyboard navigable: tab onto it and the arrow keys walk
 string by string and fret by fret, Enter sounds the note, and each square announces
@@ -49,8 +49,8 @@ The neck sits in the middle; everything else is arranged around it.
 - **Left panel** names the current scale, spells it correctly for the key, gives its formula
   and character, and lists every root position on every string.
 
-### Guessing game
-Four drills, all scored, with per-note accuracy kept in `localStorage`:
+### Drills
+Five drills, all scored, with per-note accuracy kept in `localStorage`:
 
 | Mode | What it asks |
 |---|---|
@@ -108,6 +108,19 @@ loop keeps time regardless of what the page is doing. There is a count-in, and a
 metronome with tap tempo and 2/3/4/6 beats to the bar that shares the same clock,
 so you can run either or both.
 
+### Rhythm
+The gap most fretboard tools leave open. A strumming hand does not stop: it swings
+down on every beat and up on every "and" for the whole bar, whether or not it
+touches the strings. A pattern is not a sequence of movements to memorise, it is a
+choice of which of those movements connect — so the eight boxes here are fixed,
+labelled 1 & 2 & 3 & 4 & with their stroke direction, and only their state changes.
+
+Click a box to cycle it through strike, muted chuck and miss. Seven presets are
+there to start from, including the D · D U · U D U that sits under a thousand
+songs, and each starts playing when you pick it. It strums a real voicing of
+whatever chord you choose, with an optional click on the beat, and a playhead that
+shows which of the eight you are on.
+
 ### Pentatonics
 All five boxes for minor and major pentatonic, each labelled with the CAGED shape it belongs
 to. Show one box, or the whole neck. Optional blue note. "Ghost the other positions" reveals
@@ -117,7 +130,7 @@ the thing worth practising.
 Box shapes are a standard-tuning idea. In DADGAD or open G the notes stay correct but the
 box buttons switch off, with a note explaining why.
 
-### Circle of fifths
+### Circle
 A clickable circle. Selecting a key gives its signature and which sharps or flats, the seven
 diatonic chords with Roman numerals, the relative minor, and the ii–V–I, I–V–vi–IV and
 12-bar blues in that key. I, IV and V are highlighted on the circle itself. One button sends

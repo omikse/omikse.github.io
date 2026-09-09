@@ -422,6 +422,37 @@ details[open] summary{margin-bottom:8px}
   a[href]:after{content:""}
 }
 .tscroll{overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin}
+
+/* ---------- rhythm ---------- */
+.rhgrid{display:grid; grid-template-columns:repeat(8,1fr); gap:6px; margin:14px 0}
+.rhgrid .slot{
+  position:relative; background:var(--panel2); border:1px solid var(--line2); border-radius:10px;
+  padding:12px 4px 10px; cursor:pointer; font:inherit; color:var(--text);
+  display:flex; flex-direction:column; align-items:center; gap:3px; transition:background .1s, border-color .1s;
+}
+.rhgrid .slot.beat{background:var(--raise)}
+.rhgrid .slot:hover{border-color:var(--faint)}
+.rhgrid .slot .cnt{font-size:.72rem; color:var(--muted); font-weight:700}
+.rhgrid .slot.beat .cnt{color:var(--text)}
+.rhgrid .slot .arrow{font-size:1.5rem; line-height:1; opacity:.22}
+.rhgrid .slot .what{height:11px; width:11px; border-radius:50%; background:transparent}
+.rhgrid .slot[data-state="x"]{background:var(--root); border-color:var(--root)}
+.rhgrid .slot[data-state="x"] .cnt{color:var(--root-ink); opacity:.75}
+.rhgrid .slot[data-state="x"] .arrow{color:var(--root-ink); opacity:1}
+.rhgrid .slot[data-state="m"]{background:var(--panel2); border-color:var(--blue)}
+.rhgrid .slot[data-state="m"] .arrow{color:var(--blue); opacity:.85}
+.rhgrid .slot[data-state="m"] .what{background:var(--blue)}
+.rhgrid .slot.now{box-shadow:0 0 0 3px var(--scale); z-index:2}
+#rh-presets{display:flex; gap:6px; flex-wrap:wrap}
+#rh-presets button{background:var(--panel2); border:1px solid var(--line2); color:var(--text);
+  font:inherit; font-size:.85rem; padding:8px 12px; border-radius:9px; cursor:pointer}
+#rh-presets button:hover{background:var(--raise); border-color:var(--faint)}
+#rh-play.on{background:var(--rose); border-color:var(--rose); color:#2a0710}
+@media(max-width:560px){
+  .rhgrid{gap:4px}
+  .rhgrid .slot{padding:9px 2px 8px}
+  .rhgrid .slot .arrow{font-size:1.15rem}
+}
 .hide{display:none !important}
 </style>
 </head>
@@ -447,11 +478,12 @@ details[open] summary{margin-bottom:8px}
   </div>
   <nav id="tabs" role="tablist">
     <button role="tab" data-v="play" aria-selected="true">Learn</button>
-    <button role="tab" data-v="game" aria-selected="false">Guessing game</button>
+    <button role="tab" data-v="game" aria-selected="false">Drills</button>
     <button role="tab" data-v="chords" aria-selected="false">Chords</button>
+    <button role="tab" data-v="rhythm" aria-selected="false">Rhythm</button>
     <button role="tab" data-v="jam" aria-selected="false">Jam</button>
     <button role="tab" data-v="pent" aria-selected="false">Pentatonics</button>
-    <button role="tab" data-v="circle" aria-selected="false">Circle of fifths</button>
+    <button role="tab" data-v="circle" aria-selected="false">Circle</button>
     <button role="tab" data-v="theory" aria-selected="false">Theory</button>
   </nav>
 </header>
@@ -723,6 +755,72 @@ details[open] summary{margin-bottom:8px}
   </div>
 </section>
 
+<!-- ================= RHYTHM ================= -->
+<section id="v-rhythm" class="hide">
+  <div class="note" style="margin:18px 0 14px"><b>Your strumming hand never stops.</b> It swings down on every beat and
+  up on every “and”, all the way through the bar, whether or not it touches the strings. A strumming pattern is not a
+  sequence of movements to memorise — it is a choice of <em>which of those movements connect</em>. That is why the
+  eight boxes below are fixed and only their colour changes.</div>
+
+  <div class="bar">
+    <div class="f"><label for="rh-root">Chord</label><select id="rh-root"></select></div>
+    <div class="f"><label for="rh-qual">&nbsp;</label><select id="rh-qual"></select></div>
+    <label class="chk"><input type="checkbox" id="rh-click" checked> Click on the beat</label>
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:170px">
+      <span class="hint">Tempo</span>
+      <input type="range" id="rh-bpm" min="45" max="160" value="88" step="1" style="flex:1;accent-color:var(--root)">
+      <span class="mono hint" id="rh-bpmv">88</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <button class="btn primary" id="rh-play" style="padding:11px 18px;font-size:1rem">▶ Play the pattern</button>
+      <span class="hint">Playing <b id="rh-chordname">G</b> · <span class="mono" id="rh-shape"></span></span>
+      <button class="btn ghost" id="rh-clear" style="margin-left:auto">Clear the bar</button>
+    </div>
+
+    <div class="rhgrid" id="rh-grid"></div>
+
+    <p class="hint" style="margin:0 0 10px">Click a box to cycle it: <b style="color:var(--root)">strike</b> →
+    <b style="color:var(--blue)">muted chuck</b> → miss. Down arrows are downstrokes, up arrows upstrokes — that never changes.</p>
+    <div id="rh-note"></div>
+  </div>
+
+  <div class="card">
+    <h3>Patterns worth knowing</h3>
+    <div id="rh-presets"></div>
+    <p class="hint" id="rh-why" style="margin:10px 0 0">Pick one and it starts playing.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Getting it into your hand</h3>
+      <ul class="tight">
+        <li><b>Count out loud.</b> “One and two and three and four and.” Not in your head — out loud. Rhythm that
+        you cannot say, you cannot play.</li>
+        <li><b>Keep the hand moving on the misses.</b> If your hand stops and restarts, the timing goes with it.
+        Swing past the strings without touching them.</li>
+        <li><b>Slow enough to be boring.</b> Drop the tempo until it is easy, then leave it there for a week.
+        Speed is a side effect of accuracy, never the other way round.</li>
+        <li><b>One chord at first.</b> Get the pattern automatic before you ask your other hand to change chords
+        underneath it.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Why down and up are not interchangeable</h3>
+      <p>A downstroke hits the low strings first and lands with the weight of your arm behind it; an upstroke
+      catches the high strings first and arrives lighter. That difference is most of what makes a strum sound like
+      a groove rather than a series of chords.</p>
+      <p>It also explains why patterns are written against a fixed hand motion. Play “down, down, up” by making
+      three separate deliberate movements and it sounds stiff. Play the same three strikes while your hand is
+      already swinging in eighths and it sits in the beat by itself.</p>
+      <p class="hint">A muted chuck is the same movement with the side of your palm resting on the strings. It makes
+      no pitch, only a percussive click — which is exactly what a drummer would put there.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ================= JAM ================= -->
 <section id="v-jam" class="hide">
   <div class="note" style="margin:18px 0 14px"><b>Play over it.</b> Pick a key and a progression, start the loop,
@@ -828,6 +926,7 @@ details[open] summary{margin-bottom:8px}
     </div>
     <label class="chk"><input type="checkbox" id="p-blues"> Add the blue note</label>
     <label class="chk"><input type="checkbox" id="p-rest"> Ghost the other positions</label>
+    <label class="chk"><input type="checkbox" id="p-chord"> Ring the chord inside it</label>
     <button class="btn ghost" id="p-play" title="Play the shape on screen, low to high and back">▶ Play this shape</button>
   </div>
 
@@ -839,6 +938,7 @@ details[open] summary{margin-bottom:8px}
       <span><i style="background:var(--root)"></i>Root</span>
       <span><i style="background:var(--scale)"></i>Pentatonic tone</span>
       <span><i style="background:var(--blue)"></i>Blue note</span>
+      <span><i style="background:transparent;box-shadow:0 0 0 2px var(--blue);border-radius:50%"></i>Note of the chord</span>
       <span class="hint" id="p-span"></span>
     </div>
   </div>
@@ -1131,7 +1231,7 @@ const S = {
   sound: store.get('sound',true),
   theme: store.get('theme','dark'),
   eRoot:'A', eScale:'minPent', eLabels:'name', eGhost:false, eOct:false,
-  pRoot:'A', pType:'minor', pBox:1, pLabels:'name', pBlues:false, pRest:false,
+  pRoot:'A', pType:'minor', pBox:1, pLabels:'name', pBlues:false, pRest:false, pChord:false,
   cofKey:'C', cofMinor:false,
   tKey:'C', tMode:'major',
 };
@@ -1487,7 +1587,7 @@ class Fretboard{
    tabs & global controls
    ============================================================ */
 const $ = id => document.getElementById(id);
-const VIEWS = ['play','game','chords','jam','pent','circle','theory'];
+const VIEWS = ['play','game','chords','rhythm','jam','pent','circle','theory'];
 function showView(v){
   VIEWS.forEach(x=> $('v-'+x).classList.toggle('hide', x!==v));
   [...$('tabs').children].forEach(b=>{
@@ -1496,6 +1596,7 @@ function showView(v){
     if(on && b.scrollIntoView) b.scrollIntoView({block:'nearest', inline:'nearest'});
   });
   if(v==='chords') renderChords();
+  if(v==='rhythm') renderRhythm();
   if(v==='jam') renderJam();
   if(v==='pent') renderPent();
   if(v==='game') gameLayout();
@@ -1505,6 +1606,7 @@ function showView(v){
   plLoop(v==='play');
   if(typeof stopSequence==='function') stopSequence();
   if(v!=='jam' && typeof JAM!=='undefined' && JAM.playing) jamStop();
+  if(v!=='rhythm' && typeof RH!=='undefined' && RH.playing) rhStop();
   if(v!=='play' && typeof TUNE!=='undefined' && TUNE.on) tunerStop();
   window.scrollTo({top:0,behavior:'instant'});
 }
@@ -1536,7 +1638,7 @@ $('tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(
     document.documentElement.dataset.theme = S.theme; store.set('theme',S.theme);
   };
 })();
-function redrawAll(){ renderChords(); renderJam(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
+function redrawAll(){ renderChords(); renderJam(); renderRhythm(); renderPent(); renderCircle(); renderTheory(); renderPlay(); if(game.q) drawQuestion(); }
 
 function fillRoots(sel, val){
   ROOT_CHOICES.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=pretty(r); sel.appendChild(o); });
@@ -2004,6 +2106,7 @@ const fbP = new Fretboard('fb-pent');
   $('p-type').onchange=e=>{ S.pType=e.target.value; renderPent(); };
   $('p-blues').onchange=e=>{ S.pBlues=e.target.checked; renderPent(); };
   $('p-rest').onchange=e=>{ S.pRest=e.target.checked; renderPent(); };
+  $('p-chord').onchange=e=>{ S.pChord=e.target.checked; renderPent(); };
   $('p-play').onclick = ()=>{
     const asc = [];
     for(let st=0; st<fbP.strings; st++){
@@ -2037,6 +2140,8 @@ function renderPent(){
   const {rootPc, minorPc, iv} = pentData();
   const set = new Set(iv.map(i=>(rootPc+i)%12));
   const bluePc = S.pType==='minor' ? (rootPc+6)%12 : (rootPc+3)%12;
+  const triadIv = S.pType==='minor' ? SCALES.min.iv : SCALES.maj.iv;
+  const triadSet = new Set(triadIv.map(i=>(rootPc+i)%12));
   const blueDeg = S.pType==='minor' ? '♭5' : '♭3';
   $('p-warn').classList.toggle('hide', std);
   [...$('p-boxes').children].forEach(b=>{
@@ -2074,7 +2179,8 @@ function renderPent(){
     if(!member) continue;
     const inside = (S.pBox===0 || !std) ? true : inBox.has(k) || (isBlue && f>=lo && f<=hi);
     if(!inside){ if(S.pRest) fbP.set(s,f,'ghost', S.pLabels==='none'?'':lbl(pc)); continue; }
-    const cls = pc===rootPc ? 'root' : (isBlue ? 'blue' : 'on');
+    let cls = pc===rootPc ? 'root' : (isBlue ? 'blue' : 'on');
+    if(S.pChord && triadSet.has(pc)) cls += ' chordtone';
     fbP.set(s,f,cls,lbl(pc));
   }
   fbP.paint(S.pRoot);
@@ -2096,6 +2202,9 @@ function renderPent(){
     ['Fits over', S.pType==='minor' ? pretty(S.pRoot)+'m, '+pretty(S.pRoot)+'7, and a 12-bar blues in '+pretty(S.pRoot) : pretty(S.pRoot)+', '+pretty(S.pRoot)+'maj7, '+pretty(S.pRoot)+'6'],
   ];
   if(std && S.pBox>0) facts.push(['CAGED shape', (S.pType==='minor'?PENT_BOXES[S.pBox-1].caged:CAGED_MAJOR[S.pBox])+' shape']);
+  facts.push(['The chord inside', pretty(S.pRoot)+(S.pType==='minor'?'m':'')+' — '
+    + triadIv.map(i=>pretty(nameOf((rootPc+i)%12, S.pRoot))).join(' ')
+    + '. Ring them and you can see the chord the shape is wrapped around.']);
   $('p-facts').innerHTML = facts.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
 }
 
@@ -3058,6 +3167,148 @@ function renderTuner(live){
 })();
 
 /* ============================================================
+   RHYTHM — the hand never stops; the pattern is where it connects
+   ============================================================ */
+const RH = {
+  pat:'x-xx-xxx'.split(''),      // 8 eighth-note slots: x strike, m muted chuck, - miss
+  bpm:88, playing:false, slot:-1, nextTime:0, idx:0, timer:null,
+  root:'G', qual:'maj', click:true, voicing:null
+};
+const RH_PRESETS = [
+  {n:'All downs',        p:'x-x-x-x-', why:'Where everyone starts. One strike a beat, all downstrokes.'},
+  {n:'Straight eighths', p:'xxxxxxxx', why:'Every movement connects. Good for feeling the up-down motion.'},
+  {n:'D · D U · U D U',  p:'x-xx-xxx', why:'The one behind a thousand songs. Learn this and you can busk.'},
+  {n:'Ballad',           p:'x---x---', why:'Two strikes a bar. Room to sing over.'},
+  {n:'Folk',             p:'x-xxx-xx', why:'Driving, but with a gap that keeps it from sounding mechanical.'},
+  {n:'Muted funk',       p:'xmxmxmxm', why:'Every other strike is a chuck — the strings damped by your palm.'},
+  {n:'Off-beat',         p:'-x-x-x-x', why:'Nothing on the beat at all. Reggae and ska live here.'}
+];
+const SLOT_LABEL = ['1','&','2','&','3','&','4','&'];
+const SLOT_DIR   = ['D','U','D','U','D','U','D','U'];
+
+function rhVoicing(){
+  const l = findVoicings(RH.root, RH.qual, 12, false);
+  return l.length ? l[0] : null;
+}
+function rhStrum(v, down, vol, muted){
+  if(!v) return;
+  const idx = [];
+  for(let s=0;s<v.pick.length;s++) if(v.pick[s]>=0) idx.push(s);
+  const order = down ? idx : idx.slice().reverse();
+  const gap = muted ? 0.012 : 0.026;
+  order.forEach((s,k)=> pluck(midiAt(s, v.pick[s]), (vol.when||0) + k*gap,
+                             muted ? 0.075 : 1.5, (vol.v||0.4) * (muted ? 0.55 : 1)));
+}
+function rhStop(){
+  RH.playing = false;
+  if(RH.timer) clearTimeout(RH.timer);
+  RH.timer = null; RH.slot = -1;
+  $('rh-play').textContent = '▶ Play the pattern';
+  $('rh-play').classList.remove('on');
+  renderRhythm();
+}
+function rhStart(){
+  const ctx = audio(); if(!ctx) return;
+  RH.voicing = rhVoicing();
+  if(!RH.voicing){ $('rh-note').textContent = 'No shape found for that chord in this tuning.'; return; }
+  RH.playing = true; RH.idx = 0;
+  RH.nextTime = ctx.currentTime + 0.12;
+  $('rh-play').textContent = '■ Stop';
+  $('rh-play').classList.add('on');
+  rhTick();
+}
+function rhTick(){
+  const ctx = actx; if(!ctx || !RH.playing) return;
+  const eighth = 30/RH.bpm;                 // half a beat
+  while(RH.nextTime < ctx.currentTime + 0.7){
+    const i = RH.idx % 8;
+    const what = RH.pat[i];
+    const when = RH.nextTime - ctx.currentTime;
+    if(what === 'x') rhStrum(RH.voicing, i%2===0, {when:when, v:i%2===0?0.44:0.32}, false);
+    else if(what === 'm') rhStrum(RH.voicing, i%2===0, {when:when, v:0.36}, true);
+    if(RH.click && i%2===0) click(when, i===0);
+    const showAt = Math.max(0, when*1000);
+    setTimeout(()=>{ if(RH.playing){ RH.slot = i; paintSlots(); } }, showAt);
+    RH.nextTime += eighth;
+    RH.idx++;
+  }
+  RH.timer = setTimeout(rhTick, 110);
+}
+
+function paintSlots(){
+  const cells = $('rh-grid').children;
+  for(let i=0;i<cells.length;i++){
+    const c = cells[i];
+    c.classList.toggle('now', RH.playing && i===RH.slot);
+    c.dataset.state = RH.pat[i];
+  }
+}
+function renderRhythm(){
+  const g = $('rh-grid');
+  if(g.children.length !== 8){
+    g.innerHTML = '';
+    for(let i=0;i<8;i++){
+      const b = document.createElement('button');
+      b.className = 'slot' + (i%2===0 ? ' beat' : '');
+      b.dataset.i = i;
+      b.innerHTML = '<span class="cnt">' + SLOT_LABEL[i] + '</span>'
+                  + '<span class="arrow">' + (SLOT_DIR[i]==='D' ? '↓' : '↑') + '</span>'
+                  + '<span class="what"></span>';
+      b.title = 'Click to cycle: strike, muted chuck, miss';
+      g.appendChild(b);
+    }
+  }
+  paintSlots();
+
+  const hits = RH.pat.filter(c=>c!=='-').length;
+  $('rh-note').innerHTML = '<b>' + hits + '</b> of the 8 movements connect. '
+    + 'Your hand keeps going down-up-down-up the whole bar either way — on a “miss” it '
+    + 'travels past the strings without touching them. That is the whole trick, and it is '
+    + 'why counting <span class="mono">1 &amp; 2 &amp; 3 &amp; 4 &amp;</span> out loud helps more than trying to memorise the shape of the pattern.';
+
+  $('rh-chordname').textContent = pretty(RH.root) + (CHORD_SUFFIX[RH.qual] || '');
+  const v = RH.voicing || rhVoicing();
+  $('rh-shape').textContent = v ? v.pick.map(f=> f<0 ? '×' : f).join('  ') : '—';
+}
+
+(function initRhythm(){
+  fillRoots($('rh-root'), RH.root);
+  CHORD_KEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=SCALES[k].n; $('rh-qual').appendChild(o); });
+  $('rh-qual').value = RH.qual;
+
+  RH_PRESETS.forEach((p,i)=>{
+    const b = document.createElement('button');
+    b.textContent = p.n; b.dataset.p = i; b.title = p.why;
+    $('rh-presets').appendChild(b);
+  });
+
+  $('rh-presets').onclick = e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    const p = RH_PRESETS[+b.dataset.p];
+    RH.pat = p.p.split('');
+    $('rh-why').textContent = p.why;
+    renderRhythm();
+    if(!RH.playing) rhStart();
+  };
+  $('rh-grid').onclick = e=>{
+    const b = e.target.closest('.slot'); if(!b) return;
+    const i = +b.dataset.i;
+    RH.pat[i] = RH.pat[i]==='x' ? 'm' : RH.pat[i]==='m' ? '-' : 'x';
+    renderRhythm();
+    if(!RH.playing && RH.pat[i]!=='-'){
+      const v = RH.voicing || rhVoicing();
+      rhStrum(v, i%2===0, {when:0, v:0.4}, RH.pat[i]==='m');
+    }
+  };
+  $('rh-play').onclick = ()=> RH.playing ? rhStop() : rhStart();
+  $('rh-root').onchange = e=>{ RH.root=e.target.value; RH.voicing=rhVoicing(); renderRhythm(); };
+  $('rh-qual').onchange = e=>{ RH.qual=e.target.value; RH.voicing=rhVoicing(); renderRhythm(); };
+  $('rh-click').onchange = e=>{ RH.click=e.target.checked; };
+  $('rh-bpm').oninput = e=>{ RH.bpm=+e.target.value; $('rh-bpmv').textContent=e.target.value; };
+  $('rh-clear').onclick = ()=>{ RH.pat = '--------'.split(''); renderRhythm(); };
+})();
+
+/* ============================================================
    shareable state in the URL
    ============================================================ */
 const TUNE_KEYS = Object.keys(TUNINGS);
@@ -3111,6 +3362,7 @@ function saveWork(){
     ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions},
     jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums},
     met:{bpm:MET.bpm, beats:MET.beats},
+    rh:{pat:RH.pat.join(''), bpm:RH.bpm, root:RH.root, qual:RH.qual, click:RH.click},
     game:{mode:game.mode, hi:game.hi, naturals:game.naturals, focus:game.focus, earset:game.earset}
   });
 }
@@ -3136,6 +3388,10 @@ function loadWork(){
       if(JAM.prog>=progs.length) JAM.prog=0;
       $('jam-prog').value=String(JAM.prog);
       $('jam-scale').value=JAM.scale; }
+    if(w.rh){ RH.pat = (w.rh.pat||'x-xx-xxx').split(''); RH.bpm=w.rh.bpm||88;
+      RH.root=w.rh.root||'G'; RH.qual=w.rh.qual||'maj'; RH.click=w.rh.click!==false;
+      $('rh-root').value=RH.root; $('rh-qual').value=RH.qual; $('rh-click').checked=RH.click;
+      $('rh-bpm').value=String(RH.bpm); $('rh-bpmv').textContent=String(RH.bpm); }
     if(w.met){ Object.assign(MET, w.met);
       $('met-bpm').value=String(MET.bpm); $('met-bpmv').textContent=String(MET.bpm);
       $('met-sig').value=String(MET.beats); metDots(); }
@@ -3506,7 +3762,7 @@ function plLoop(on){
   });
 })();
 
-renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam();
+renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam(); renderRhythm();
 document.querySelectorAll('table').forEach(tb=>{
   if(tb.parentElement && tb.parentElement.classList.contains('tscroll')) return;
   const w = document.createElement('div'); w.className = 'tscroll';
