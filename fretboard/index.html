@@ -816,6 +816,7 @@ body.has-plan{padding-bottom:86px}
       <h3>On the neck</h3>
       <div class="fbwrap"><div class="fb" id="fb-chord"></div></div>
       <div class="quick" style="margin-top:10px">
+        <button id="ch-drill">⟳ Drill changing to this</button>
         <button id="ch-strum">▶ Strum down</button>
         <button id="ch-strumup">▲ Strum up</button>
         <button id="ch-arp">♪ One note at a time</button>
@@ -1130,6 +1131,7 @@ body.has-plan{padding-bottom:86px}
       <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" id="cof-toboard">Show this key on the neck →</button>
         <button class="btn" id="cof-tochords">Find these chords →</button>
+        <button class="btn" id="cof-todrill">Drill changing between them →</button>
         </div>
       </div>
     </div>
@@ -2699,6 +2701,15 @@ function renderCircle(){
     ['ii–V–I', minor? '—' : [sp[1]+'m',sp[4]+'7',sp[0]+'maj7'].map(pretty).join(' · ')],
     ['12-bar blues', [sp[0]+'7',sp[3]+'7',sp[4]+'7'].map(pretty).join(' · ')],
   ].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+  $('cof-todrill').onclick = ()=>{
+    const picks = [];
+    sp.forEach((n,i)=>{
+      if(qual[i] === 'diminished') return;          // nobody drills the vii
+      const rn = ROOT_CHOICES.indexOf(n)>=0 ? n : SHARP[pcOf(n)];
+      picks.push([rn, QUAL_FROM[qual[i]]]);
+    });
+    drillChords('The chords of ' + pretty(key) + (minor?' minor':' major'), picks);
+  };
   $('cof-tochords').onclick = ()=>{
     CH.root = ROOT_CHOICES.indexOf(sp[0])>=0 ? sp[0] : SHARP[pcOf(sp[0])];
     CH.qual = minor ? 'min' : 'maj'; CH.sel = 0;
@@ -3047,9 +3058,16 @@ function renderChords(){
       '<dl class="kv">'
     + '<dt>Shape</dt><dd class="mono">'+names.join('  ')+'</dd>'
     + '<dt>Fingers</dt><dd>'+(v.fingers||'none — all open')+(v.barre? ', barring fret '+v.barre.fret : '')+'</dd>'
-    + (function(){ const f=assignFingers(v); const names={1:'index',2:'middle',3:'ring',4:'little'};
-        const rows=[]; for(let st=0;st<t.length;st++) if(f[st]) rows.push(names[f[st]]+' on string '+(t.length-st)+', fret '+v.pick[st]);
-        return rows.length ? '<dt>Which finger</dt><dd>'+rows.join('; ')+'</dd>' : ''; })()
+    + (function(){
+        const f = assignFingers(v), names = {1:'index', 2:'middle', 3:'ring', 4:'little'};
+        const rows = [];
+        if(v.barre) rows.push('index barring strings ' + (t.length-v.barre.from) + ' to ' + (t.length-v.barre.to) + ' at fret ' + v.barre.fret);
+        for(let st=0; st<t.length; st++){
+          if(!f[st]) continue;
+          if(v.barre && f[st]===1) continue;       // already covered by the barre line
+          rows.push(names[f[st]] + ' on string ' + (t.length-st) + ', fret ' + v.pick[st]);
+        }
+        return rows.length ? '<dt>Which finger</dt><dd>' + rows.join('<br>') + '</dd>' : ''; })()
     + '<dt>Stretch</dt><dd>'+(v.span? (v.span+1)+' frets' : 'one fret')+'</dd>'
     + '<dt>Bass note</dt><dd>'+pretty(nameOf(v.bassPc, CH.root))+(v.bassPc===rootPc? ' — root position' : ' — an inversion')+'</dd>'
     + '<dt>Notes</dt><dd>'+(v.full? 'complete' : 'the fifth is left out, which is normal')+'</dd>'
@@ -3144,6 +3162,13 @@ function progressionsFor(sp, minor){
   $('ch-grid').onclick = e=>{
     const b = e.target.closest('.chordcard'); if(!b) return;
     CH.sel = +b.dataset.i; renderChords(); strum(CH.list[CH.sel], true);
+  };
+  $('ch-drill').onclick = ()=>{
+    /* whatever you are looking at, plus the two chords it most often sits between */
+    const pc = pcOf(CH.root);
+    const nameAt = k => { const n = nameOf((pc+k)%12, CH.root); return ROOT_CHOICES.indexOf(n)>=0 ? n : SHARP[(pc+k)%12]; };
+    drillChords(pretty(CH.root)+(CHORD_SUFFIX[CH.qual]||'') + ' with its neighbours',
+      [[CH.root, CH.qual], [nameAt(5), 'maj'], [nameAt(7), 'maj']]);
   };
   $('ch-strum').onclick = ()=> CH.list[CH.sel] && strum(CH.list[CH.sel], true);
   $('ch-strumup').onclick = ()=> CH.list[CH.sel] && strum(CH.list[CH.sel], false);
@@ -3822,8 +3847,26 @@ const CHANGE_POOLS = [
   {n:'C · Am · F · G — the doo-wop set',          c:[['C','maj'],['A','min'],['F','maj'],['G','maj']]},
   {n:'A · D · E — blues in A',                    c:[['A','maj'],['D','maj'],['E','maj']]},
   {n:'Every open chord',                          c:[['C','maj'],['A','maj'],['G','maj'],['E','maj'],['D','maj'],['A','min'],['E','min'],['D','min']]},
-  {n:'Sevenths: G7 · C7 · D7',                    c:[['G','dom7'],['C','dom7'],['D','dom7']]}
+  {n:'Sevenths: G7 · C7 · D7',                    c:[['G','dom7'],['C','dom7'],['D','dom7']]},
+  {n:'Sent from another view',                    c:[['G','maj'],['C','maj'],['D','maj']], custom:true}
 ];
+const CUSTOM_POOL = CHANGE_POOLS.length - 1;
+/* Load a set of chords into the change drill and start it. */
+function drillChords(name, chords){
+  CHANGE_POOLS[CUSTOM_POOL].n = name;
+  CHANGE_POOLS[CUSTOM_POOL].c = chords;
+  RH.pool = CUSTOM_POOL;
+  const opt = $('rh-pool').options[CUSTOM_POOL];
+  if(opt) opt.textContent = name;
+  $('rh-pool').value = String(CUSTOM_POOL);
+  showView('rhythm');
+  if(RH.playing) rhStop();
+  RH.drill = true; RH.bar = 0; RH.changes = 0; RH.cur = null; RH.next = null;
+  $('rh-changer').classList.remove('hide');
+  $('rh-chgo').textContent = '■ Stop the drill';
+  rhStart();
+  setTimeout(()=>{ const el=$('rh-changer'); if(el) el.scrollIntoView({block:'center'}); }, 120);
+}
 function chLabel(p){ return pretty(p[0]) + (CHORD_SUFFIX[p[1]] || ''); }
 function pickNext(){
   const pool = CHANGE_POOLS[RH.pool].c;
