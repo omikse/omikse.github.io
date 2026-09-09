@@ -141,6 +141,14 @@ whatever chord you choose, with an optional click on the beat, and a playhead th
 shows which of the eight you are on. Jam can borrow the pattern too, so the backing
 track strums the way you do.
 
+It also fingerpicks. Switching hands turns the eight boxes into string choices
+instead of strokes, with five patterns to start from — arpeggios, an alternating
+bass, a ballad figure. The patterns are written as positions within the chord
+rather than absolute string numbers, so one pattern survives every chord change:
+the alternating bass picks strings 6-4-5-3 on a G and becomes 4-2-3-1 on a D,
+skipping the muted strings by itself, which is what a player's thumb does without
+being told.
+
 Underneath it is the drill that most beginners actually need: changing chords in
 time. Pick a set — G C D, the four chords, every open chord, the sevenths — and it
 keeps the bar going, shows what is coming next and counts the beats down to the
