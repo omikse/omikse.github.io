@@ -397,6 +397,30 @@ details[open] summary{margin-bottom:8px}
   font:inherit; font-size:.85rem; padding:8px 12px; border-radius:9px; cursor:pointer}
 #tu-refs button:hover{background:var(--raise)}
 #tu-refs button b{color:var(--muted); font-size:.72rem; margin-right:4px}
+
+.fb .cell.click:focus-visible{outline:2px solid var(--blue); outline-offset:-3px; border-radius:6px; z-index:7}
+.fb .cell.click:focus{outline:none}
+
+/* ---------- printing: the neck and what it means, nothing else ---------- */
+@media print{
+  :root{
+    --bg:#fff; --panel:#fff; --panel2:#fff; --raise:#f2f2f2;
+    --line:#ccc; --line2:#aaa; --text:#000; --muted:#555; --faint:#888;
+    --root:#c87000; --root-ink:#fff; --scale:#0a7a66; --scale-ink:#fff;
+    --wood-a:#f4ede3; --wood-b:#ece2d4; --shadow:none;
+  }
+  header, nav, .bar, .quick, .earbox, .answers, .days, .timerbar,
+  #tu-card, .scope, #jam-chords, #met-beats, .legend .hint{ display:none !important }
+  body{background:#fff}
+  .wrap{max-width:none; padding:0}
+  .card, .scope, .slot{border:1px solid #ccc; box-shadow:none; break-inside:avoid; page-break-inside:avoid}
+  .fbwrap{overflow:visible}
+  .fb{min-width:0}
+  .fb .dot{border:1px solid #999}
+  .fb .capo{background:#333}
+  .learn-mid{grid-template-columns:1fr; grid-template-areas:"neck" "info" "side"}
+  a[href]:after{content:""}
+}
 .hide{display:none !important}
 </style>
 </head>
@@ -492,6 +516,7 @@ details[open] summary{margin-bottom:8px}
         <span><i style="background:rgba(140,150,160,.35)"></i>Other note</span>
         <span><i style="background:#39424d;border-radius:3px"></i>Capo — drag it</span>
         <span class="hint" id="w-capotext"></span>
+      <span class="hint">Tab onto the neck and the arrow keys walk it.</span>
       </div>
     </div>
 
@@ -1294,30 +1319,38 @@ class Fretboard{
     board.appendChild(inlay);
 
 
-    this.cells=[]; this.colCells=[];
+    this.cells=[]; this.colCells=[]; this.cellEls=[];
     for(let s=n-1;s>=0;s--){
       const row=document.createElement('div'); row.className='row strings';
       row.style.setProperty('--sw', (0.8 + (n-1-s)*0.42).toFixed(2)+'px');
       const tun=document.createElement('div'); tun.className='cell tuner';
       if(s===0) this.tunerCell = tun;
       const b=document.createElement('b'); b.dataset.tun=s; tun.appendChild(b); row.appendChild(tun);
-      this.cells[s]=[];
+      this.cells[s]=[]; this.cellEls[s]=[];
       for(let f=0;f<=F;f++){
         const c=document.createElement('div'); c.className='cell'+(f===0?' open':'');
         const dot=document.createElement('div'); dot.className='dot'; c.appendChild(dot);
         if(this.opts.clickable){
           c.classList.add('click');
+          c.tabIndex = -1;
+          c.setAttribute('role','button');
+          c.dataset.s = s; c.dataset.f = f;
           c.addEventListener('click',()=>{
             if(this.opts.canPlay && !this.opts.canPlay(s,f)) return;
             playPos(s,f); if(this.onCell) this.onCell(s,f);
           });
         }
-        row.appendChild(c); this.cells[s][f]=dot;
+        row.appendChild(c); this.cells[s][f]=dot; this.cellEls[s][f]=c;
         if(s===0) this.colCells[f]=c;
       }
       board.appendChild(row);
     }
     this.board = board;
+    if(this.opts.clickable){
+      const first = this.cellEls[n-1] && this.cellEls[n-1][0];
+      if(first) first.tabIndex = 0;
+      board.addEventListener('keydown', e=> this.onKey(e));
+    }
     if(this.opts.capo){
       const cp = document.createElement('div');
       cp.className='capo'; cp.tabIndex=0; cp.setAttribute('role','slider');
@@ -1330,6 +1363,37 @@ class Fretboard{
     el.appendChild(board);
     this.paint();
     function cell(txt){ const c=document.createElement('div'); c.className='cell'; c.textContent=txt; return c; }
+  }
+  focusCell(s,f){
+    const el = this.cellEls[s] && this.cellEls[s][f];
+    if(!el) return;
+    this.cellEls.forEach(row=> row && row.forEach(c=> { if(c) c.tabIndex = -1; }));
+    el.tabIndex = 0; el.focus({preventScroll:false});
+  }
+  onKey(e){
+    const el = document.activeElement;
+    if(!el || el.dataset == null || el.dataset.s === undefined) return;
+    let s = +el.dataset.s, f = +el.dataset.f;
+    const dir = S.lefty ? -1 : 1;
+    switch(e.key){
+      case 'ArrowLeft':  f -= dir; break;
+      case 'ArrowRight': f += dir; break;
+      case 'ArrowUp':    s += 1;   break;
+      case 'ArrowDown':  s -= 1;   break;
+      case 'Home':       f = 0;    break;
+      case 'End':        f = this.frets; break;
+      case 'Enter': case ' ':
+        e.preventDefault();
+        if(this.opts.canPlay && !this.opts.canPlay(s,f)) return;
+        playPos(s,f); if(this.onCell) this.onCell(s,f);
+        return;
+      default: return;
+    }
+    e.preventDefault();
+    this.focusCell(
+      Math.max(0, Math.min(this.strings-1, s)),
+      Math.max(0, Math.min(this.frets, f))
+    );
   }
   capoLeft(n){
     if(!this.capoEl || !this.board) return 0;
@@ -1407,6 +1471,10 @@ class Fretboard{
         const d=this.cells[s][f], m=this.marks.get(this.key(s,f));
         d.className='dot' + (m? ' '+m.cls : '');
         d.textContent = m? m.label : '';
+        const c = this.cellEls[s] && this.cellEls[s][f];
+        if(c) c.setAttribute('aria-label',
+          'String ' + (this.strings-s) + ', ' + (f===0 ? 'open' : 'fret '+f) + ', '
+          + pretty(nameOf((t[s]+f)%12, ctxRoot)));
       }
     }
   }
@@ -2266,6 +2334,11 @@ function findVoicings(rootName, qualKey, maxF, inv){
   const ess = def.iv.filter(iv=> !(def.iv.length>=4 && iv===7)).map(i=>(rootPc+i)%12);
   const fifthPc = (rootPc+7)%12;
   const minSound = Math.min(4, n);
+  // a ukulele's top string is pitched above its next one, so "lowest string" is not
+  // "lowest note", and asking for the root in the bass would rule out every shape
+  // a ukulele player actually uses
+  let reentrant = false;
+  for(let i=1;i<n;i++) if(midiAt(i,0) < midiAt(i-1,0)) reentrant = true;
   const top = Math.min(maxF, S.frets);
   const seen = new Set(), out = [];
 
@@ -2292,9 +2365,13 @@ function findVoicings(rootName, qualKey, maxF, inv){
     if(sounding.length < minSound) return null;
     const pcs = new Set(sounding.map(s=>(t[s]+pick[s])%12));
     for(const e of ess) if(!pcs.has(e)) return null;
-    const bass = sounding[0];
-    const bassPc = (t[bass]+pick[bass])%12;
-    if(!inv && bassPc!==rootPc) return null;
+    let bassS = sounding[0], bassMidi = midiAt(bassS, pick[bassS]);
+    for(let k=1;k<sounding.length;k++){
+      const sx = sounding[k], m = midiAt(sx, pick[sx]);
+      if(m < bassMidi){ bassMidi = m; bassS = sx; }
+    }
+    const bassPc = ((bassMidi%12)+12)%12;
+    if(!inv && !reentrant && bassPc!==rootPc) return null;
     const {fingers, barre, span} = fingersFor(pick);
     if(fingers>4 || span>3) return null;
     let inner = 0;
@@ -2314,8 +2391,10 @@ function findVoicings(rootName, qualKey, maxF, inv){
     let sc = sounding.length*3 + opens*2 - fingers*2 - span - inner*5 - minFret*0.3;
     if(minFret>=5) sc -= opens*3;
     if(pcs.has(fifthPc)) sc += 2;
-    if(bassPc===rootPc) sc += 6; else sc -= 2;
-    if(barre) sc -= 1.5;
+    // on a reentrant instrument the lowest string is not the bass in any musical
+    // sense, so which note is under it matters far less
+    if(bassPc===rootPc) sc += reentrant ? 2 : 6; else if(!reentrant) sc -= 2;
+    if(barre) sc -= 0.75;
     if(pcs.size === def.iv.length) sc += 2;
     return {pick, sig:pick.join(','), fingers, barre, span, minFret, opens, score:sc,
             bassPc, full:pcs.size===def.iv.length};

@@ -10,6 +10,11 @@ no network calls. Open it and it works.
 
 ## The seven views
 
+Every neck in the app is keyboard navigable: tab onto it and the arrow keys walk
+string by string and fret by fret, Enter sounds the note, and each square announces
+itself as "String 6, fret 5, A". There is a print stylesheet too, so a neck diagram
+or a set of chord shapes prints without the controls around them.
+
 ### Learn
 The default view, and the one meant for someone who has never read a fretboard diagram.
 The neck sits in the middle; everything else is arranged around it.
@@ -74,9 +79,13 @@ survives is scored on fullness, open strings, finger count, stretch and whether
 the root is in the bass, then spread across the neck so you get a choice of
 positions instead of six versions of first position.
 
-It returns what it should: `x32010` for C, `x32000` for Cmaj7, `x3434x` for Cm7♭5,
-the E-shape barre at the eighth fret. Because it is a search, it works in drop D,
-open G, DADGAD, bass and ukulele with no extra data. Diagrams follow the printed
+It returns what it should: `x32010` for C, `133211` for F, `x32000` for Cmaj7,
+`x3434x` for Cm7♭5, the E-shape barre at the eighth fret. Because it is a search,
+it works in drop D, open G, DADGAD, bass and ukulele with no extra data — and it
+knows a ukulele is reentrant, so it measures the bass note by pitch rather than by
+string order and stops insisting on a root in the bass on an instrument that has no
+bass register. Switch the tuning to ukulele and it gives you `0003`, `0232`, `2010`
+and `2000` for C, G, F and Am. Diagrams follow the printed
 convention — low string on the left, root dots in orange, barres as bars, position
 number beside the top fret. Click one to strum it; the selected shape appears on a
 full neck with its notes named.
@@ -129,7 +138,8 @@ Kept in `localStorage`, applied to every view:
 - **Tuning** — standard, drop D, half step down, open G, open D, DADGAD, 4-string bass, ukulele
 - **Frets** — 12 to 24
 - **Accidentals** — sharps, flats, or auto (follows the key)
-- **Left-handed** — mirrors the neck; the nut, fret wires and capo all flip with it
+- **Left-handed** — mirrors the neck; the nut, fret wires, capo and arrow keys all
+  flip with it
 - **Sound** — on/off
 - **Theme** — light and dark
 - **Share** — copies a link that encodes the view, root, scale, capo, labels,
