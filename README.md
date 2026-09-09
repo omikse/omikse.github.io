@@ -55,7 +55,9 @@ The neck sits in the middle; everything else is arranged around it.
   holds still.
 - **The harmonics panel** shows that one string is never doing one thing: it vibrates in
   halves and thirds at the same time, and those extra speeds land on the octave, the fifth,
-  the next octave. The intervals were found inside a string, not invented.
+  the next octave. The intervals were found inside a string, not invented. Click any
+  bar to hear that partial alone as a sine, which is what makes the claim believable
+  rather than merely stated.
 - **The capo is a physical object.** It parks by the nut. Drag it onto any fret and it snaps
   there, mutes everything behind it, plays the note it lands on, and tells you what your
   open strings have become. Arrow keys move it if you would rather not drag.
@@ -381,8 +383,9 @@ Audio needs a user gesture before it will start, in every browser. Clicking a fr
 - Pentatonic box shapes assume standard tuning; other tunings show correct notes but no boxes.
 - The five boxes are drawn for six-string instruments. Bass and ukulele tunings work
   everywhere else.
-- Practice stats are per browser origin — the copy on the site and a local copy keep
-  separate histories.
+- Practice stats live in one browser. A box under the heatmap copies the record out
+  and merges one back in, adding the two together rather than overwriting, so a phone
+  and a laptop can be kept in step in either direction.
 
 ## Ideas not built yet
 
