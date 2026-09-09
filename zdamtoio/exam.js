@@ -10,11 +10,11 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=745491fa";
-import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=745491fa";
-import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=745491fa";
+import { RENDERERS, esc, stripJsonc, renderReference } from "./renderers.js?v=daf02fb4";
+import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState } from "./progress.js?v=daf02fb4";
+import { gradeQuestion, gradeEssay, GradingError } from "./grading.js?v=daf02fb4";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=745491fa";
+  from "./admin.js?v=daf02fb4";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -511,13 +511,18 @@ function renderEssayDiagnostics(history = {}) {
     "4b": "Poprawność ortograficzna", "4c": "Poprawność interpunkcyjna",
   };
 
+  const failure = Object.fromEntries(
+    failed.map(f => (typeof f === "string" ? [f, ""] : [f.id, f.error || ""])));
+
   const rows = Object.keys(names).map(id => {
     const v = raw[id];
     const body = v
       ? esc(Object.entries(v)
           .filter(([, x]) => typeof x !== "object")
           .map(([k, x]) => `${k}: ${x}`).join(", ")) || "—"
-      : `<em>${failed.includes(id) ? "nie udało się ocenić" : "brak"}</em>`;
+      : id in failure
+        ? `<em>${esc(failure[id] || "nie udało się ocenić")}</em>`
+        : `<em>brak</em>`;
     return `<tr><td><strong>${esc(id)}</strong></td><td>${esc(names[id])}</td><td>${body}</td></tr>`;
   }).join("");
 

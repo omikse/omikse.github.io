@@ -15,7 +15,7 @@
  *     pdf-json keeps each booklet's `work` directory out of .gitignore.
  */
 
-import { RENDERERS, ESSAY_CRITERIA, buildEssayCriterionPrompt } from "./renderers.js?v=745491fa";
+import { RENDERERS, ESSAY_CRITERIA, buildEssayCriterionPrompt } from "./renderers.js?v=daf02fb4";
 
 export const MODEL_NAME = "gemini-2.5-flash";   // pinned; newer models are worse here
 
@@ -31,10 +31,11 @@ const ENDPOINT = model =>
  * ------------------------------------------------------------------ */
 
 export class GradingError extends Error {
-  constructor(message, { quota = false, raw = "", transient = false } = {}) {
+  constructor(message, { quota = false, raw = "", transient = false, fatal = false } = {}) {
     super(message);
-    this.quota = quota;        // 429 — stop, the rest would fail too
+    this.quota = quota;         // 429 — stop, the rest would fail too
     this.transient = transient; // 5xx / overload — worth one retry
+    this.fatal = fatal;         // misconfigured (no key, bad key) — stop, and say why
     this.raw = raw;
   }
 }
@@ -67,7 +68,7 @@ export async function callGemini(prompt, apiKey, { retries = 1 } = {}) {
 }
 
 async function callOnce(prompt, apiKey) {
-  if (!apiKey) throw new GradingError("Brak klucza API — otwórz Ustawienia.");
+  if (!apiKey) throw new GradingError("Brak klucza API — otwórz Ustawienia.", { fatal: true });
 
   let res;
   try {
@@ -92,7 +93,11 @@ async function callOnce(prompt, apiKey) {
         : isTransient(res.status, msg)
           ? "Model chwilowo przeciążony. Spróbuj ponownie za chwilę."
           : "Błąd API: " + msg,
-      { quota: res.status === 429, transient: isTransient(res.status, msg) },
+      {
+        quota: res.status === 429,
+        transient: isTransient(res.status, msg),
+        fatal: res.status === 400 || res.status === 401 || res.status === 403,
+      },
     );
   }
 
@@ -191,12 +196,15 @@ export async function gradeEssay(question, apiKey, onProgress = () => {}) {
       if (parsed) results[id] = parsed;
       else failures.push(id);
     } catch (err) {
-      failures.push(id);
+      failures.push({ id, error: err.message });
       if (err.raw) responses[id] = err.raw;
-      // Quota is terminal: the remaining calls would all fail too, and each
-      // attempt still counts. Stop and keep what was already paid for.
-      if (err.quota) {
-        onProgress(i, ESSAY_CRITERIA.length, id);
+      // A missing or invalid key, and an exhausted quota, will fail identically
+      // for every remaining criterion. Grinding through the other seven only
+      // buys eight copies of "nie udało się ocenić" with the reason thrown
+      // away -- which is exactly what it did the first time this ran for real.
+      if (err.quota || err.fatal) {
+        onProgress(ESSAY_CRITERIA.length, ESSAY_CRITERIA.length, id);
+        if (!Object.keys(results).length) throw err;   // nothing salvaged: say why
         break;
       }
     }
