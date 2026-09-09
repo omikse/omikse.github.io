@@ -50,7 +50,7 @@ The neck sits in the middle; everything else is arranged around it.
   and character, and lists every root position on every string.
 
 ### Drills
-Five drills, all scored, with per-note accuracy kept in `localStorage`:
+Six drills, all scored, with per-note accuracy kept in `localStorage`:
 
 | Mode | What it asks |
 |---|---|
@@ -59,11 +59,15 @@ Five drills, all scored, with per-note accuracy kept in `localStorage`:
 | Find every octave | One position is shown — click every other place that note lives |
 | Find the interval | A reference note and an interval — click the target, any string |
 | Hear the interval | Two notes play, low then high — name the distance by ear |
+| Hear the chord | A chord is strummed — say what kind it is |
 
-The ear mode is the one the diagrams cannot teach. Pick how many intervals are
+The two ear modes are what diagrams cannot teach. Pick how many intervals are
 in play (three, seven or all twelve); after you answer it shows where the two notes
-were on the neck, so the sound and the shape arrive together. Accuracy per interval
-is tracked in its own panel.
+were on the neck, so the sound and the shape arrive together. Telling major from
+minor is arguably the more useful skill for a beginner, so chord mode goes from
+exactly that up to nine qualities including diminished, augmented, suspended and
+the sevenths, strumming a real voicing at a random root and revealing the shape
+afterwards. Accuracy is tracked per interval and per chord type in its own panel.
 
 Filter by string, cap the fret range, restrict to naturals, and optionally run a clock.
 The accuracy bars show which note names you are actually slow on, which is more useful than
