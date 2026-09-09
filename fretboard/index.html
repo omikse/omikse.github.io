@@ -593,6 +593,12 @@ body.has-plan{padding-bottom:86px}
     </div>
     <label class="chk"><input type="checkbox" id="w-ghost" checked> Show non-scale notes</label>
     <div class="f"><label for="w-capo">Capo</label><select id="w-capo"></select></div>
+    <div class="f"><label for="w-seq">Sequence</label><select id="w-seq">
+      <option value="straight" selected>Straight up</option>
+      <option value="pairs">In pairs</option>
+      <option value="thirds">In thirds</option>
+      <option value="fours">In fours</option>
+    </select></div>
     <button class="btn ghost" id="w-play" title="Play the scale up one string">▶ Play scale</button>
   </div>
 
@@ -849,6 +855,12 @@ body.has-plan{padding-bottom:86px}
   </div>
 
   <div class="card">
+    <h3>Patterns worth knowing</h3>
+    <div id="rh-presets"></div>
+    <p class="hint" id="rh-why" style="margin:10px 0 0">Pick one and it starts playing.</p>
+  </div>
+
+  <div class="card">
     <h3>Changing chords in time</h3>
     <p class="hint" style="margin-bottom:12px">The hard part of a song is rarely a chord. It is arriving at the next
     one without the strumming hand stopping to wait. This keeps the bar going and tells you what is coming, so the
@@ -874,11 +886,6 @@ body.has-plan{padding-bottom:86px}
     </div>
   </div>
 
-  <div class="card">
-    <h3>Patterns worth knowing</h3>
-    <div id="rh-presets"></div>
-    <p class="hint" id="rh-why" style="margin:10px 0 0">Pick one and it starts playing.</p>
-  </div>
 
   <div class="grid">
     <div class="card">
@@ -971,6 +978,17 @@ body.has-plan{padding-bottom:86px}
       </div>
       <div class="beats" id="met-beats"></div>
     </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+      <label class="chk" style="padding:0"><input type="checkbox" id="met-ramp"> Speed up as I go</label>
+      <span class="hint">add
+        <select id="met-rampby" style="min-width:64px"><option>2</option><option selected>4</option><option>6</option></select>
+        bpm every
+        <select id="met-rampevery" style="min-width:64px"><option>4</option><option selected>8</option><option>16</option></select>
+        bars, up to
+        <select id="met-rampto" style="min-width:74px"><option>100</option><option>120</option><option selected>140</option><option>160</option><option>200</option></select>
+      </span>
+      <span class="hint" id="met-rampmsg" style="margin-left:auto"></span>
+    </div>
   </div>
 
   <div class="grid">
@@ -1015,6 +1033,17 @@ body.has-plan{padding-bottom:86px}
     <label class="chk"><input type="checkbox" id="p-blues"> Add the blue note</label>
     <label class="chk"><input type="checkbox" id="p-rest"> Ghost the other positions</label>
     <label class="chk"><input type="checkbox" id="p-chord"> Ring the chord inside it</label>
+    <div class="f"><label for="p-seq">Sequence</label><select id="p-seq">
+      <option value="straight" selected>Straight up</option>
+      <option value="pairs">In pairs</option>
+      <option value="thirds">In thirds</option>
+      <option value="fours">In fours</option>
+    </select></div>
+    <div class="f"><label for="p-speed">Speed</label><select id="p-speed">
+      <option value="0.40">Slow</option>
+      <option value="0.26" selected>Steady</option>
+      <option value="0.17">Quick</option>
+    </select></div>
     <button class="btn ghost" id="p-play" title="Play the shape on screen, low to high and back">▶ Play this shape</button>
   </div>
 
@@ -1754,6 +1783,21 @@ function fillRoots(sel, val){
 /* walk a list of [string, fret] positions, sounding and lighting each in turn */
 let seqTimers = [];
 function stopSequence(){ seqTimers.forEach(clearTimeout); seqTimers = []; }
+/* the standard ways a player drills a shape: straight, in pairs, in thirds, in fours */
+function sequenceIdx(n, kind){
+  const out = [];
+  if(kind==='pairs'){ for(let i=0;i+1<n;i++){ out.push(i, i+1); } }
+  else if(kind==='thirds'){ for(let i=0;i+2<n;i++){ out.push(i, i+2); } }
+  else if(kind==='fours'){ for(let i=0;i+3<n;i++){ out.push(i, i+1, i+2, i+3); } }
+  else for(let i=0;i<n;i++) out.push(i);
+  return out;
+}
+function playShape(fb, asc, kind, gap){
+  if(!asc.length) return;
+  const up = sequenceIdx(asc.length, kind).map(i=>asc[i]);
+  const down = sequenceIdx(asc.length, kind).map(i=>asc[asc.length-1-i]);
+  playSequence(fb, up.concat(down), gap, 0.46);
+}
 function playSequence(fb, seq, gap, vol){
   stopSequence(); audio();
   gap = gap || 0.30;
@@ -1807,9 +1851,8 @@ function playScaleUp(){
   const def = SCALES[PL.scale], rootPc = pcOf(PL.root), t = tuning();
   const s = PL.A ? PL.A.s : 0;
   let start = PL.capo; while((t[s]+start)%12 !== rootPc) start++;
-  const up = def.iv.concat([12]).map(i=>start+i).filter(f=> f<=S.frets);
-  const seq = up.concat(up.slice(0,-1).reverse()).map(f=>[s,f]);
-  playSequence(fbW, seq, 0.30, 0.46);
+  const up = def.iv.concat([12]).map(i=>start+i).filter(f=> f<=S.frets).map(f=>[s,f]);
+  playShape(fbW, up, $('w-seq') ? $('w-seq').value : 'straight', 0.28);
 }
 
 /* ============================================================
@@ -2315,8 +2358,7 @@ const fbP = new Fretboard('fb-pent');
       }
       frets.sort((a,b)=>a-b).forEach(f=> asc.push([st,f]));
     }
-    if(!asc.length) return;
-    playSequence(fbP, asc.concat(asc.slice(0,-1).reverse()), 0.24, 0.46);
+    playShape(fbP, asc, $('p-seq').value, +$('p-speed').value);
   };
   $('p-labels').onclick=e=>{ const b=e.target.closest('button'); if(!b) return;
     S.pLabels=b.dataset.l; [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed',String(x===b))); renderPent(); };
@@ -3096,7 +3138,8 @@ function renderJam(){
 }
 
 /* ---- metronome, sharing the audio clock with the loop ---- */
-const MET = {on:false, bpm:90, beats:4, beat:0, nextTime:0, timer:null, taps:[]};
+const MET = {on:false, bpm:90, beats:4, beat:0, nextTime:0, timer:null, taps:[],
+             ramp:false, rampBy:4, rampEvery:8, rampTo:140, bars:0, startBpm:90, schedBeat:0};
 function metDots(){
   const w = $('met-beats'); if(!w) return;
   if(w.children.length !== MET.beats)
@@ -3116,22 +3159,33 @@ function metStop(){
 }
 function metStart(){
   const ctx = audio(); if(!ctx) return;
-  MET.on = true; MET.beat = 0;
+  MET.on = true; MET.beat = 0; MET.schedBeat = 0; MET.bars = 0; MET.startBpm = MET.bpm;
   MET.nextTime = ctx.currentTime + 0.08;
+  if($('met-rampmsg')) $('met-rampmsg').textContent = '';
   $('met-play').textContent = '■ Stop';
   $('met-play').classList.add('on');
   metTick();
 }
 function metTick(){
   const ctx = actx; if(!ctx || !MET.on) return;
-  const spb = 60/MET.bpm;
   while(MET.nextTime < ctx.currentTime + 0.6){
-    const b = MET.beat;
+    /* schedBeat is the scheduler's cursor; MET.beat is what the dots show, set later
+       by a timer. They must not be the same variable, or the display clobbers the count. */
+    const b = MET.schedBeat;
     click(MET.nextTime - ctx.currentTime, b===0);
     const lead = (MET.nextTime - ctx.currentTime)*1000;
     setTimeout(()=>{ if(MET.on){ MET.beat = b; metDots(); } }, Math.max(0, lead));
-    MET.beat = (b+1) % MET.beats;
-    MET.nextTime += spb;
+    MET.schedBeat = (b+1) % MET.beats;
+    if(MET.schedBeat === 0){
+      MET.bars++;
+      if(MET.ramp && MET.bars % MET.rampEvery === 0 && MET.bpm < MET.rampTo){
+        MET.bpm = Math.min(MET.rampTo, MET.bpm + MET.rampBy);
+        $('met-bpm').value = String(MET.bpm);
+        $('met-bpmv').textContent = String(MET.bpm);
+        $('met-rampmsg').textContent = MET.startBpm + ' → ' + MET.bpm + ' bpm over ' + MET.bars + ' bars';
+      }
+    }
+    MET.nextTime += 60/MET.bpm;
   }
   MET.timer = setTimeout(metTick, 110);
 }
@@ -3141,6 +3195,10 @@ function metTick(){
   $('met-play').onclick = ()=> MET.on ? metStop() : metStart();
   $('met-sig').onchange = e=>{ MET.beats=+e.target.value; MET.beat=0; metDots(); };
   $('met-bpm').oninput = e=>{ MET.bpm=+e.target.value; $('met-bpmv').textContent=e.target.value; };
+  $('met-ramp').onchange = e=>{ MET.ramp = e.target.checked; if(MET.ramp) MET.startBpm = MET.bpm; };
+  $('met-rampby').onchange = e=>{ MET.rampBy = +e.target.value; };
+  $('met-rampevery').onchange = e=>{ MET.rampEvery = +e.target.value; };
+  $('met-rampto').onchange = e=>{ MET.rampTo = +e.target.value; };
   $('met-tap').onclick = ()=>{
     const now = performance.now();
     MET.taps = MET.taps.filter(t=> now-t < 2500);
@@ -3908,7 +3966,7 @@ function saveWork(){
     pl:{root:PL.root, scale:PL.scale, labels:PL.labels, capo:PL.capo, ghost:PL.ghost, timbre:PL.timbre, win:PL.win},
     ch:{root:CH.root, qual:CH.qual, maxFret:CH.maxFret, inversions:CH.inversions},
     jam:{key:JAM.key, minor:JAM.minor, prog:JAM.prog, bpm:JAM.bpm, scale:JAM.scale, drums:JAM.drums},
-    met:{bpm:MET.bpm, beats:MET.beats},
+    met:{bpm:MET.bpm, beats:MET.beats, ramp:MET.ramp, rampBy:MET.rampBy, rampEvery:MET.rampEvery, rampTo:MET.rampTo},
     rh:{pat:RH.pat.join(''), bpm:RH.bpm, root:RH.root, qual:RH.qual, click:RH.click, mode:RH.mode, pick:RH.pick},
     game:{mode:game.mode, hi:game.hi, naturals:game.naturals, focus:game.focus, earset:game.earset}
   });
@@ -3944,7 +4002,11 @@ function loadWork(){
       [...$('rh-mode').children].forEach(x=> x.setAttribute('aria-pressed', String(x.dataset.m===RH.mode))); }
     if(w.met){ Object.assign(MET, w.met);
       $('met-bpm').value=String(MET.bpm); $('met-bpmv').textContent=String(MET.bpm);
-      $('met-sig').value=String(MET.beats); metDots(); }
+      $('met-sig').value=String(MET.beats); metDots();
+      $('met-ramp').checked = !!MET.ramp;
+      $('met-rampby').value = String(MET.rampBy);
+      $('met-rampevery').value = String(MET.rampEvery);
+      $('met-rampto').value = String(MET.rampTo); }
     if(w.game){ Object.assign(game, w.game); $('q-focus').checked = !!game.focus;
       $('q-mode').value=game.mode; $('q-hi').value=String(game.hi);
       $('q-natural').checked=game.naturals; $('q-earset').value=game.earset;
@@ -4323,6 +4385,14 @@ document.querySelectorAll('table').forEach(tb=>{
   tb.parentNode.insertBefore(w, tb); w.appendChild(tb);
 });
 loadWork();
+/* a first visit wants to be told what a note is; a returning one wants a way in */
+(function orderLearn(){
+  const sec = $('v-play');
+  const note = sec.querySelector('.note');
+  const card = $('pl-go') && $('pl-go').closest('.card');
+  const returning = Object.keys(stats.days||{}).length > 0 || Object.keys(stats.byPos||{}).length > 0;
+  if(returning && note && card) sec.insertBefore(card, note);
+})();
 applyHash();
 redrawAll(); renderPlay();
 ['w-root','w-scale','w-capo','g-tuning','g-frets','g-acc','ch-root','ch-qual'].forEach(id=>{ const el=$(id); if(el) el.addEventListener('change', pushHash); });

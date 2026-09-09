@@ -125,7 +125,9 @@ the previous shape without playing an awkward one, so I–V–vi–IV in A comes
 Scheduling runs about three quarters of a second ahead of the audio clock, so the
 loop keeps time regardless of what the page is doing. There is a count-in, and a
 metronome with tap tempo and 2/3/4/6 beats to the bar that shares the same clock,
-so you can run either or both.
+so you can run either or both. The metronome can also ramp — add so many bpm every so
+many bars up to a ceiling — which is how speed is actually built: from something clean
+and slow, not from trying fast and missing.
 
 ### Rhythm
 The gap most fretboard tools leave open. A strumming hand does not stop: it swings
@@ -160,6 +162,11 @@ All five boxes for minor and major pentatonic, each labelled with the CAGED shap
 to. Show one box, or the whole neck. Optional blue note. "Ghost the other positions" reveals
 where each box overlaps its neighbours — the overlap is the door between them, and that is
 the thing worth practising.
+
+Shapes can be played back in the four sequences players actually drill them with —
+straight, in pairs, in thirds, in fours — at three speeds, ascending then descending,
+with each note lighting up as it sounds. The same sequences apply to any scale in the
+Learn view.
 
 Box shapes are a standard-tuning idea. In DADGAD or open G the notes stay correct but the
 box buttons switch off, with a note explaining why.
