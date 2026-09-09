@@ -135,6 +135,12 @@ index; D is index, middle, ring; F is index barre, middle, ring, little; Bm is t
 barre at the second fret with the little finger on the D string. Click one to strum it; the selected shape appears on a
 full neck with its notes named.
 
+There is a capo calculator alongside it, because that is what a capo is actually
+for. E♭ has three flats and no friendly open shapes; the table says take the C
+shapes and put the capo on the third fret, and shows exactly what you finger and
+what comes out. It lists all five shape families sorted by how far up the neck they
+put you, skipping the diminished chord in minor keys because nobody strums it.
+
 It runs backwards too. Put a shape you have stumbled onto on the second neck —
 one fret per string, click again to mute — and it names it, using the same rule in
 reverse: every note you are playing must belong to the chord, every note the chord

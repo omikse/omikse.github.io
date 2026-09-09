@@ -833,6 +833,22 @@ body.has-plan{padding-bottom:86px}
     all the notes the chord needs, fits under four fingers, and spans no more than four frets. Click one to hear it.</p>
   </div>
 
+  <div class="card" id="capo-card">
+    <h3>Play a hard key with shapes you already know</h3>
+    <p class="hint" style="margin-bottom:12px">This is what a capo is really for. E♭ has three flats and no friendly
+    open shapes; put a capo on the third fret and play the C shapes you learned in your first week, and E♭ is what
+    comes out. Pick the key you need to be in and this shows where the capo goes for each family of shapes.</p>
+    <div class="bar" style="margin:0 0 12px; background:none; border:0; padding:0">
+      <div class="f"><label for="capo-key">Sound in the key of</label><select id="capo-key"></select></div>
+      <label class="chk"><input type="checkbox" id="capo-minor"> Minor key</label>
+    </div>
+    <div class="tscroll"><table>
+      <thead><tr><th>Shapes you play</th><th>Capo</th><th>What you finger</th><th>What comes out</th></tr></thead>
+      <tbody id="capo-rows"></tbody>
+    </table></div>
+    <p class="hint" style="margin:10px 0 0" id="capo-note"></p>
+  </div>
+
   <div class="card" id="id-card">
     <h3>Or go the other way: name a shape</h3>
     <p class="hint" style="margin-bottom:10px">Stumbled onto something and want to know what it is? Put it on this neck
@@ -1801,7 +1817,7 @@ function showView(v){
     b.setAttribute('aria-selected', String(on));
     if(on && b.scrollIntoView) b.scrollIntoView({block:'nearest', inline:'nearest'});
   });
-  if(v==='chords'){ renderChords(); renderIdentify(); }
+  if(v==='chords'){ renderChords(); renderIdentify(); renderCapoCalc(); }
   if(v==='rhythm') renderRhythm();
   if(v==='jam') renderJam();
   if(v==='pent') renderPent();
@@ -4355,6 +4371,44 @@ function renderNotation(){
   el.innerHTML = notationSVG([PL.A, PL.B], PL.root);
 }
 
+/* ---- capo calculator: which shapes get you into which key ---- */
+const CAPO_FAMILIES = ['C','A','G','E','D'];
+function renderCapoCalc(){
+  const key = $('capo-key').value, minor = $('capo-minor').checked;
+  const targetPc = pcOf(key);
+  const rows = CAPO_FAMILIES.map(fam=>{
+    const capo = ((targetPc - pcOf(fam)) % 12 + 12) % 12;
+    const iv = SCALES[minor ? 'minor' : 'major'].iv;
+    const qual = minor ? QUAL_MIN : QUAL_MAJ;
+    const shapes = spellScale(fam, iv);
+    const sounds = spellScale(
+      ROOT_CHOICES.indexOf(key)>=0 ? key : SHARP[targetPc], iv);
+    const suffix = i => qual[i]==='minor' ? 'm' : qual[i]==='diminished' ? '°' : '';
+    /* the degrees people actually play: I ii IV V vi in major, i III iv v VII in
+       minor — skipping the diminished chord, which nobody strums */
+    const pick = minor ? [0,2,3,4,6] : [0,1,3,4,5];
+    return {
+      fam: fam, capo: capo,
+      finger: pick.map(i=> pretty(shapes[i]) + suffix(i)).join(' '),
+      sounds: pick.map(i=> pretty(sounds[i]) + suffix(i)).join(' ')
+    };
+  }).sort((a,b)=> a.capo - b.capo);
+
+  $('capo-rows').innerHTML = rows.map(r=>
+    '<tr><td><b>' + r.fam + (minor?' minor':'') + ' shapes</b></td>'
+    + '<td class="n">' + (r.capo === 0 ? 'none' : 'fret ' + r.capo) + '</td>'
+    + '<td class="n">' + r.finger + '</td>'
+    + '<td class="n">' + r.sounds + '</td></tr>').join('');
+
+  const usable = rows.filter(r=> r.capo <= 7);
+  const say = r => r.capo === 0 ? 'the ' + r.fam + ' shapes with no capo at all'
+                                : 'the ' + r.fam + ' shapes at fret ' + r.capo;
+  $('capo-note').innerHTML = !usable.length
+    ? 'Every option here needs a high capo. Above the seventh fret the frets are cramped and the guitar thins out, so this may be a key worth learning barre chords for instead.'
+    : 'Take whichever shapes you know best: ' + usable.slice(0,2).map(say).join(', or ')
+      + '. Above the seventh fret the frets get cramped and the guitar starts to sound thin, so the lower numbers are usually the better bet.';
+}
+
 const fbI = new Fretboard('fb-identify', {clickable:true});
 /* ============================================================
    NAME THAT SHAPE — the chord finder run backwards
@@ -4453,6 +4507,10 @@ function renderIdentify(){
     ID.pick[s] = (ID.pick[s] === f) ? -1 : f;
     renderIdentify();
   };
+  fillRoots($('capo-key'), 'Eb');
+  $('capo-key').onchange = renderCapoCalc;
+  $('capo-minor').onchange = renderCapoCalc;
+  renderCapoCalc();
   $('id-clear').onclick = ()=>{ ID.pick = new Array(tuning().length).fill(-1); renderIdentify(); };
   $('id-fromfinder').onclick = ()=>{
     const v = CH.list[CH.sel];
