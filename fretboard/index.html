@@ -1347,6 +1347,14 @@ const SCALES = {
   dim7:         {n:'Diminished 7th',     iv:[0,3,6,9],        grp:'Chords'},
   six:          {n:'Major 6th',          iv:[0,4,7,9],        grp:'Chords'},
   min6:         {n:'Minor 6th',          iv:[0,3,7,9],        grp:'Chords'},
+  add9:         {n:'add9',                iv:[0,2,4,7],        grp:'Chords'},
+  madd9:        {n:'Minor add9',          iv:[0,2,3,7],        grp:'Chords'},
+  six9:         {n:'6/9',                 iv:[0,2,4,7,9],      grp:'Chords'},
+  sus47:        {n:'7sus4',               iv:[0,5,7,10],       grp:'Chords'},
+  dom9:         {n:'Dominant 9th',        iv:[0,2,4,7,10],     grp:'Chords'},
+  maj9:         {n:'Major 9th',           iv:[0,2,4,7,11],     grp:'Chords'},
+  min9:         {n:'Minor 9th',           iv:[0,2,3,7,10],     grp:'Chords'},
+  sharp9:       {n:'7♯9',                 iv:[0,3,4,7,10],     grp:'Chords'},
 };
 const SCALE_BLURB = {
   major:'Bright and resolved. The reference every other scale is measured against.',
@@ -2829,9 +2837,12 @@ const fbC = new Fretboard('fb-chord', {clickable:true});
    CHORDS — search the neck for shapes a hand can actually hold
    ============================================================ */
 const CH = {root:'C', qual:'maj', maxFret:12, inversions:false, fingers:true, sel:0, list:[]};
-const CHORD_KEYS = ['maj','min','dim','aug','sus2','sus4','maj7','dom7','min7','m7b5','dim7','six','min6'];
+const CHORD_KEYS = ['maj','min','dim','aug','sus2','sus4','maj7','dom7','min7','m7b5','dim7','six','min6',
+                    'add9','madd9','six9','sus47','dom9','maj9','min9','sharp9'];
 const CHORD_SUFFIX = {maj:'', min:'m', dim:'°', aug:'+', sus2:'sus2', sus4:'sus4',
-  maj7:'maj7', dom7:'7', min7:'m7', m7b5:'m7♭5', dim7:'°7', six:'6', min6:'m6'};
+  maj7:'maj7', dom7:'7', min7:'m7', m7b5:'m7♭5', dim7:'°7', six:'6', min6:'m6',
+  add9:'add9', madd9:'m(add9)', six9:'6/9', sus47:'7sus4',
+  dom9:'9', maj9:'maj9', min9:'m9', sharp9:'7♯9'};
 
 function fingersFor(pick){
   const fretted = [];
@@ -2886,6 +2897,8 @@ function findVoicings(rootName, qualKey, maxF, inv){
   const t = tuning(), n = t.length;
   const def = SCALES[qualKey], rootPc = pcOf(rootName);
   const tones = new Set(def.iv.map(i=>(rootPc+i)%12));
+  /* On a guitar the fifth is the note you drop when you run out of strings; everything
+     else in the chord is part of what makes it that chord. */
   const ess = def.iv.filter(iv=> !(def.iv.length>=4 && iv===7)).map(i=>(rootPc+i)%12);
   const fifthPc = (rootPc+7)%12;
   const minSound = Math.min(4, n);

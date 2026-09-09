@@ -112,6 +112,12 @@ survives is scored on fullness, open strings, finger count, stretch and whether
 the root is in the bass, then spread across the neck so you get a choice of
 positions instead of six versions of first position.
 
+Twenty-one chord types are covered, from triads and suspensions up through the
+sevenths to add9, 6/9, 7sus4, the ninths and the 7♯9 — three hundred and fifty-seven
+root-and-quality combinations, every one of which returns something playable. Five-note
+chords drop the fifth, which is the note a guitarist drops when the strings run out and
+the only one whose absence does not change what the chord is.
+
 It returns what it should: `x32010` for C, `133211` for F, `x32000` for Cmaj7,
 `x3434x` for Cm7♭5, the E-shape barre at the eighth fret. Because it is a search,
 it works in drop D, open G, DADGAD, bass and ukulele with no extra data — and it
