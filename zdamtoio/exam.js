@@ -12,13 +12,13 @@
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange,
          gradesDeterministically }
-  from "./renderers.js?v=4c82067d";
+  from "./renderers.js?v=206fb2cf";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=4c82067d";
+         submitAttempt, startOver } from "./progress.js?v=206fb2cf";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=4c82067d";
+  from "./grading.js?v=206fb2cf";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=4c82067d";
+  from "./admin.js?v=206fb2cf";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -610,10 +610,12 @@ function note(text, bad = false) {
 }
 
 
-function renderCard(question) {
+function renderCard(question, { alone = false } = {}) {
   const renderer = RENDERERS[question.type];
   const card = document.createElement("section");
-  card.className = "q-card";
+  // Without the stack the card gives back its left gutter: nothing is sitting
+  // in it, so the text should not be indented past an empty margin.
+  card.className = alone ? "q-card q-card-plain" : "q-card";
   card.dataset.questionId = question.id || question.number || "";
 
   const points = question.scoring?.max_points ?? "";
@@ -629,7 +631,13 @@ function renderCard(question) {
   const isEssay = question.type === "P-ESSAY";
   const aiGraded = !deterministic && !!renderer?.buildPrompt;
 
-  const buttonLabel = isEssay ? "Oceń wypracowanie (8 zapytań AI)" : "";
+  // The foot of the card carries a labelled button in two cases: the essay
+  // always, because eight paid calls should not be spendable from an unlabelled
+  // 55px box; and any question rendered without the stack, which would
+  // otherwise have no way to be graded at all.
+  const footLabel = isEssay ? "Oceń wypracowanie (8 zapytań AI)"
+    : deterministic ? "Sprawdź"
+    : "Sprawdź (AI — 1 zapytanie)";
 
   // Laid out like the printed arkusz: a lavender bar reading
   // "Zadanie 3. (0–2)" across the text column, and beside it the examiner's
@@ -642,9 +650,7 @@ function renderCard(question) {
   const range = scoreRange(maxPoints);
   const gradeable = deterministic || aiGraded;
 
-  card.innerHTML = `
-    <header class="q-header">
-      <div class="q-head-bar">Zadanie ${esc(question.number)}. (0–${esc(maxPoints)})</div>
+  const stack = alone ? "" : `
       <div class="q-score-stack">
         <div class="q-score-num" aria-hidden="true">${esc(question.number)}.</div>
         <div class="q-score-range" aria-hidden="true">${esc(range)}</div>
@@ -653,14 +659,19 @@ function renderCard(question) {
                      title="${esc(gradeHint(deterministic, isEssay))}"
                      aria-label="${esc(gradeHint(deterministic, isEssay))}">${gradeMark(deterministic)}</button>`
           : `<div class="q-score-box" data-score></div>`}
-      </div>
+      </div>`;
+
+  card.innerHTML = `
+    <header class="q-header">
+      <div class="q-head-bar">Zadanie ${esc(question.number)}. (0–${esc(maxPoints)})</div>${stack}
     </header>
     ${renderReference(question.reference_data)}
     <p class="q-prompt">${esc(question.question || "")}</p>
     <div class="q-answer">${answerHtml}</div>
     <div class="q-result"></div>
     <footer class="q-actions">
-      ${isEssay ? `<button type="button" data-action="grade">${esc(buttonLabel)}</button>` : ""}
+      ${(isEssay || alone) && gradeable
+          ? `<button type="button" data-action="grade">${esc(footLabel)}</button>` : ""}
       ${adminMode ? `<button type="button" data-action="analyse">Analiza</button>` : ""}
     </footer>`;
 
@@ -774,9 +785,13 @@ function renderExam(loadedExam) {
   host.innerHTML = "";
 
   const questions = loadedExam.questions || [];
+  // A one-question sheet is the rozszerzony paper: a single wypracowanie. There
+  // is nothing to number it against and its footer button already says what
+  // grading costs, so it goes without the margin stack entirely.
+  const alone = questions.length <= 1;
   questions.forEach(question => {
     try {
-      host.appendChild(renderCard(question));
+      host.appendChild(renderCard(question, { alone }));
     } catch (err) {
       const box = document.createElement("pre");
       box.className = "q-unsupported";
@@ -959,9 +974,12 @@ function renderSummary({ reason = "manual" } = {}) {
           <div class="text-3xl font-bold text-slate-900">${esc(totals.points)}<span class="text-slate-400 text-xl">/${esc(totals.maxPoints)}</span></div>
           <div class="text-xs text-slate-500">punktów</div>
         </div>
+        <!-- Only the parts this paper actually has. The rozszerzony sheet is a
+             wypracowanie and nothing else, so "Arkusz 1 (test): 0/0" there is
+             a row about a booklet that was never printed. -->
         <div class="text-sm text-slate-600">
-          <div>Arkusz 1 (test): <strong>${esc(parts.test.got)}/${esc(parts.test.max)}</strong></div>
-          <div>Wypracowanie: <strong>${esc(parts.essay.got)}/${esc(parts.essay.max)}</strong></div>
+          ${parts.test.max ? `<div>Arkusz 1 (test): <strong>${esc(parts.test.got)}/${esc(parts.test.max)}</strong></div>` : ""}
+          ${parts.essay.max ? `<div>Wypracowanie: <strong>${esc(parts.essay.got)}/${esc(parts.essay.max)}</strong></div>` : ""}
         </div>
         <div class="text-sm text-slate-600">
           <div>Sprawdzone: <strong>${esc(totals.graded)}</strong> z ${esc((exam?.questions || []).length)}</div>

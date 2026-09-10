@@ -139,6 +139,10 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   padding-left: calc(28px + var(--q-gutter));
   background: var(--q-card-bg);
 }
+/* A card with no scoring stack gives the gutter back — indenting the text past
+   an empty margin only looks like a mistake. Set by the shell on a sheet whose
+   single question is the whole paper (the rozszerzony wypracowanie). */
+.q-card-plain { padding-left: 28px; }
 
 /* The header copies the printed arkusz rather than inventing a layout.
    On paper each zadanie opens with a lavender bar reading "Zadanie 3. (0–2)"

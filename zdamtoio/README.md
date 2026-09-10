@@ -138,6 +138,10 @@ model involved), and **punkt AI™** where a model does the grading — ours, no
 CKE's. The wypracowanie also keeps its labelled button at the foot of the card,
 since that one spends eight API calls.
 
+The rozszerzony paper is the exception: it is one wypracowanie, so it drops the
+margin stack entirely and keeps a single button at the foot of the card. Its
+summary likewise shows only *Wypracowanie*, not an empty *Arkusz 1* row.
+
 The sizes and colours are measured off the rendered booklet, not chosen; see
 DOCUMENTATION.md §14 before touching them.
 
