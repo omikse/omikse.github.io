@@ -144,6 +144,21 @@ button:disabled { opacity: .45; cursor: not-allowed; }
    single question is the whole paper (the rozszerzony wypracowanie). */
 .q-card-plain { padding-left: 28px; }
 
+/* Inside the continuous sheet the questions are one document, not a stack of
+   panels. The sheet (.exam-sheet) already draws the outer border and the
+   rounded corners, so a card drawing its own puts 1px against 1px at every
+   join — a 2px rule with a rounded notch at each end of it. One hairline
+   between questions instead, and none above the first.
+   The harness is deliberately different: its #questions container is a flex
+   column with a 24px gap, where the cards really are separate panels and their
+   own border and radius are right. Scope this to .exam-sheet only. */
+.exam-sheet .q-card {
+  border: 0;
+  border-top: 1px solid var(--q-border);
+  border-radius: 0;
+}
+.exam-sheet .q-card:first-child { border-top: 0; }
+
 /* The header copies the printed arkusz rather than inventing a layout.
    On paper each zadanie opens with a lavender bar reading "Zadanie 3. (0–2)"
    across the text column, and out in the right margin the examiner gets a

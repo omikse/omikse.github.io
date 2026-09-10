@@ -132,11 +132,12 @@ Each question is headed the way CKE prints it: a lavender bar reading
 the marks available, and the box the score goes in.
 
 **That box is the button.** Click it and the question is marked; the score
-appears in the same place. It carries one of two marks, because there are two
-mechanisms: **klucz CKE** where the answer is compared against CKE's key (no
-model involved), and **punkt AI™** where a model does the grading — ours, not
-CKE's. The wypracowanie also keeps its labelled button at the foot of the card,
-since that one spends eight API calls.
+appears in the same place. A question settled against CKE's own key reads
+**klucz CKE**; everything else reads **sprawdź teraz**, because a model does
+that grading — ours, not CKE's — and the label should say what the click does
+rather than name a brand. Which mechanism will run, and what it costs, is in
+the tooltip and the accessible name. The wypracowanie also keeps its labelled
+button at the foot of the card, since that one spends eight API calls.
 
 The rozszerzony paper is the exception: it is one wypracowanie, so it drops the
 margin stack entirely and keeps a single button at the foot of the card — the

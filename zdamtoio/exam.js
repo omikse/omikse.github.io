@@ -12,13 +12,13 @@
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange,
          gradesDeterministically }
-  from "./renderers.js?v=7b8ffaf6";
+  from "./renderers.js?v=d8eb8833";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=7b8ffaf6";
+         submitAttempt, startOver } from "./progress.js?v=d8eb8833";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=7b8ffaf6";
+  from "./grading.js?v=d8eb8833";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=7b8ffaf6";
+  from "./admin.js?v=d8eb8833";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -1047,17 +1047,23 @@ async function retakeExam() {
 
 /* What the marker button says before it has marked anything.
  *
- * Two marks, because there are two mechanisms and conflating them would be a
- * lie to the student. P-TF and P-CHOICE are compared against
- * scoring.correct_answers — CKE's own key, no model involved (CLAUDE.md rule 3)
- * — so they say so. Everything else is graded by a model, which is ours, not
- * CKE's; branding that "CKE" would imply the Komisja stands behind a score it
- * has never seen.
+ * Two labels, and they are not symmetrical on purpose. A question compared
+ * against scoring.correct_answers is answered by CKE's own key with no model
+ * involved (CLAUDE.md rule 3), and saying `klucz CKE` there is a fact worth
+ * showing. Everything else is graded by a model, which is ours, not CKE's —
+ * so it says what pressing it does instead of naming a brand. It read
+ * `punkt AI™` until 2026-09-10; a trademark on a control the student has not
+ * clicked yet told them nothing about what the click would do.
+ *
+ * Dropping the AI mark moves that disclosure onto gradeHint() — the tooltip
+ * and the accessible name, which name the mechanism and the call count — and
+ * onto the whole-sheet confirm, which prices the run before spending anything.
+ * If you ever remove those, the disclosure has to come back here.
  *
  * Change the wording here and it changes everywhere; nothing else spells it. */
 const GRADE_MARK = {
-  key: { top: "klucz", bottom: "CKE", tm: "" },
-  ai:  { top: "punkt", bottom: "AI",  tm: "™" },
+  key: { top: "klucz",   bottom: "CKE",   tm: "" },
+  ai:  { top: "sprawdź", bottom: "teraz", tm: "" },
 };
 
 function gradeMark(deterministic) {
