@@ -60,6 +60,17 @@ files are **derived** — editing them here is pointless, the next sync overwrit
 them. Fix a question type or its styling in `web-renderer`; fix the exam data in
 `pdf-json`.
 
+**Rozszerzona really is one zadanie.** The poziom rozszerzony paper is a single
+wypracowanie worth 35 pkt with no test section — its own instructions say so
+(*"W wyznaczonym miejscu zapisz numer tematu… Wypracowanie zapisz w miejscu na
+to przeznaczonym"*), and the 18 printed pages are the two topics, the reading
+list and lined answer space. Cards therefore say **wypracowanie** rather than
+"1 zadanie", which read like a failed import. Podstawowa says "17 zadań +
+wypracowanie" for the same reason: its question count includes the essay,
+because CKE numbers it straight on from Arkusz 1. The wording comes from `kind`
+in the manifest (`describeContents` in `exam.js`) and matches the renderer
+harness, so the two cannot drift.
+
 ### Adding one exam by hand
 
 Drop the folder into `exams/` and publish. Nothing else:

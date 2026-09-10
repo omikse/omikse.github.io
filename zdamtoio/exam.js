@@ -11,13 +11,13 @@
  */
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange }
-  from "./renderers.js?v=7f5c3df7";
+  from "./renderers.js?v=9bd6e827";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=7f5c3df7";
+         submitAttempt, startOver } from "./progress.js?v=9bd6e827";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=7f5c3df7";
+  from "./grading.js?v=9bd6e827";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=7f5c3df7";
+  from "./admin.js?v=9bd6e827";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -94,6 +94,35 @@ function plural(n, one, few, many) {
   return many;
 }
 
+/* What an exam actually contains, in words rather than a bare count.
+ *
+ * "1 zadanie" on a rozszerzona card reads as a broken import, but it is
+ * correct: that paper really is a single wypracowanie worth 35 pkt, with no
+ * test section — the arkusz's own instructions say so. Saying "wypracowanie"
+ * removes the doubt without changing the data.
+ *
+ * The podstawowa count includes the essay (CKE numbers it straight on from
+ * Arkusz 1), so quoting it whole reads as more test questions than there are.
+ * `kind` comes from the manifest; the renderer harness describes exams the same
+ * way, and they should not drift. */
+function describeSheet(questions) {
+  const essays = questions.filter(q => q.type === "P-ESSAY").length;
+  return describeContents({
+    questions: questions.length,
+    kind: !essays ? "test" : questions.length === essays ? "essay" : "full",
+  });
+}
+
+function describeContents(entry) {
+  const n = Number(entry.questions) || 0;
+  if (entry.kind === "essay") return "wypracowanie";
+  if (entry.kind === "full") {
+    const test = Math.max(0, n - 1);
+    return `${test} ${plural(test, "zadanie", "zadania", "zadań")} + wypracowanie`;
+  }
+  return `${n} ${plural(n, "zadanie", "zadania", "zadań")}`;
+}
+
 function renderMenu(showHidden = false) {
   const grid = document.getElementById("exam-grid");
   grid.innerHTML = "";
@@ -138,7 +167,7 @@ function renderMenu(showHidden = false) {
         <h3 class="text-lg font-bold text-slate-800 mb-1">Matura ${esc(when)}</h3>
         <p class="text-xs text-slate-500 mb-4">${esc(level)}</p>
         <ul class="text-xs text-slate-500 space-y-1 mb-4 flex-grow">
-          <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> ${esc(entry.questions)} ${plural(entry.questions, "zadanie", "zadania", "zadań")}</li>
+          <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> ${esc(describeContents(entry))}</li>
           <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">grade</span> ${esc(entry.max_points)} pkt</li>
         </ul>
         <div class="mt-auto flex items-center justify-between gap-2">
@@ -375,7 +404,7 @@ async function loadExam(examId, mode = "practice") {
     }
 
     renderExam(exam);
-    if (restored) setStatus(`${questions.length} ${plural(questions.length, "zadanie", "zadania", "zadań")} · przywrócono ${restored} ${plural(restored, "zapisaną odpowiedź", "zapisane odpowiedzi", "zapisanych odpowiedzi")}.`);
+    if (restored) setStatus(`${describeSheet(questions)} · przywrócono ${restored} ${plural(restored, "zapisaną odpowiedź", "zapisane odpowiedzi", "zapisanych odpowiedzi")}.`);
 
     // An attempt whose clock ran out while the tab was closed is already over.
     if (isExamMode() && !isFrozen() && msLeft() !== null && msLeft() <= 0) {
@@ -773,7 +802,7 @@ function renderExam(loadedExam) {
   });
   host.appendChild(foot);
 
-  setStatus(`${questions.length} ${plural(questions.length, "zadanie", "zadania", "zadań")}.`);
+  setStatus(`${describeSheet(questions)}.`);
 
   // One delegated listener for the whole sheet rather than one per field:
   // renderers own their markup, and this stays correct whatever they emit.
