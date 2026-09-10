@@ -139,8 +139,10 @@ CKE's. The wypracowanie also keeps its labelled button at the foot of the card,
 since that one spends eight API calls.
 
 The rozszerzony paper is the exception: it is one wypracowanie, so it drops the
-margin stack entirely and keeps a single button at the foot of the card. Its
-summary likewise shows only *Wypracowanie*, not an empty *Arkusz 1* row.
+margin stack entirely and keeps a single button at the foot of the card — the
+sheet-level *Sprawdź cały arkusz* is not shown there either, since one question
+*is* the whole arkusz. Its summary likewise shows only *Wypracowanie*, not an
+empty *Arkusz 1* row.
 
 The sizes and colours are measured off the rendered booklet, not chosen; see
 DOCUMENTATION.md §14 before touching them.

@@ -12,13 +12,13 @@
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange,
          gradesDeterministically }
-  from "./renderers.js?v=206fb2cf";
+  from "./renderers.js?v=7b8ffaf6";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=206fb2cf";
+         submitAttempt, startOver } from "./progress.js?v=7b8ffaf6";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=206fb2cf";
+  from "./grading.js?v=7b8ffaf6";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=206fb2cf";
+  from "./admin.js?v=7b8ffaf6";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -803,14 +803,27 @@ function renderExam(loadedExam) {
 
   // Foot of the sheet: check everything at once, as an alternative to the
   // per-question buttons rather than a replacement for them.
+  //
+  // On a one-question sheet there is nothing to be an alternative to -- the
+  // card's own button already grades the whole paper, and it is the one that
+  // says what that costs. Two buttons for one action is just a choice the
+  // student has to think about.
+  const showGradeAll = !alone && !gradingLocked();
+
+  // The note is about closed questions. A sheet with none is not reassured by
+  // being told they are free.
+  const hasFreeQuestions = questions.some(q => gradesDeterministically(q));
+  const footNote = gradingLocked()
+    ? "W trybie egzaminacyjnym wynik zobaczysz po zakończeniu."
+    : hasFreeQuestions ? "Zadania zamknięte sprawdzają się bez zapytań do AI."
+    : "";
+
   const foot = document.createElement("div");
   foot.className = "q-sheet-foot";
   foot.innerHTML = `
-    ${gradingLocked() ? "" : `<button type="button" data-action="grade-all">Sprawdź cały arkusz</button>`}
+    ${showGradeAll ? `<button type="button" data-action="grade-all">Sprawdź cały arkusz</button>` : ""}
     <button type="button" data-action="finish">${isExamMode() ? "Zakończ egzamin" : "Podsumowanie"}</button>
-    <span class="q-sheet-foot-note">${gradingLocked()
-      ? "W trybie egzaminacyjnym wynik zobaczysz po zakończeniu."
-      : "Zadania zamknięte sprawdzają się bez zapytań do AI."}</span>`;
+    ${footNote ? `<span class="q-sheet-foot-note">${esc(footNote)}</span>` : ""}`;
   foot.querySelector("[data-action='grade-all']")
       ?.addEventListener("click", event => gradeWholeSheet(event.currentTarget));
   foot.querySelector("[data-action='finish']").addEventListener("click", () => {
