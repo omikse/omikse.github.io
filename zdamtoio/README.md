@@ -124,7 +124,8 @@ wypracowanie, and **Rozwiąż ponownie** archives the attempt and starts over.
 
 Two ways to be marked: **Sprawdź** under each question, or **Sprawdź cały
 arkusz** at the foot of the sheet. The second says how many API calls it will
-cost before spending any — a podstawowa paper is about 23.
+cost before spending any — a podstawowa paper is 20–23 depending on the year,
+the wypracowanie's eight included.
 
 Each question is headed the way CKE prints it: a lavender bar reading
 *Zadanie 3. (0–2)*, and in the left margin the examiner's stack — the number,
@@ -142,15 +143,22 @@ DOCUMENTATION.md §14 before touching them.
 
 ## Grading, honestly
 
-- **Closed questions** (`P-TF`, `P-CHOICE`) — graded by comparison in the
-  browser. Exact, instant, free, no model involved.
+- **Questions with an exact key** (`P-TF`, `P-CHOICE`, and `P-TABLE-MATCH`
+  wherever its key lines up one-to-one with the rows) — graded by comparison in
+  the browser. Exact, instant, free, no model involved. A `P-TABLE-MATCH` whose
+  rubric offers partial credit, or whose key cannot be read as pairs, falls back
+  to the model rather than guessing.
 - **Open questions** — graded by `gemini-2.5-flash` using the prompts the
-  pipeline generates, with the student's own API key.
-- **Wypracowanie** — eight per-criterion AI calls produce *raw* values only. The
-  deterministic aggregator that turns those into an official score does not
-  exist yet, so the essay result is labelled diagnostic, not a real score. The
-  stored shape already matches the spec, so building the aggregator later fills
-  it in without a migration.
+  renderer generates, with the student's own API key.
+- **Wypracowanie** — eight per-criterion AI calls produce *raw* values only
+  (error counts, classifications); `aggregateEssay()` turns them into points
+  using the matrix, thresholds and gating rules carried in the exam JSON. A
+  model is never asked for a total.
+
+⚠️ **One run is not the score.** The same essay graded twice minutes apart came
+back 31/35 and then 34/35 — Kryterium 3a flipped between 0 and 3 points. The
+aggregator is deterministic, so that spread is entirely what the model reported.
+Treat a single essay result as an estimate.
 
 Gemini's free tier is 20 requests/day, so a whole exam cannot be graded in one
 sitting. Grading is per question, on demand.

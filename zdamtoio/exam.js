@@ -10,14 +10,15 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange }
-  from "./renderers.js?v=9bd6e827";
+import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange,
+         gradesDeterministically }
+  from "./renderers.js?v=4c82067d";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=9bd6e827";
+         submitAttempt, startOver } from "./progress.js?v=4c82067d";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=9bd6e827";
+  from "./grading.js?v=4c82067d";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=9bd6e827";
+  from "./admin.js?v=4c82067d";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
@@ -622,7 +623,9 @@ function renderCard(question) {
 
   // Three kinds of question: graded by comparison, graded by one AI call, or
   // the wypracowanie, which takes eight. The renderer says which.
-  const deterministic = !!renderer?.grade;
+  // Not "does this type have grade()" — P-TABLE-MATCH has one but only claims
+  // questions whose key it can settle exactly, and the rest still cost a call.
+  const deterministic = gradesDeterministically(question);
   const isEssay = question.type === "P-ESSAY";
   const aiGraded = !deterministic && !!renderer?.buildPrompt;
 
@@ -1070,7 +1073,7 @@ function paintScoreBox(question, card, state = null) {
     box.classList.add("q-score-box-busy");
   } else {
     box.innerHTML = box.tagName === "BUTTON"
-      ? gradeMark(!!RENDERERS[question.type]?.grade)
+      ? gradeMark(gradesDeterministically(question))
       : "";
     box.classList.remove("q-score-box-busy");
   }
@@ -1092,8 +1095,8 @@ function pendingWork() {
   const questions = exam?.questions || [];
   const ungraded = questions.filter(q => isAnswered(q.user_answer) && !q.grade_result);
   return {
-    free: ungraded.filter(q => RENDERERS[q.type]?.grade),
-    ai: ungraded.filter(q => !RENDERERS[q.type]?.grade && RENDERERS[q.type]?.buildPrompt
+    free: ungraded.filter(q => gradesDeterministically(q)),
+    ai: ungraded.filter(q => !gradesDeterministically(q) && RENDERERS[q.type]?.buildPrompt
                              && q.type !== "P-ESSAY"),
     essay: questions.find(q => q.type === "P-ESSAY"
                                && isAnswered(q.user_answer)

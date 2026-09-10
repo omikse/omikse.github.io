@@ -47,6 +47,20 @@ export function scoreRange(maxPoints) {
   return Array.from({ length: max + 1 }, (_, i) => i).join("–");
 }
 
+/**
+ * Will this question be graded by comparison rather than by a model?
+ *
+ * Not "does the type have a grade()" — P-TABLE-MATCH has one but only claims
+ * questions whose key it can settle exactly (see canGrade there). Both shells
+ * ask this so the button, its mark and the grading path cannot disagree about
+ * which mechanism is going to run.
+ */
+export function gradesDeterministically(question) {
+  const renderer = RENDERERS[question?.type];
+  if (!renderer?.grade) return false;
+  return renderer.canGrade ? renderer.canGrade(question) : true;
+}
+
 /** Strip // and /* *​/ comments so .jsonc files parse with JSON.parse. */
 export function stripJsonc(text) {
   return text
@@ -305,6 +319,56 @@ Odpowiedź podaj w formacie { "points": int, "explanation": "Text." }, nic więc
 /* P-TABLE-MATCH — table with exact-match answers picked from options  */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ *
+ * P-TABLE-MATCH: grading by comparison
+ *
+ * These questions carry an exact key ("A1, B3") and CKE marks them
+ * all-or-nothing, so sending them to a model costs a call to reproduce a
+ * string compare — the same reason P-TF and P-CHOICE never see one.
+ *
+ * But only where that is provably true. `canGrade` refuses anything whose key
+ * does not line up one-to-one with the answerable rows, or whose criteria offer
+ * partial credit, and the shell then falls back to the prompt. A future paper
+ * that awards 2 points for one right pair must not be silently marked 0.
+ * ------------------------------------------------------------------ */
+
+/** "A1, B3" -> Map { A => "1", B => "3" }. null if it is not that shape. */
+function parseMatchKey(raw) {
+  const text = String(raw ?? "").trim();
+  if (!text) return null;
+  const pairs = new Map();
+  for (const part of text.split(/[,;]/)) {
+    const m = part.trim().match(/^([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]+)\s*[.:–-]?\s*(\d+)$/);
+    if (!m) return null;
+    const letter = m[1].toUpperCase();
+    if (pairs.has(letter)) return null;          // "A1, A2" is not a matching
+    pairs.set(letter, m[2]);
+  }
+  return pairs.size ? pairs : null;
+}
+
+/** Row "A." -> "A". The key writes bare letters; the table prints them dotted. */
+function matchRowLetter(row) {
+  return String(row?.label ?? "").replace(/[.\s]/g, "").toUpperCase();
+}
+
+/** The rows a student actually fills in — a table may carry static rows too. */
+function matchInputRows(q) {
+  return (q.table?.rows || []).filter(row =>
+    Object.values(row.cells || {}).some(
+      cell => typeof cell === "object" && cell !== null && cell.type === "input"));
+}
+
+/** Does the rubric offer anything between 0 and full marks? */
+function isAllOrNothing(scoring) {
+  const max = Number(scoring?.max_points ?? 0);
+  if (!(max > 0)) return false;
+  const crit = scoring?.scoring_criteria;
+  if (!crit || typeof crit !== "object" || Array.isArray(crit)) return max === 1;
+  const keys = Object.keys(crit).map(k => String(k).trim());
+  return keys.length === 2 && keys.includes("0") && keys.includes(String(max));
+}
+
 const PTableMatch = {
   type: "P-TABLE-MATCH",
 
@@ -355,8 +419,44 @@ const PTableMatch = {
     });
   },
 
+  /* Only claim a question the comparison can actually settle. Everything this
+     refuses keeps its prompt and goes to the model as before. */
+  canGrade(q) {
+    const key = parseMatchKey(q.scoring?.correct_answers);
+    if (!key) return false;
+    const rows = matchInputRows(q);
+    if (!rows.length || rows.length !== key.size) return false;
+    if (!rows.every(row => key.has(matchRowLetter(row)))) return false;
+    return isAllOrNothing(q.scoring);
+  },
+
+  grade(q) {
+    const max = Number(q.scoring?.max_points ?? 1);
+    const key = parseMatchKey(q.scoring?.correct_answers);
+    const rows = matchInputRows(q);
+    const answerFor = row => String(q.user_answer?.[row.id] ?? "").trim();
+
+    // Unanswered is wrong, not correct-by-vacuity: "niepełna" scores 0.
+    const complete = rows.every(row => answerFor(row) !== "");
+    const correct = complete
+      && rows.every(row => key.get(matchRowLetter(row)) === answerFor(row));
+
+    const fmt = pairs => pairs.join(", ");
+    return {
+      correct,
+      points: correct ? max : 0,
+      max_points: max,
+      expected: fmt(rows.map(r => `${matchRowLetter(r)}${key.get(matchRowLetter(r))}`)),
+      given: fmt(rows.map(r => `${matchRowLetter(r)}${answerFor(r) || "?"}`)),
+    };
+  },
+
   renderResult(q) {
-    return aiResultBox(q.grade_result, q);
+    const r = q.grade_result;
+    if (!r) return "";
+    // A restored attempt may hold either kind, so read what is there rather
+    // than assuming this type is graded one way.
+    return r.source === "ai" ? aiResultBox(r, q) : gradeBadge(r);
   },
 
   buildPrompt(q) {

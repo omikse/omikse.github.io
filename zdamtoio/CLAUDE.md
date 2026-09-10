@@ -45,8 +45,11 @@ edits appear to do nothing. Same trap as `tools/web-renderer`.
 2. **Type logic lives only in `renderers.js`.** Do not special-case a question
    type in `exam.js`; that is what the `RENDERERS` registry is for. Adding a
    type means adding it in `../tools/web-renderer` and re-syncing.
-3. **`P-TF` and `P-CHOICE` are graded by comparison, never by an AI prompt.**
-   `renderer.grade(q)` already does it — exact, instant and free.
+3. **Questions with an exact key are graded by comparison, never by a prompt.**
+   `P-TF`, `P-CHOICE` and most `P-TABLE-MATCH` — exact, instant and free. Ask
+   **`gradesDeterministically(q)`**, not `RENDERERS[q.type].grade`: the type
+   having a `grade()` does not mean this question is settleable, and the cost
+   estimate, the button's mark and the grading path must all agree.
 4. **Gemini is pinned to `gemini-2.5-flash`.** Newer models are worse here; see
    `../tools/pdf-json/CLAUDE.md` rule 5. Free tier is **20 requests/day, 5/minute**, so a
    full exam (17 open questions + 8 essay criteria = 25 calls) does not fit in

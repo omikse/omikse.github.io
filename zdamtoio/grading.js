@@ -15,7 +15,7 @@
  *     pdf-json keeps each booklet's `work` directory out of .gitignore.
  */
 
-import { RENDERERS, ESSAY_CRITERIA, buildEssayCriterionPrompt } from "./renderers.js?v=9bd6e827";
+import { RENDERERS, ESSAY_CRITERIA, buildEssayCriterionPrompt } from "./renderers.js?v=4c82067d";
 
 export const MODEL_NAME = "gemini-2.5-flash";   // pinned; newer models are worse here
 
