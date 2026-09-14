@@ -611,6 +611,19 @@ tbody tr.act td:first-child::after{content:''}
   border:1px solid var(--line2); border-radius:9px; padding:10px; resize:vertical;
   font-family:ui-monospace,Consolas,monospace; font-size:.78rem; line-height:1.45; white-space:pre; overflow-x:auto}
 #rec-chords{font-size:.88rem; color:var(--muted); min-height:1.3em}
+
+/* ---------- the frequency ruler ---------- */
+#fr-canvas{display:block; width:100%; height:176px; cursor:pointer}
+#fr-steps{display:flex; gap:6px; flex-wrap:wrap; margin-top:12px}
+#fr-steps span{padding:4px 9px; border-radius:8px; background:var(--panel2); border:1px solid var(--line2);
+  font-size:.76rem; color:var(--muted); font-variant-numeric:tabular-nums}
+#fr-steps span b{color:var(--text); font-weight:650}
+#fr-steps span.w{border-color:color-mix(in srgb,var(--scale) 45%, var(--line2))}
+#fr-steps span.h{border-color:color-mix(in srgb,var(--rose) 55%, var(--line2))}
+#fr-say{margin-top:12px}
+#fr-say b{color:var(--text)}
+#fr-rootlab{font-variant-numeric:tabular-nums; font-weight:650; align-self:center; padding-bottom:7px}
+input[type=range].slide{accent-color:var(--root); min-width:180px}
 .hide{display:none !important}
 </style>
 </head>
@@ -773,6 +786,80 @@ tbody tr.act td:first-child::after{content:''}
       <label class="chk"><input type="checkbox" id="pl-keep" checked> Keep the previous note as B</label>
     </div>
     <div class="ratio" id="pl-ratio"></div>
+  </div>
+
+  <div class="card" id="fr-card">
+    <h3>The name is a place. The scale is the spacing.</h3>
+    <p style="margin:0 0 4px">“C” and “C♯” are not musical ideas. They are two points on the line below —
+    261.63 Hz and 277.18 Hz — and naming one of them tells you nothing about what should come next. The
+    <b>scale</b> is the part that does: it is nothing but a pattern of gaps. Pick the pattern up, drop it anywhere
+    on the line, and it is the same scale in a new key.</p>
+    <p class="hint" style="margin:0 0 12px">Slide the root and watch the shape travel without changing. Change the
+    scale and watch the start stay exactly where it is while the gaps rearrange themselves.</p>
+
+    <div class="bar" style="margin:0 0 12px; padding:12px 14px">
+      <div class="f"><label>Axis</label>
+        <div class="seg" id="fr-axis">
+          <button data-a="log" aria-pressed="true" title="Equal musical steps, equal width">Equal ratios</button>
+          <button data-a="lin" aria-pressed="false" title="Equal hertz, equal width">Equal hertz</button>
+        </div>
+      </div>
+      <div class="f"><label>Label each gap with</label>
+        <div class="seg" id="fr-gaps">
+          <button data-g="semi" aria-pressed="true">Semitones</button>
+          <button data-g="ratio" aria-pressed="false">Ratio</button>
+          <button data-g="hz" aria-pressed="false">Hertz</button>
+        </div>
+      </div>
+      <div class="f"><label for="fr-oct">Octaves shown</label><select id="fr-oct">
+        <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+      </select></div>
+      <label class="chk"><input type="checkbox" id="fr-cmp"> Second row to compare</label>
+      <div class="f hide" id="fr-cmpwrap"><label for="fr-cmpscale">Compare with</label><select id="fr-cmpscale"></select></div>
+      <button class="btn ghost" id="fr-play">▶ Play the row</button>
+    </div>
+
+    <div class="scope" style="padding-bottom:10px">
+      <canvas id="fr-canvas"></canvas>
+    </div>
+    <div class="legend" id="fr-legend"></div>
+
+    <div class="bar" style="margin:12px 0 0; padding:12px 14px">
+      <div class="f" style="flex:1; min-width:220px">
+        <label for="fr-root">Slide the root — same shape, new place</label>
+        <input type="range" class="slide" id="fr-root" min="36" max="72" step="1" value="57">
+      </div>
+      <span id="fr-rootlab" class="hint">Low C to high C. The neck above follows.</span>
+    </div>
+
+    <div id="fr-steps"></div>
+    <p id="fr-say"></p>
+
+    <div class="grid" style="margin-top:14px; gap:14px">
+      <div>
+        <h3 style="font-size:.92rem">Why two axes</h3>
+        <p>On <b>equal ratios</b> every semitone is the same width, because the axis multiplies as it goes —
+        each step is ×1.0595, the twelfth root of two, and twelve of them make exactly ×2. This is the axis your
+        ear uses, and the one the fretboard is built on.</p>
+        <p>On <b>equal hertz</b> the same scale falls apart: the gaps at the bottom collapse and the ones at the top
+        sprawl. Nothing changed but the ruler. A musical distance is a multiplication, and a multiplication looks
+        uneven on a ruler that only knows how to add.</p>
+      </div>
+      <div>
+        <h3 style="font-size:.92rem">What this means in practice</h3>
+        <ul class="tight">
+          <li>Two scales with the same name and different roots are <b>the same set of gaps</b>. That is why one
+          shape moves up the neck and works everywhere.</li>
+          <li>Two scales with the same root and different names <b>start in the same place</b> and diverge
+          immediately. Turn the second row on with major against minor and the first difference shows up at the
+          third note.</li>
+          <li>The half steps are the landmarks — they are the marked chips below, and in a major scale there are
+          exactly two of them, between 3–4 and 7–8.</li>
+          <li>A capo does not change a single gap. It moves where the pattern starts, which is the same thing this
+          slider does.</li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -2225,7 +2312,7 @@ document.addEventListener('keydown', e=>{
       if(store.get('theme', null) !== null) return;
       S.theme = mq.matches ? 'light' : 'dark';
       document.documentElement.dataset.theme = S.theme;
-      if(!$('v-play').classList.contains('hide')){ drawWave(); drawHarm(); }
+      if(!$('v-play').classList.contains('hide')){ drawWave(); drawHarm(); drawRuler(); }
     };
     if(mq.addEventListener) mq.addEventListener('change', follow);
     else if(mq.addListener) mq.addListener(follow);
@@ -6104,7 +6191,7 @@ function renderPlay(){
 
   $('pl-slotA').innerHTML = slotCard(PL.A,'A — blue');
   $('pl-slotB').innerHTML = slotCard(PL.B,'B — orange');
-  renderRatio(); drawWave(); drawHarm(); renderNotation();
+  renderRatio(); drawWave(); drawHarm(); renderNotation(); drawRuler();
 
   const opens = t.map(function(v){ return pretty(nameOf((v+PL.capo)%12, PL.root)); }).join(' ');
   $('w-capotext').textContent = PL.capo
@@ -6199,8 +6286,237 @@ function plLoop(on){
 
   fbW.onCell = function(s,f){ if(f<PL.capo) return; setSlot('A', s, f, {silent:true}); };
   window.addEventListener('resize', function(){
-    if(!$('v-play').classList.contains('hide')){ drawWave(); drawHarm(); fbW.setCapo(PL.capo); }
+    if(!$('v-play').classList.contains('hide')){ drawWave(); drawHarm(); drawRuler(); fbW.setCapo(PL.capo); }
   });
+})();
+
+/* ============================================================
+   THE FREQUENCY RULER — a name is a place, a scale is the spacing
+   ============================================================ */
+var FR = {axis:'log', gaps:'semi', oct:2, rootMidi:57, cmp:false, cmpScale:'major', pins:[]};
+
+function frNiceStep(span){
+  const raw = span/7, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  for(const k of [1,2,2.5,5]) if(raw <= k*p) return k*p;
+  return 10*p;
+}
+function frLaneNotes(ivals){
+  const out = [];
+  for(let k=0;k<FR.oct;k++) ivals.forEach(iv=> out.push(FR.rootMidi + 12*k + iv));
+  out.push(FR.rootMidi + 12*FR.oct);          // close on the octave, so the last gap shows
+  return out;
+}
+function frPlay(midi){
+  audio();
+  if(PL.timbre==='sine'){ toneOn('fr', midiToFreq(midi), .2); setTimeout(function(){ toneOff('fr'); }, 900); }
+  else pluck(midi, 0, 1.8, .45);
+}
+
+function drawRuler(){
+  if(!FR) return;
+  const cv = $('fr-canvas'); if(!cv || !cv.clientWidth) return;
+
+  /* the ruler shows whatever root the view is set to — move to the nearest octave of
+     it rather than jumping across the axis */
+  const wantPc = pcOf(PL.root), havePc = ((FR.rootMidi%12)+12)%12;
+  if(wantPc !== havePc){
+    let d = ((wantPc - havePc) % 12 + 12) % 12; if(d > 6) d -= 12;
+    FR.rootMidi = Math.max(36, Math.min(72, FR.rootMidi + d));
+  }
+  $('fr-root').value = String(FR.rootMidi);
+
+  const H = FR.cmp ? 248 : 176;
+  cv.style.height = H + 'px';
+  const fc = fitCanvas(cv, H), ctx = fc.ctx, W = fc.w;
+  ctx.clearRect(0,0,W,H);
+
+  const line=cssVar('--line'), line2=cssVar('--line2'), muted=cssVar('--muted'),
+        faint=cssVar('--faint'), text=cssVar('--text'), rootc=cssVar('--root'),
+        scalec=cssVar('--scale'), violet=cssVar('--violet'), rose=cssVar('--rose');
+
+  const PAD = 22, plotW = Math.max(60, W - PAD*2);
+  const f0 = midiToFreq(FR.rootMidi), f1 = midiToFreq(FR.rootMidi + 12*FR.oct);
+  const xOf = f => PAD + (FR.axis==='log' ? Math.log2(f/f0)/FR.oct : (f-f0)/(f1-f0)) * plotW;
+  const xm  = m => xOf(midiToFreq(m));
+  const axisY = H - 42, laneY = [58, 130];
+  FR.pins = [];
+
+  ctx.font = '10px ui-monospace,Consolas,monospace'; ctx.textAlign = 'center';
+
+  /* even hertz, so you can see for yourself whether the notes agree with them */
+  if(FR.axis==='lin'){
+    const step = frNiceStep(f1-f0);
+    for(let f=Math.ceil(f0/step)*step; f<=f1+0.001; f+=step){
+      const x = Math.round(xOf(f))+0.5;
+      ctx.strokeStyle = line; ctx.globalAlpha = .55;
+      ctx.beginPath(); ctx.moveTo(x,22); ctx.lineTo(x,axisY); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.fillStyle = faint; ctx.fillText(Math.round(f), x, H-6);
+    }
+    ctx.textAlign = 'right'; ctx.fillStyle = faint; ctx.fillText('Hz', W-2, H-6); ctx.textAlign = 'center';
+  }
+
+  /* the octave boundaries — the doubling is the one thing both axes agree about */
+  for(let k=0;k<=FR.oct;k++){
+    const f = f0*Math.pow(2,k), x = Math.round(xOf(f))+0.5;
+    ctx.strokeStyle = line2; ctx.globalAlpha = .9; ctx.setLineDash(k ? [3,3] : []);
+    ctx.beginPath(); ctx.moveTo(x,22); ctx.lineTo(x,axisY+6); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+    ctx.fillStyle = muted; ctx.fillText(k ? '×'+Math.pow(2,k) : '×1', x, 14);
+    if(FR.axis==='log'){ ctx.fillStyle = faint; ctx.fillText(f.toFixed(f<200?1:0)+' Hz', x, H-6); }
+  }
+
+  /* every semitone there is, whether this scale uses it or not */
+  ctx.strokeStyle = line2; ctx.globalAlpha = .75; ctx.lineWidth = 1;
+  for(let m=FR.rootMidi; m<=FR.rootMidi+12*FR.oct; m++){
+    const x = Math.round(xm(m))+0.5;
+    ctx.beginPath(); ctx.moveTo(x, axisY-5); ctx.lineTo(x, axisY+5); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  ctx.beginPath(); ctx.moveTo(PAD-8, axisY+0.5); ctx.lineTo(W-PAD+8, axisY+0.5); ctx.stroke();
+
+  function lane(y, key, accent){
+    const ivals = SCALES[key].iv;
+    const sp = spellScale(PL.root, ivals);
+    const notes = frLaneNotes(ivals);
+    const nameFor = m => {
+      const iv = ((m-FR.rootMidi)%12+12)%12, i = ivals.indexOf(iv);
+      return pretty((sp && i>=0) ? sp[i] : nameOf(((m%12)+12)%12, PL.root));
+    };
+
+    notes.forEach(m=>{
+      const x = Math.round(xm(m))+0.5, isR = ((m-FR.rootMidi)%12+12)%12 === 0;
+      ctx.strokeStyle = isR ? rootc : accent; ctx.globalAlpha = isR ? .45 : .2;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,axisY); ctx.stroke(); ctx.globalAlpha = 1;
+    });
+
+    for(let i=0;i+1<notes.length;i++){
+      const a = xm(notes[i]), b = xm(notes[i+1]), semis = notes[i+1]-notes[i], by = y-19;
+      ctx.strokeStyle = line2; ctx.globalAlpha = .95; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(a+3,by);   ctx.lineTo(b-3,by);
+      ctx.moveTo(a+3,by-3); ctx.lineTo(a+3,by+3);
+      ctx.moveTo(b-3,by-3); ctx.lineTo(b-3,by+3);
+      ctx.stroke(); ctx.globalAlpha = 1;
+      const lab = FR.gaps==='semi'  ? String(semis)
+                : FR.gaps==='ratio' ? '×'+Math.pow(2,semis/12).toFixed(3)
+                :                     '+'+(midiToFreq(notes[i+1])-midiToFreq(notes[i])).toFixed(1);
+      ctx.font = '10px ui-monospace,Consolas,monospace'; ctx.textAlign = 'center';
+      if(b-a > ctx.measureText(lab).width + 10){
+        ctx.fillStyle = semis===1 ? rose : muted;
+        ctx.fillText(lab, (a+b)/2, by-5);
+      }
+    }
+
+    let lastLab = -99;
+    notes.forEach((m,i)=>{
+      const x = xm(m), isR = ((m-FR.rootMidi)%12+12)%12 === 0;
+      ctx.beginPath(); ctx.arc(x, y, isR?6:4.5, 0, Math.PI*2);
+      ctx.fillStyle = isR ? rootc : accent; ctx.fill();
+      FR.pins.push({x:x, y:y, m:m});
+      if(x - lastLab > 20){
+        lastLab = x;
+        ctx.font = (isR?'700 ':'') + '11px ui-sans-serif,system-ui';
+        ctx.textAlign = 'center'; ctx.fillStyle = isR ? text : muted;
+        ctx.fillText(nameFor(m), x, y+18);
+        if(isR){
+          ctx.font = '9px ui-monospace,Consolas,monospace'; ctx.fillStyle = faint;
+          ctx.fillText(midiToFreq(m).toFixed(1), x, y+29);
+        }
+      }
+    });
+  }
+
+  lane(laneY[0], PL.scale, scalec);
+  if(FR.cmp) lane(laneY[1], FR.cmpScale, violet);
+
+  /* ---- the readouts underneath ---- */
+  $('fr-legend').innerHTML =
+    '<span><i style="background:var(--root)"></i>' + pretty(PL.root) + ' — the root, wherever you put it</span>'
+    + '<span><i style="background:var(--scale)"></i>' + SCALES[PL.scale].n + '</span>'
+    + (FR.cmp ? '<span><i style="background:var(--violet)"></i>' + SCALES[FR.cmpScale].n
+        + ' — same root, different gaps</span>' : '')
+    + '<span class="hint">Click any dot to hear it.</span>';
+
+  const iv = SCALES[PL.scale].iv, spA = spellScale(PL.root, iv);
+  const nm = i => pretty(spA ? spA[i] : nameOf((pcOf(PL.root)+iv[i])%12, PL.root));
+  const chips = [];
+  for(let i=0;i<iv.length;i++){
+    const a = FR.rootMidi + iv[i], b = FR.rootMidi + (i+1<iv.length ? iv[i+1] : 12);
+    const s = b-a, fa = midiToFreq(a), fb = midiToFreq(b);
+    chips.push('<span class="' + (s===1?'h':s===2?'w':'') + '"><b>' + nm(i) + ' → '
+      + (i+1<iv.length ? nm(i+1) : nm(0)) + '</b> ' + s + (s===1?' semitone':' semitones')
+      + ' · ×' + Math.pow(2,s/12).toFixed(4)
+      + ' · +' + (fb-fa).toFixed(1) + ' Hz</span>');
+  }
+  $('fr-steps').innerHTML = chips.join('');
+
+  $('fr-rootlab').innerHTML = '<b>' + pretty(PL.root) + (Math.floor(FR.rootMidi/12)-1) + '</b> · '
+    + f0.toFixed(2) + ' Hz';
+
+  const octNo = Math.floor(FR.rootMidi/12) - 1;
+  const lastSemi = midiToFreq(FR.rootMidi+12*FR.oct) - midiToFreq(FR.rootMidi+12*FR.oct-1);
+  $('fr-say').innerHTML =
+    'Your root is <b>' + pretty(PL.root) + octNo + '</b> — <b>' + f0.toFixed(2) + ' Hz</b>. That number is the '
+    + 'whole of what the name carries; it says where, not what comes next. '
+    + (FR.axis==='log'
+      ? 'This axis multiplies rather than adds, so a semitone is the same width everywhere on it — always '
+        + '×1.0595. That is why the pattern above can be picked up and put down anywhere without changing '
+        + 'shape, and why one fingering works in every key.'
+      : 'This axis adds, and the same scale has gone lopsided. The first semitone here is '
+        + (midiToFreq(FR.rootMidi+1)-f0).toFixed(1) + ' Hz; the last one, ' + FR.oct + ' octave'
+        + (FR.oct>1?'s':'') + ' up, is ' + lastSemi.toFixed(1) + ' Hz — the same musical step, '
+        + (lastSemi/(midiToFreq(FR.rootMidi+1)-f0)).toFixed(0) + '× the hertz. Musical distance is a '
+        + 'multiplication, never a subtraction, which is also why the frets crowd together as you climb.');
+}
+
+(function initRuler(){
+  const grp = {};
+  Object.entries(SCALES).forEach(function(e){ (grp[e[1].grp] = grp[e[1].grp] || []).push(e); });
+  Object.entries(grp).forEach(function(g){
+    const og = document.createElement('optgroup'); og.label = g[0];
+    g[1].forEach(function(e){ const o=document.createElement('option'); o.value=e[0]; o.textContent=e[1].n; og.appendChild(o); });
+    $('fr-cmpscale').appendChild(og);
+  });
+  $('fr-cmpscale').value = FR.cmpScale;
+
+  const seg = (id, key, fn)=>{
+    $(id).onclick = function(e){
+      const b = e.target.closest('button'); if(!b) return;
+      FR[key] = b.dataset[fn];
+      [...e.currentTarget.children].forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      drawRuler();
+    };
+  };
+  seg('fr-axis', 'axis', 'a');
+  seg('fr-gaps', 'gaps', 'g');
+
+  $('fr-oct').onchange = function(e){ FR.oct = +e.target.value; drawRuler(); };
+  $('fr-cmp').onchange = function(e){
+    FR.cmp = e.target.checked;
+    $('fr-cmpwrap').classList.toggle('hide', !FR.cmp);
+    drawRuler();
+  };
+  $('fr-cmpscale').onchange = function(e){ FR.cmpScale = e.target.value; drawRuler(); };
+
+  /* sliding the root moves the neck too — that is the point being made */
+  $('fr-root').oninput = function(e){
+    FR.rootMidi = +e.target.value;
+    const pc = ((FR.rootMidi%12)+12)%12, want = nameOf(pc, PL.root);
+    PL.root = ROOT_CHOICES.indexOf(want)>=0 ? want : SHARP[pc];
+    $('w-root').value = PL.root;
+    renderPlay();
+  };
+  $('fr-play').onclick = function(){
+    audio();
+    frLaneNotes(SCALES[PL.scale].iv).forEach(function(m,i){ pluck(m, i*0.26, 1.1, .42); });
+  };
+  $('fr-canvas').onclick = function(e){
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    let best = null, d = 1e9;
+    FR.pins.forEach(function(p){ const dd = Math.hypot(p.x-x, p.y-y); if(dd < d){ d = dd; best = p; } });
+    if(best && d < 16) frPlay(best.m);
+  };
 })();
 
 renderPent(); renderTheory(); renderPlay(); renderChords(); renderJam(); renderRhythm(); renderIdentify(); renderAlong();
