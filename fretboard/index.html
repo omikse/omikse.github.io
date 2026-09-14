@@ -6413,7 +6413,9 @@ function drawRuler(){
       ctx.beginPath(); ctx.arc(x, y, isR?6:4.5, 0, Math.PI*2);
       ctx.fillStyle = isR ? rootc : accent; ctx.fill();
       FR.pins.push({x:x, y:y, m:m});
-      if(x - lastLab > 20){
+      /* the root always gets its name; a neighbour gives way to it rather than crowding it */
+      const nextR = i+1 < notes.length && ((notes[i+1]-FR.rootMidi)%12+12)%12 === 0;
+      if(isR || (x - lastLab > 20 && !(nextR && xm(notes[i+1]) - x < 20))){
         lastLab = x;
         ctx.font = (isR?'700 ':'') + '11px ui-sans-serif,system-ui';
         ctx.textAlign = 'center'; ctx.fillStyle = isR ? text : muted;
