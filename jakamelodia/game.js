@@ -17,7 +17,7 @@
   var RUNDA_N  = 7;                       // ile utworow w rundzie
   var PELNA    = 30;                      // dlugosc calej probki
   var MIN_PULA = 6;                       // ponizej tego nie ma sensownych podpowiedzi
-  var ROK_MIN  = 1950;
+  var ROK_MIN  = 1940;
   var ROK_MAX  = new Date().getFullYear();
 
   var $  = function(id){ return document.getElementById(id); };
@@ -43,7 +43,7 @@
   /* ---- stan ---- */
   var S = {
     gracze: 'jeden',
-    wybor: { gat:'wszystko', kraj:'oba', od:ROK_MIN, do:ROK_MAX, sp:null },
+    wybor: { gat:'wszystko', polska:false, od:ROK_MIN, do:ROK_MAX, sp:null },
     pula: [], gotowaDla: null,
     tryb: 'dzienna',
     utwor:null, proba:0, odpowiedzi:[], koniec:false, wygrana:false,
@@ -75,19 +75,19 @@
   function pulaDlaWyboru(w){
     return window.KATALOG.filter(function(s){
       if(w.gat !== 'wszystko' && s.g !== w.gat) return false;
-      if(w.kraj !== 'oba' && s.k !== w.kraj) return false;
+      if(w.polska && s.k !== 'pl') return false;
       return s.r >= w.od && s.r <= w.do;
     });
   }
   function biezacyWybor(){
-    return { gat:S.wybor.gat, kraj:S.wybor.kraj, od:S.wybor.od, do:S.wybor.do };
+    return { gat:S.wybor.gat, polska:S.wybor.polska, od:S.wybor.od, do:S.wybor.do };
   }
 
   function pulaSurowa(){
     if(S.wybor.sp) return (window.Spotify2 && window.Spotify2.repertuar(S.wybor.sp)) || [];
     return window.KATALOG.filter(function(s){
       if(S.wybor.gat !== 'wszystko' && s.g !== S.wybor.gat) return false;
-      if(S.wybor.kraj !== 'oba' && s.k !== S.wybor.kraj) return false;
+      if(S.wybor.polska && s.k !== 'pl') return false;
       return s.r >= S.wybor.od && s.r <= S.wybor.do;
     });
   }
@@ -95,13 +95,13 @@
      zeby ta sama melodia dnia wypadla kazdemu, kto ustawil to samo */
   function podpisWyboru(){
     if(S.wybor.sp) return 'sp:' + S.wybor.sp;
-    return S.wybor.gat + '/' + S.wybor.kraj + '/' + S.wybor.od + '-' + S.wybor.do;
+    return S.wybor.gat + '/' + (S.wybor.polska?'pl':'wsz') + '/' + S.wybor.od + '-' + S.wybor.do;
   }
   function nazwaWyboru(){
     if(S.wybor.sp) return window.Spotify2.nazwaZrodla(S.wybor.sp);
     var g = S.wybor.gat === 'wszystko' ? 'Wszystko'
           : (window.GATUNKI.filter(function(x){ return x.id===S.wybor.gat; })[0]||{}).name;
-    var k = S.wybor.kraj === 'pl' ? 'Polska' : (S.wybor.kraj === 'sw' ? 'Świat' : 'Polska i świat');
+    var k = S.wybor.polska ? 'Polska' : 'Polska i świat';
     var l = (S.wybor.od <= ROK_MIN && S.wybor.do >= ROK_MAX) ? 'wszystkie lata' : (S.wybor.od + '–' + S.wybor.do);
     return g + ' · ' + k + ' · ' + l;
   }
@@ -112,8 +112,8 @@
   function wczytajWybor(){
     var z = mem.get('wybor', null);
     if(z && typeof z === 'object'){
-      S.wybor.gat  = z.gat  || 'wszystko';
-      S.wybor.kraj = z.kraj || 'oba';
+      S.wybor.gat    = z.gat || 'wszystko';
+      S.wybor.polska = !!z.polska;
       S.wybor.od   = Math.max(ROK_MIN, Math.min(ROK_MAX, z.od || ROK_MIN));
       S.wybor.do   = Math.max(S.wybor.od, Math.min(ROK_MAX, z.do || ROK_MAX));
       S.wybor.sp   = z.sp || null;
@@ -156,49 +156,65 @@
       box.appendChild(b);
     });
 
-    rysujSpotify();
+    rysujMoje();
 
-    /* kraj */
-    var kbox = $('kol-kraj'); kbox.innerHTML = '';
-    [['oba','Polska i świat'],['pl','Polska'],['sw','Świat']].forEach(function(o){
-      var b = el('button','przelacznik' + (S.wybor.kraj===o[0] ? ' wybrany' : ''), o[1]);
-      b.onclick = function(){ S.wybor.kraj = o[0]; rysujRepertuar(); odswiez(); };
-      kbox.appendChild(b);
-    });
+    /* tylko polskie */
+    $('tp-check').checked = S.wybor.polska;
+    $('tp-prze').classList.toggle('wl', S.wybor.polska);
 
     $('lata-od').value = S.wybor.od;
     $('lata-do').value = S.wybor.do;
     rysujSuwak();
-    /* filtry kraju i lat dotycza katalogu, nie cudzej playlisty */
-    $('kol-kraj').classList.toggle('przygaszone', !!S.wybor.sp);
+    /* przy cudzej playliscie filtry katalogu (polskie, lata) nie maja czego dotyczyc */
     $('blok-lata').classList.toggle('przygaszone', !!S.wybor.sp);
+    $('blok-polska').classList.toggle('przygaszone', !!S.wybor.sp);
   }
 
-  /* ---- playlisty ze Spotify ------------------------------------------
-     Po zalogowaniu stoja w tej samej kolumnie co gatunki. Pierwsze
-     wejscie w playliste buduje z niej repertuar (kazdy tytul trzeba
-     odszukac w katalogu Apple, po jednym co 1,3 s), kolejne sa
+  /* ---- "Moje" — playlista ze Spotify, jako jedna pozycja wygladem
+     dopasowana do przyciskow gatunkow. Zwiniety to zwykly dropdown;
+     pierwsze wejscie w playliste buduje z niej repertuar (kazdy tytul
+     trzeba odszukac w katalogu Apple, po jednym co 1,3 s), kolejne sa
      natychmiastowe, bo wynik lezy w pamieci przegladarki. */
-  function rysujSpotify(){
+  function rysujMoje(){
     var sp = window.Spotify2;
-    var lista = $('sp-lista'); lista.innerHTML = '';
-    $('sp-auth').textContent = sp.zalogowany() ? 'Wyloguj ze Spotify' : 'Zaloguj przez Spotify';
+    var sel = $('sel-moje');
+    sel.innerHTML = '';
+    sel.classList.toggle('wybrany', !!S.wybor.sp);
+    $('moje-wyloguj').classList.toggle('hide', !sp.zalogowany());
+
     if(!sp.zalogowany()){
-      lista.appendChild(el('p','sp-teraz','Zaloguj się, żeby grać ze swoich playlist.'));
+      sel.appendChild(el('option', null, 'Moje — zaloguj się przez Spotify'));
+      sel.onchange = null;
+      sel.onmousedown = function(e){ e.preventDefault(); sp.zaloguj(); };
       return;
     }
+    sel.onmousedown = null;
+
     var spis = sp.spis();
-    if(!spis.length){ lista.appendChild(el('p','sp-teraz','Pobieram playlisty…')); return; }
+    var pierwsza = el('option', null, 'Moje');
+    pierwsza.value = ''; pierwsza.disabled = true;
+    sel.appendChild(pierwsza);
+
+    if(!spis.length){
+      var czekaj = el('option', null, 'Pobieram playlisty…');
+      czekaj.value = ''; czekaj.disabled = true;
+      sel.appendChild(czekaj);
+      sel.value = '';
+      sel.onchange = null;
+      return;
+    }
     spis.forEach(function(p){
       var gotowy = sp.repertuar(p.id);
-      var b = el('button','sp-poz' + (S.wybor.sp===p.id ? ' wybrany' : ''));
-      b.appendChild(el('b', null, p.nazwa));
-      b.appendChild(el('i', null, gotowy ? (gotowy.length + ' melodii gotowych')
-                                         : (p.ile ? p.ile + ' utworów — kliknij, żeby wczytać'
-                                                  : 'kliknij, żeby wczytać')));
-      b.onclick = function(){ wezPlayliste(p); };
-      lista.appendChild(b);
+      var o = el('option', null,
+        p.nazwa + ' — ' + (gotowy ? gotowy.length + ' gotowych' : (p.ile ? p.ile + ' utworów' : 'kliknij, żeby wczytać')));
+      o.value = p.id;
+      sel.appendChild(o);
     });
+    sel.value = S.wybor.sp || '';
+    sel.onchange = function(){
+      var p = spis.filter(function(x){ return x.id === sel.value; })[0];
+      if(p) wezPlayliste(p);
+    };
   }
 
   function spKomunikat(tekst, czyBlad){
@@ -221,7 +237,7 @@
       $('sp-postep').classList.add('hide');
       if(w.ok < MIN_PULA){
         spKomunikat('Z tej playlisty dopasowałem tylko ' + w.ok + ' melodii — za mało do gry.', true);
-        rysujSpotify();
+        rysujMoje();
         return;
       }
       S.wybor.sp = p.id;
@@ -237,7 +253,7 @@
 
   function odswiezSpis(){
     return window.Spotify2.pobierzSpis()
-      .then(function(){ rysujSpotify(); })
+      .then(function(){ rysujMoje(); })
       .catch(function(e){ spKomunikat(e.message, true); });
   }
 
@@ -746,14 +762,14 @@
     });
 
     if(window.Pokoj) window.Pokoj.podepnij();
-    $('sp-auth').onclick = function(){
-      if(window.Spotify2.zalogowany()){
-        window.Spotify2.wyloguj();
-        S.wybor.sp = null;
-        rysujRepertuar(); odswiez();
-      } else {
-        window.Spotify2.zaloguj();
-      }
+    $('moje-wyloguj').onclick = function(){
+      window.Spotify2.wyloguj();
+      S.wybor.sp = null;
+      rysujRepertuar(); odswiez();
+    };
+    $('tp-check').onchange = function(){
+      S.wybor.polska = $('tp-check').checked;
+      rysujRepertuar(); odswiez();
     };
 
     /* powrot z ekranu zgody Spotify */

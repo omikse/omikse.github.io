@@ -9,16 +9,23 @@ Sześć podejść na melodię.
 
 ## Menu
 
-Czyta się od lewej do prawej, trzema kolumnami:
+Czyta się od lewej do prawej, czterema kolumnami:
 
 1. **Gracze** — jeden gracz albo wspólny pokój
-2. **Repertuar** — gatunek albo Twoja playlista ze Spotify, skąd (Polska / świat) i lata
-3. **Tryb gry** — melodia dnia, gra bez końca albo runda na punkty
+2. **Repertuar** — gatunek, Twoja playlista ze Spotify (pozycja „Moje") i przełącznik „tylko polskie"
+3. **Lata** — suwak z zakresem, osobna kolumna, żeby nie tłoczyć się z resztą filtrów
+4. **Tryb gry** — melodia dnia, gra bez końca albo runda na punkty
 
 Repertuar nie jest gotową listą. Powstaje z filtrów nałożonych na płaski katalog
 w `songs.js`, a licznik pod spodem pokazuje na bieżąco, ile melodii zostało.
 Poniżej sześciu tytułów tryby się blokują — z tak wąskiej puli nie da się zrobić
 sensownych podpowiedzi.
+
+Gatunki nie są już ręcznie ułożone jedna po drugiej — poza Hitami i Filmowymi
+(oryginalny polski wybór) każdy z nich pochodzi z rzeczywistej, popularnej
+playlisty Spotify dla danego gatunku (Rock, Rap, Pop, Jazz, Elektronika, Indie,
+Soul/R&B), przepuszczonej przez to samo dopasowanie do katalogu Apple, którego
+używa „Moje". Zobacz sekcję **Skąd się wzięły gatunki** niżej.
 
 | tryb | na czym polega |
 |---|---|
@@ -93,25 +100,31 @@ nie ma gry.
 
 ## Repertuar ze Spotify
 
-Kolumna „Repertuar" ma na dole przycisk **Zaloguj przez Spotify**. Po zalogowaniu
-Twoje playlisty stają tam obok gatunków z katalogu — bez żadnych okien i bez
-osobnego kroku „wczytaj". Wybranie playlisty po raz pierwszy buduje z niej
-repertuar, każde następne wejście jest natychmiastowe, bo wynik leży
-w `localStorage`. Wylogowanie kasuje te repertuary razem z tokenem.
+W kolumnie „Repertuar", pod listą gatunków, stoi pozycja **Moje** — wygląda jak
+reszta przycisków, ale jest rozwijaną listą (`<select>`). Niezalogowanym pokazuje
+jedną opcję, która po kliknięciu od razu prowadzi do logowania Spotify; zalogowanym
+listę własnych playlist. Wybranie playlisty po raz pierwszy buduje z niej repertuar,
+każde następne wejście jest natychmiastowe, bo wynik leży w `localStorage`.
+Link **Wyloguj ze Spotify** pod spodem kasuje te repertuary razem z tokenem.
 
 Budowanie chwilę trwa: każdy tytuł trzeba odszukać w katalogu Apple, a zapytania
-idą po jednym co 1,3 sekundy, bo API nie lubi natarczywych. Przy pięćdziesięciu
-utworach to około minuty; widać pasek postępu i to, czego akurat szuka.
+idą po jednym co 1,3–1,8 sekundy, bo API nie lubi natarczywych i potrafi na chwilę
+zacząć odrzucać zapytania (HTTP 403), gdy się je zbytnio przyspieszy. Przy
+pięćdziesięciu utworach budowanie to około minuty; widać pasek postępu i to,
+czego akurat szuka.
 
 **Spotify mówi tylko, czego słuchasz — dźwięk i tak przychodzi od Apple.** Ich pole
 `preview_url` jest oznaczone jako wycofane i często puste, a regulamin zabrania
 robić z tych urywków osobnej usługi; pełne odtwarzanie wymagałoby konta Premium
-u każdego grającego. Dlatego tytuł z playlisty musi się zgadzać z tym z katalogu
-Apple — inaczej do repertuaru trafiałaby przypadkowa piosenka tego wykonawcy.
-Czego nie da się dopasować, gra wypisuje wprost, zamiast po cichu skracać listę.
+u każdego grającego. Dlatego zarówno tytuł, jak i **wykonawca** z playlisty muszą
+się zgadzać z tym z katalogu Apple — samo dopasowanie tytułu nie wystarczy, bo pod
+tym samym tytułem trafiają się covery i nagrania innych wykonawców (szczególnie
+w rapie i hip‑hopie). Czego nie da się dopasować — albo bo tytuł nie pasuje, albo
+bo w wynikach nie ma tej samej piosenki od tego samego wykonawcy — gra wypisuje
+wprost, zamiast po cichu skracać listę albo podstawiać przypadkową piosenkę.
 
-Filtry kraju i lat dotyczą katalogu, nie playlisty — przy wybranej playliście
-przygasają, bo to Twoja lista, a nie wycinek katalogu.
+Suwak lat i przełącznik „tylko polskie" dotyczą katalogu, nie playlisty — przy
+wybranej playliście przygasają, bo to Twoja lista, a nie wycinek katalogu.
 
 ### Tryb deweloperski — ważne
 
@@ -135,6 +148,29 @@ http://127.0.0.1:8000/jakamelodia/
 Do pracy na własnym komputerze trzeba wchodzić przez **127.0.0.1**, a nie
 `localhost` — Spotify nie przyjmuje `localhost` po http.
 
+## Skąd się wzięły gatunki
+
+Rock, Rap, Pop, Jazz, Elektronika, Indie i Soul/R&B nie są ułożone ręcznie —
+każdy pochodzi z jednej realnej, popularnej publicznej playlisty Spotify dla tego
+gatunku (np. „Jazz Top 100 — Most Popular on Spotify", „100 Greatest Indie Rock
+of All Time"). Spis utworów z każdej z nich przeszedł przez to samo dopasowanie
+tytuł+wykonawca do katalogu Apple, którego używa „Moje" — opisane wyżej wymaganie
+zgodności wykonawcy dotyczy więc też tych gatunków. Hity i Filmowe zostały przy
+oryginalnym, ręcznie ułożonym polskim wyborze.
+
+Spotify od listopada 2024 blokuje aplikacjom w trybie Development odczyt cudzych
+playlist przez swoje API (nawet zwykłe „Get Playlist Items" na oficjalnej
+playliście Spotify kończy się błędem 403) — to ograniczenie obchodzi tylko
+zatwierdzenie *Extended Quota Mode*. Listy utworów dla tych siedmiu playlist
+zostały więc odczytane z ich publicznych stron na open.spotify.com (to, co widać
+bez logowania), a nie przez API.
+
+Nie każdy utwór z playlisty źródłowej znalazł się w katalogu — część nie ma
+w Apple Music nagrania z poprawnie przypisanym wykonawcą i podglądem audio,
+zwłaszcza wśród świeższych hitów rapu. Orientacyjna skuteczność dopasowania:
+Rock ~94%, Indie ~66%, Jazz ~66%, Soul/R&B ~82%, Pop ~70%, Elektronika ~75%,
+Rap ~54% (dużo remixów i "type beat" bez oficjalnego wydania).
+
 ## Jak dopisać piosenkę
 
 Katalog to jedna płaska lista `window.KATALOG`. Wpis wygląda tak:
@@ -149,7 +185,7 @@ Katalog to jedna płaska lista `window.KATALOG`. Wpis wygląda tak:
 * `a` — wykonawca
 * `r` — rok premiery **utworu**, nie data pliku w sklepie (patrz niżej)
 * `k` — `pl` albo `sw` (świat)
-* `g` — `hity`, `rock`, `rap` albo `film`
+* `g` — `hity`, `rock`, `rap`, `pop`, `jazz`, `elektro`, `indie`, `soul` albo `film`
 * `alt` — inne uznawane pisownie; przydatne przy muzyce filmowej, gdzie Apple
   trzyma utwór jako „Main Title", a gracz myśli „Gwiezdne wojny"
 
@@ -195,7 +231,7 @@ a innej nie pokazać ani razu. Dlatego repertuar jest tasowany raz na obieg
 (tyle dni, ile melodii) — każda wypada dokładnie raz, zanim którakolwiek się
 powtórzy, a następny obieg ma inną kolejność.
 
-W losowanie wchodzi też **podpis wyboru** (gatunek, kraj, lata). Dzięki temu
+W losowanie wchodzi też **podpis wyboru** (gatunek, „tylko polskie", lata). Dzięki temu
 melodia dnia jest ta sama dla każdego, kto ustawił to samo, a wynik do skopiowania
 nazywa ten wybór — żeby było wiadomo, o którą stawkę chodzi. Zmiana liczby utworów
 w katalogu przestawia harmonogram i to jest w porządku.

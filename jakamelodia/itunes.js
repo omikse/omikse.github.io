@@ -101,9 +101,11 @@
         var nt = norm(x.trackName);
         return nt === t || nt.indexOf(t) === 0 || t.indexOf(nt) === 0;
       });
+      /* wykonawca musi sie zgadzac — sam tytul nie wystarczy: wsrod wynikow
+         trafiaja sie coverowe wersje i "soundalike" nagrania innych artystow
+         pod tym samym tytulem, zwlaszcza w rapie i hip-hopie */
       if(w){
-        var swoi = kand.filter(function(x){ return norm(x.artistName).indexOf(w) >= 0 || w.indexOf(norm(x.artistName)) >= 0; });
-        if(swoi.length) kand = swoi;
+        kand = kand.filter(function(x){ return norm(x.artistName).indexOf(w) >= 0 || w.indexOf(norm(x.artistName)) >= 0; });
       }
       if(!kand.length) return null;
       var czyste = kand.filter(function(x){ return x.trackExplicitness !== 'explicit'; });

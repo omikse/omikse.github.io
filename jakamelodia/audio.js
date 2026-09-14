@@ -11,6 +11,7 @@
 (function(){
   'use strict';
   var ctx = null, master = null, analyser = null, gramTeraz = null;
+  var stingBus = null;                // osobny bus dla stingow i motywu — melodia go omija
   var bufory = {};                    // url -> AudioBuffer
   var FADE = 0.06;                    // wyciszenie na koncu urywka
 
@@ -22,9 +23,11 @@
       if(!AC) return null;
       try{ ctx = new AC(); }catch(e){ return null; }
       master = ctx.createGain(); master.gain.value = 1;
+      stingBus = ctx.createGain(); stingBus.gain.value = 1;
       analyser = ctx.createAnalyser();
       analyser.fftSize = 256; analyser.smoothingTimeConstant = 0.75;
       master.connect(analyser); analyser.connect(ctx.destination);
+      stingBus.connect(master);
     }
     if(ctx.state === 'suspended') ctx.resume();
     return ctx;
@@ -99,7 +102,19 @@
      graja zawsze, bo bez nich nie ma gry.
      ============================================================ */
   var stingi = true;
-  function stingiWl(v){ if(v!==undefined) stingi = !!v; return stingi; }
+  function stingiWl(v){
+    if(v!==undefined){
+      stingi = !!v;
+      if(ctx && stingBus){
+        /* nie tylko blokujemy nowe dzwieki — tniemy i to, co juz gra
+           (np. w polowie taktu motywu), inaczej przycisk "nie dziala"
+           jeszcze do trzech sekund po kliknieciu */
+        stingBus.gain.cancelScheduledValues(ctx.currentTime);
+        stingBus.gain.setTargetAtTime(stingi ? 1 : 0, ctx.currentTime, 0.01);
+      }
+    }
+    return stingi;
+  }
 
   var szum = null;
   function bufSzumu(c){
@@ -130,7 +145,7 @@
       o.frequency.value = freq * Math.pow(2, cent/1200);
       o.connect(f); o.start(t); o.stop(t+dlug+0.05);
     });
-    f.connect(g).connect(master);
+    f.connect(g).connect(stingBus);
   }
   function akord(freqs, kiedy, dlug, glos){
     freqs.forEach(function(f){ blacha(f, kiedy, dlug, glos/Math.sqrt(freqs.length)); });
@@ -144,7 +159,7 @@
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(glos, t+0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t+dlug);
-    o.connect(g).connect(master); o.start(t); o.stop(t+dlug+0.05);
+    o.connect(g).connect(stingBus); o.start(t); o.stop(t+dlug+0.05);
   }
   /* talerz — szum przez gorna polke, dlugi zjazd */
   function talerz(kiedy, glos, dlug){
@@ -157,7 +172,7 @@
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(glos, t+0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t+dlug);
-    s.connect(hp).connect(g).connect(master);
+    s.connect(hp).connect(g).connect(stingBus);
     s.start(t); s.stop(t+dlug+0.05);
   }
   /* narastajacy szum przed uderzeniem */
@@ -172,7 +187,7 @@
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(glos, t+dlug);
     g.gain.linearRampToValueAtTime(0, t+dlug+0.05);
-    s.connect(bp).connect(g).connect(master);
+    s.connect(bp).connect(g).connect(stingBus);
     s.start(t); s.stop(t+dlug+0.1);
   }
 
@@ -221,7 +236,7 @@
         o.frequency.value = nutaHz(i ? 44 : 47) * Math.pow(2, cent/1200);
         o.connect(f); o.start(t); o.stop(t+0.24);
       });
-      f.connect(g).connect(master);
+      f.connect(g).connect(stingBus);
     });
   }
 
@@ -236,7 +251,7 @@
       var g = c.createGain();
       g.gain.setValueAtTime(0.045 + i*0.007, t);
       g.gain.exponentialRampToValueAtTime(0.0001, t+0.055);
-      s.connect(bp).connect(g).connect(master); s.start(t); s.stop(t+0.07);
+      s.connect(bp).connect(g).connect(stingBus); s.start(t); s.stop(t+0.07);
     }
     talerz(16*0.042, 0.1, 0.8);
   }
@@ -299,7 +314,7 @@
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(mocne?0.26:0.14, t+0.002);
     g.gain.exponentialRampToValueAtTime(0.0001, t+0.05);
-    o.connect(f).connect(g).connect(master); o.start(t); o.stop(t+0.08);
+    o.connect(f).connect(g).connect(stingBus); o.start(t); o.stop(t+0.08);
   }
   window.Audio2 = {
     silnik: silnik, wczytaj: wczytaj, graj: graj, stop: stop, gra: gra, poziomy: poziomy,

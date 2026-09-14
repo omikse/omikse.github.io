@@ -190,7 +190,7 @@
     if(!w) return '';
     var g = w.gat === 'wszystko' ? 'Wszystko'
           : (window.GATUNKI.filter(function(x){ return x.id===w.gat; })[0]||{}).name || w.gat;
-    var k = w.kraj === 'pl' ? 'Polska' : (w.kraj === 'sw' ? 'Świat' : 'Polska i świat');
+    var k = w.polska ? 'Polska' : 'Polska i świat';
     return g + ' · ' + k + ' · ' + w.od + '–' + w.do;
   }
 
