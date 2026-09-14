@@ -11,7 +11,7 @@ Sześć podejść na melodię.
 
 Czyta się od lewej do prawej, trzema kolumnami:
 
-1. **Gracze** — jeden gracz albo wielu (to drugie jeszcze w budowie)
+1. **Gracze** — jeden gracz albo wspólny pokój
 2. **Repertuar** — gatunek, skąd (Polska / świat / oba) i przedział lat na suwaku
 3. **Tryb gry** — melodia dnia, gra bez końca albo runda na punkty
 
@@ -25,6 +25,27 @@ sensownych podpowiedzi.
 | Melodia dnia | jedna piosenka na dobę, ta sama dla wszystkich z tym samym wyborem |
 | Gra bez końca | melodia za melodią, z licznikiem serii i rekordem |
 | Runda na punkty | siedem utworów, 6 punktów za trafienie w pierwszym podejściu, 1 w szóstym |
+
+## Gra w wielu graczy
+
+W duchu Gartic Phone: wszyscy słuchają tego samego urywka w tej samej chwili
+i piszą równocześnie. Nikt nikogo nie blokuje — urywek rośnie sam, po zegarze,
+a punktów jest tym więcej, im mniej zdążył odsłonić, zanim trafiłeś:
+6 punktów przy jednej sekundzie, 1 przy szesnastu. Siedem rund, potem podium.
+
+Zakładający dostaje pięcioznakowy kod i link do wysłania. Kod nie zawiera
+liter I, O ani cyfr 0 i 1, żeby nie było pomyłek przy dyktowaniu przez telefon.
+
+**Dźwięk nigdy nie idzie między graczami.** Każdy pobiera tę samą próbkę od Apple;
+przez sieć leci wyłącznie stan pokoju. Zegary równane są przez
+`.info/serverTimeOffset`, więc nie ma znaczenia, że komuś spieszy się zegarek.
+
+Punkty liczy i zapisuje założyciel pokoju. Bez serwera nie da się tego zrobić
+szczelnie — uparty gracz może skłamać, kiedy trafił. To gra dla znajomych,
+nie turniej, i lepiej powiedzieć to wprost, niż udawać inaczej.
+
+Konfiguracja Firebase i układ danych: patrz komentarz w `firebase.js`.
+Reguły bazy dają pokój założycielowi, a każdemu innemu wyłącznie własny wpis.
 
 ## Uruchomienie
 
@@ -169,6 +190,8 @@ songs.js     katalog — trackId, tytuł, wykonawca, rok, kraj, gatunek
 itunes.js    trackId -> adres próbki, z pamięcią podręczną
 audio.js     Web Audio: odtwarzanie urywków, korektor, dźwięki studia
 moje.js      budowanie własnego repertuaru z wklejonej listy
+firebase.js  jawna konfiguracja projektu + opis układu danych
+pokoj.js     gra w wielu graczy: pokoje, synchronizacja rund, punkty
 game.js      menu, filtry, tryby, punktacja, losowanie melodii dnia
 ```
 

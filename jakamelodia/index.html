@@ -217,6 +217,59 @@ button{font-family:inherit; cursor:pointer; border:0}
 }
 .licznik.za-malo{color:#ffb9c1; background:rgba(224,55,74,.12); border-color:rgba(224,55,74,.3)}
 
+/* ---- gra w wielu graczy ---- */
+.panel-pokoj{
+  margin-top:13px; padding-top:13px; border-top:1px solid rgba(255,210,74,.2);
+}
+.panel-pokoj input{
+  width:100%; padding:9px 11px; margin-bottom:8px; border-radius:9px; font-family:inherit; font-size:.88rem;
+  background:linear-gradient(180deg,#fffdf4,#efe6cd); color:#1d1503;
+  border:2px solid #6b4405; box-shadow:inset 0 2px 5px rgba(0,0,0,.25);
+}
+.panel-pokoj input:focus{outline:3px solid rgba(255,210,74,.7); outline-offset:2px}
+.panel-pokoj button{width:100%; margin-bottom:8px; font-size:.78rem; padding:10px}
+.pokoj-albo{
+  text-align:center; font-size:.66rem; letter-spacing:2px; text-transform:uppercase;
+  color:var(--przygas); margin:10px 0 8px;
+}
+.pokoj-kod-box{
+  text-align:center; padding:16px; border-radius:13px;
+  background:rgba(0,0,0,.3); border:2px solid rgba(255,210,74,.3);
+}
+.pokoj-kod{
+  font-family:var(--serif); font-weight:900; font-size:clamp(2rem,9vw,3rem); letter-spacing:9px;
+  background:linear-gradient(180deg,#fffbe6,#ffe17a 40%,#dfa317 62%,#c9860c);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 2px 0 #6b4405); margin:4px 0 12px;
+}
+.pokoj-link-rzad{display:flex; gap:8px; flex-wrap:wrap}
+.pokoj-link-rzad input{
+  flex:1; min-width:180px; padding:9px 11px; border-radius:9px; font-size:.76rem; font-family:inherit;
+  background:rgba(0,0,0,.45); color:var(--przygas); border:1px solid rgba(255,210,74,.25);
+}
+.pokoj-gracze{display:grid; gap:6px; margin-top:8px}
+.pokoj-gracz{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:9px 13px; border-radius:9px; background:rgba(255,255,255,.06);
+  border-left:4px solid rgba(255,210,74,.5); font-size:.9rem;
+}
+.pg-imie{font-weight:700}
+.pg-ty{font-size:.68rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--zloto)}
+.pasek-graczy{display:flex; gap:7px; flex-wrap:wrap; justify-content:center; margin-bottom:13px}
+.gracz-znacznik{
+  display:flex; flex-direction:column; align-items:center; padding:6px 11px; border-radius:9px;
+  background:rgba(255,255,255,.06); border:2px solid rgba(255,255,255,.14); min-width:74px;
+  transition:all .2s;
+}
+.gracz-znacznik b{font-size:.78rem; font-weight:700}
+.gracz-znacznik i{font-style:normal; font-size:.66rem; color:var(--przygas)}
+.gracz-znacznik.gotowy{
+  border-color:var(--dobrze); background:rgba(47,191,92,.18);
+}
+.gracz-znacznik.gotowy i{color:#8df0ad}
+.gracz-znacznik.ja{box-shadow:0 0 0 2px rgba(255,210,74,.5)}
+.p-wiersz.ja{background:rgba(255,210,74,.14)}
+
 /* ---- wlasny repertuar ---- */
 .imp-otworz{
   display:block; width:100%; margin:-8px 0 22px; padding:11px;
@@ -414,6 +467,17 @@ button{font-family:inherit; cursor:pointer; border:0}
       <div class="kolumna">
         <div class="kol-naglowek"><span class="kol-nr">1</span>Gracze</div>
         <div id="kol-gracze"></div>
+
+        <div class="panel-pokoj hide" id="panel-pokoj">
+          <div class="pod-tytul">Tw&#243;j podpis</div>
+          <input id="pokoj-imie" type="text" maxlength="24" placeholder="Jak Ci&#281; wo&#322;a&#263;?" autocomplete="off">
+          <button class="zloty" id="pokoj-zaloz" type="button">Za&#322;&#243;&#380; pok&#243;j</button>
+          <div class="pokoj-albo">albo do&#322;&#261;cz do istniej&#261;cego</div>
+          <input id="pokoj-kod-wpis" type="text" maxlength="5" placeholder="KOD" autocomplete="off"
+                 style="text-transform:uppercase; text-align:center; letter-spacing:5px; font-weight:900">
+          <button class="srebrny" id="pokoj-dolacz" type="button">Do&#322;&#261;cz</button>
+          <p class="komunikat blad hide" id="pokoj-blad"></p>
+        </div>
       </div>
 
       <div class="kolumna">
@@ -436,7 +500,7 @@ button{font-family:inherit; cursor:pointer; border:0}
 
       <div class="kolumna">
         <div class="kol-naglowek"><span class="kol-nr">3</span>Tryb gry</div>
-        <div class="tryby">
+        <div class="tryby" id="kol-tryby">
           <button class="zloty duzy" id="tryb-dzienna">Melodia dnia
             <span class="tryb-opis">Jedna piosenka na dob&#281; &#8212; dla wszystkich ta sama</span></button>
           <button class="srebrny" id="tryb-bezkonca">Gra bez ko&#324;ca
@@ -481,6 +545,8 @@ button{font-family:inherit; cursor:pointer; border:0}
   <section id="ekran-gra" class="hide">
     <div class="info-pas"><span id="info-tryb"></span><b id="nazwa-pakietu"></b></div>
 
+    <div class="pasek-graczy hide" id="pasek-graczy"></div>
+
     <div class="zarowki" id="zarowki"></div>
 
     <div class="tablica">
@@ -505,6 +571,40 @@ button{font-family:inherit; cursor:pointer; border:0}
 
     <div class="lista" id="lista"></div>
     <div style="text-align:center;margin-top:18px"><button class="srebrny" id="btn-menu">Menu</button></div>
+  </section>
+
+  <!-- ================= poczekalnia pokoju ================= -->
+  <section id="ekran-pokoj" class="hide">
+    <p class="sekcja-tytul">Poczekalnia</p>
+    <div class="pokoj-kod-box">
+      <div class="pod-tytul">Kod pokoju</div>
+      <div class="pokoj-kod" id="pokoj-kod">&#8212;</div>
+      <div class="pokoj-link-rzad">
+        <input id="pokoj-link" readonly onclick="this.select()">
+        <button class="srebrny" id="pokoj-kopiuj" type="button">Skopiuj link</button>
+      </div>
+    </div>
+    <div class="pod-tytul" style="margin-top:16px">Repertuar</div>
+    <p class="komunikat" id="pokoj-repertuar" style="padding:4px 0"></p>
+    <div class="pod-tytul" id="pokoj-ilu"></div>
+    <div class="pokoj-gracze" id="pokoj-gracze"></div>
+    <p class="komunikat blad hide" id="pokoj-blad2"></p>
+    <div class="w-przyciski">
+      <button class="zloty duzy hide" id="pokoj-start" type="button">Zaczynamy</button>
+      <span class="komunikat hide" id="pokoj-czekaj">Czekamy, a&#380; za&#322;o&#380;yciel zacznie&#8230;</span>
+      <button class="srebrny" id="pokoj-wyjdz" type="button">Opu&#347;&#263; pok&#243;j</button>
+    </div>
+  </section>
+
+  <!-- ================= tablica wynikow ================= -->
+  <section id="ekran-tablica" class="hide podium">
+    <p class="sekcja-tytul" id="tab-tytul"></p>
+    <p class="komunikat" id="tab-utwor"></p>
+    <div class="p-lista" id="tab-lista"></div>
+    <p class="komunikat" id="tab-czekaj"></p>
+    <div class="w-przyciski">
+      <button class="srebrny" id="tab-wyjdz" type="button">Opu&#347;&#263; pok&#243;j</button>
+    </div>
   </section>
 
   <!-- ================= odsloniecie ================= -->
@@ -544,6 +644,8 @@ button{font-family:inherit; cursor:pointer; border:0}
 <script src="itunes.js"></script>
 <script src="audio.js"></script>
 <script src="moje.js"></script>
+<script src="firebase.js"></script>
+<script src="pokoj.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

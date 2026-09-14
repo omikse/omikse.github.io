@@ -63,7 +63,7 @@
   }
 
   function pokaz(id){
-    ['ekran-start','ekran-gra','ekran-wynik','ekran-podium'].forEach(function(e){
+    ['ekran-start','ekran-gra','ekran-wynik','ekran-podium','ekran-pokoj','ekran-tablica'].forEach(function(e){
       $(e).classList.toggle('hide', e!==id);
     });
   }
@@ -71,6 +71,18 @@
   /* ============================================================
      repertuar z filtrow
      ============================================================ */
+  /* ta sama filtracja, ale dla wyboru podanego z zewnatrz (pokoj bierze wybor hosta) */
+  function pulaDlaWyboru(w){
+    return window.KATALOG.filter(function(s){
+      if(w.gat !== 'wszystko' && s.g !== w.gat) return false;
+      if(w.kraj !== 'oba' && s.k !== w.kraj) return false;
+      return s.r >= w.od && s.r <= w.do;
+    });
+  }
+  function biezacyWybor(){
+    return { gat:S.wybor.gat, kraj:S.wybor.kraj, od:S.wybor.od, do:S.wybor.do };
+  }
+
   function pulaSurowa(){
     if(S.wybor.moje) return window.Moje ? window.Moje.lista() : [];
     return window.KATALOG.filter(function(s){
@@ -114,19 +126,21 @@
   function rysujGraczy(){
     var box = $('kol-gracze'); box.innerHTML = '';
     [['jeden','Jeden gracz','Grasz sam, przy swoim ekranie'],
-     ['wielu','Wielu graczy','Wspólny pokój — jeszcze w budowie']
+     ['wielu','Wielu graczy','Wspólny pokój — wszyscy zgadują naraz']
     ].forEach(function(o){
-      var b = el('button', 'wybierak' + (S.gracze===o[0] ? ' wybrany' : '') + (o[0]==='wielu' ? ' niegotowe' : ''));
+      var b = el('button', 'wybierak' + (S.gracze===o[0] ? ' wybrany' : ''));
       b.appendChild(el('span','wybierak-nazwa', o[1]));
       b.appendChild(el('span','wybierak-opis', o[2]));
-      if(o[0]==='wielu'){
-        b.disabled = true;
-        b.appendChild(el('span','plakietka','wkrótce'));
-      } else {
-        b.onclick = function(){ S.gracze = o[0]; rysujGraczy(); };
-      }
+      b.onclick = function(){
+        S.gracze = o[0];
+        rysujGraczy();
+        $('panel-pokoj').classList.toggle('hide', o[0] !== 'wielu');
+        $('kol-tryby').classList.toggle('przygaszone', o[0] === 'wielu');
+      };
       box.appendChild(b);
     });
+    $('panel-pokoj').classList.toggle('hide', S.gracze !== 'wielu');
+    $('kol-tryby').classList.toggle('przygaszone', S.gracze === 'wielu');
   }
 
   /* kolumna 2 — z czego repertuar */
@@ -319,6 +333,7 @@
     });
 
     var info = '';
+    if(S.tryb==='pokoj')    info = 'Runda ' + (S.rundaNr+1) + ' z ' + (S.zRund||7) + '  ·  wszyscy zgadują naraz';
     if(S.tryb==='runda')    info = 'Utwór ' + (S.rundaNr+1) + ' z ' + RUNDA_N + '  ·  ' + S.rundaPkt + ' pkt';
     if(S.tryb==='bezkonca') info = 'Seria: ' + mem.get('seria',0) + '  ·  rekord: ' + mem.get('rekord',0);
     if(S.tryb==='dzienna')  info = 'Melodia dnia · ' + S.data;
@@ -328,6 +343,10 @@
     /* Nazwa przycisku ma mowic, co sie stanie po nacisnieciu. Kolejne
        podejscie odslania dluzszy urywek; przy ostatnim nie ma juz czego
        odslaniac, wiec jest to po prostu poddanie sie. */
+    /* w pokoju nie ma czego pomijac — urywek rosnie sam */
+    $('btn-pas').classList.toggle('hide', S.tryb === 'pokoj');
+    $('pasek-graczy').classList.toggle('hide', S.tryb !== 'pokoj');
+    $('btn-menu').textContent = S.tryb === 'pokoj' ? 'Opuść pokój' : 'Menu';
     var ostatnia = S.proba >= PROB-1;
     $('btn-pas').textContent = ostatnia ? 'Poddaję się' : ('Dłuższy urywek · ' + DLUGOSCI[S.proba+1] + ' s');
     $('btn-pas').title = ostatnia ? 'Kończy rundę i pokazuje odpowiedź'
@@ -377,6 +396,21 @@
     if(S.koniec) return;
     tekst = (tekst||'').trim();
     if(!tekst) return;
+    /* W pokoju nikt nikogo nie blokuje: pudlo nie odslania dluzszego urywka,
+       bo urywek rosnie wszystkim naraz po wspolnym zegarze. */
+    if(S.tryb === 'pokoj'){
+      if(pasuje(tekst, S.utwor)){
+        S.odpowiedzi.push({typ:'dobrze', tekst:S.utwor.t});
+        S.wygrana = true; S.koniec = true;
+        window.Audio2.fanfara(); window.Audio2.stop();
+        if(MULTI && MULTI.odp) MULTI.odp(S.proba);
+      } else {
+        S.odpowiedzi.push({typ:'zle', tekst:tekst});
+        window.Audio2.buczek();
+      }
+      rysujGre();
+      return;
+    }
     if(pasuje(tekst, S.utwor)){
       S.odpowiedzi.push({typ:'dobrze', tekst:S.utwor.t});
       S.wygrana = true; S.koniec = true;
@@ -507,6 +541,31 @@
     window.Audio2.final();
   }
 
+  /* ---- obsluga rundy prowadzonej przez pokoj.js ---- */
+  var MULTI = null;
+  function ustawPule(lista){ S.pula = lista; }
+  function startMulti(utwor, info){
+    MULTI = info;
+    S.tryb = 'pokoj'; S.utwor = utwor;
+    S.proba = 0; S.odpowiedzi = []; S.koniec = false; S.wygrana = false;
+    S.rundaNr = (info.rundaNr || 1) - 1; S.zRund = info.zRund || 7;
+    window.Audio2.motywStop();
+    pokaz('ekran-gra');
+    rysujGre();
+  }
+  function oknoMulti(i){
+    if(S.tryb !== 'pokoj') return;
+    S.proba = i;
+    rysujGre();
+    if(!S.koniec) zagraj();
+  }
+  function koniecMulti(){
+    if(S.tryb !== 'pokoj') return;
+    S.koniec = true;
+    window.Audio2.stop();
+    rysujGre();
+  }
+
   function doMenu(){
     window.Audio2.stop();
     pokaz('ekran-start');
@@ -598,7 +657,10 @@
 
     $('btn-graj').onclick = zagraj;
     $('btn-pas').onclick  = pas;
-    $('btn-menu').onclick = doMenu;
+    $('btn-menu').onclick = function(){
+      if(S.tryb === 'pokoj' && window.Pokoj){ window.Pokoj.wyjdz(); return; }
+      doMenu();
+    };
     $('w-graj').onclick   = function(){ window.Audio2.graj(S.utwor.preview, PELNA).catch(function(){}); };
     $('p-menu').onclick   = doMenu;
     $('p-jeszcze').onclick= function(){ start('runda'); };
@@ -618,7 +680,17 @@
         e.preventDefault(); zagraj();
       }
     });
+
+    if(window.Pokoj) window.Pokoj.podepnij();
   }
+
+  window.Gra = {
+    pokaz: pokaz, pulaDlaWyboru: pulaDlaWyboru, biezacyWybor: biezacyWybor,
+    ustawPule: ustawPule, startMulti: startMulti, oknoMulti: oknoMulti, koniecMulti: koniecMulti,
+    otworzPanelPokoju: function(){
+      S.gracze = 'wielu'; rysujGraczy();
+    }
+  };
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
   else init();
