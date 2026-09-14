@@ -103,17 +103,41 @@ pięćdziesięciu tytułach to około minuty. Gotowy repertuar ląduje w `localS
 i dołącza do listy gatunków jako osobna pozycja. Filtry lat i kraju go nie
 dotyczą — to Twoja lista, nie wycinek katalogu.
 
-### Dlaczego nie „zaloguj się przez Spotify"
+## Playlista ze Spotify
 
-Bo Spotify nie da nam dźwięku. Pole `preview_url` w ich API jest **oznaczone jako
-wycofane**, bywa puste, a regulamin mówi wprost, że urywków nie wolno udostępniać
-jako osobnej usługi. Pełne odtwarzanie idzie przez Web Playback SDK, który wymaga
-konta Premium u każdego grającego.
+„Wczytaj playlistę ze Spotify" loguje przez **Authorization Code z PKCE** — działa
+bez serwera i bez sekretu, więc nadaje się na stronę statyczną. Potem wybierasz
+playlistę, najczęściej słuchane albo polubione utwory, a gra buduje z tego repertuar.
 
-Sensowny podział jest więc taki: **Spotify mówi, czego słuchasz, a gra i tak
-odtwarza próbkę od Apple.** Logowanie przez Authorization Code z PKCE działa bez
-serwera, więc da się to zrobić na GitHub Pages — ale wymaga zarejestrowania
-własnej aplikacji w panelu Spotify i wpisania tu jej `client_id`.
+**Spotify mówi tylko, czego słuchasz — dźwięk i tak przychodzi od Apple.** Ich pole
+`preview_url` jest oznaczone jako wycofane i często puste, a regulamin zabrania
+robić z tych urywków osobnej usługi; pełne odtwarzanie wymagałoby konta Premium
+u każdego grającego. Dlatego każdy tytuł z playlisty jest wyszukiwany w katalogu
+Apple. Tytuł musi się zgadzać — inaczej do repertuaru trafiłaby przypadkowa
+piosenka tego wykonawcy. Czego nie da się dopasować, pokazuje się wprost, zamiast
+po cichu skracać playlistę.
+
+### Tryb deweloperski — ważne
+
+Nowa aplikacja w panelu Spotify startuje w **Development mode**. Znaczy to, że
+zalogować się może właściciel aplikacji i **najwyżej 25 osób dopisanych ręcznie**
+w zakładce *User Management* (imię i adres e-mail konta Spotify). Ktoś spoza tej
+listy dostanie odmowę — gra pokazuje wtedy komunikat, a nie puste okno.
+
+Żeby otworzyć to na wszystkich, trzeba wystąpić do Spotify o *extended quota mode*.
+Dla gry dla znajomych 25 kont zwykle wystarcza.
+
+### Adresy powrotu
+
+W panelu Spotify muszą być wpisane co do znaku:
+
+```
+https://omikse.github.io/jakamelodia/
+http://127.0.0.1:8000/jakamelodia/
+```
+
+Do pracy na własnym komputerze trzeba wchodzić przez **127.0.0.1**, a nie
+`localhost` — Spotify nie przyjmuje `localhost` po http.
 
 ## Jak dopisać piosenkę
 
@@ -192,6 +216,7 @@ audio.js     Web Audio: odtwarzanie urywków, korektor, dźwięki studia
 moje.js      budowanie własnego repertuaru z wklejonej listy
 firebase.js  jawna konfiguracja projektu + opis układu danych
 pokoj.js     gra w wielu graczy: pokoje, synchronizacja rund, punkty
+spotify.js   logowanie PKCE i budowanie repertuaru z playlisty
 game.js      menu, filtry, tryby, punktacja, losowanie melodii dnia
 ```
 

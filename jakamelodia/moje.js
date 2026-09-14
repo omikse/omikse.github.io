@@ -132,6 +132,17 @@
     return (zapis && zapis.songs) ? zapis.songs : [];
   }
   function jest(){ return lista().length > 0; }
+  function nazwa(){ var z = mem(KLUCZ); return (z && z.name) || 'Mój repertuar'; }
+  /* uzywane takze przez spotify.js — repertuar moze przyjsc z playlisty */
+  function zapisz(nazwaListy, utwory){
+    mem(KLUCZ, {
+      id: 'moje',
+      name: nazwaListy || 'Mój repertuar',
+      desc: utwory.length + ' melodii',
+      songs: utwory
+    });
+    odswiezPrzyciskUsun();
+  }
   function wepnij(){ return jest(); }   // zostaje dla zgodnosci
 
   function usun(){
@@ -163,5 +174,5 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', podepnijUI);
   else podepnijUI();
 
-  window.Moje = { importuj: importuj, lista: lista, jest: jest, usun: usun };
+  window.Moje = { importuj: importuj, lista: lista, jest: jest, usun: usun, zapisz: zapisz, nazwa: nazwa };
 })();

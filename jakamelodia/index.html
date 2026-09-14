@@ -270,6 +270,17 @@ button{font-family:inherit; cursor:pointer; border:0}
 .gracz-znacznik.ja{box-shadow:0 0 0 2px rgba(255,210,74,.5)}
 .p-wiersz.ja{background:rgba(255,210,74,.14)}
 
+/* ---- zrodla ze Spotify ---- */
+.sp-zrodla{display:grid; gap:6px; margin-top:11px; max-height:260px; overflow-y:auto}
+.sp-zrodlo{
+  display:block; width:100%; text-align:left; padding:9px 12px; border-radius:9px;
+  background:rgba(255,255,255,.06); border:2px solid rgba(255,210,74,.18);
+  color:var(--tekst); transition:all .16s;
+}
+.sp-zrodlo:hover{border-color:var(--zloto); background:rgba(255,210,74,.12)}
+.sp-nazwa{display:block; font-weight:700; font-size:.88rem}
+.sp-ile{display:block; font-size:.7rem; color:var(--przygas)}
+
 /* ---- wlasny repertuar ---- */
 .imp-otworz{
   display:block; width:100%; margin:-8px 0 22px; padding:11px;
@@ -514,6 +525,25 @@ button{font-family:inherit; cursor:pointer; border:0}
 
     </div>
 
+    <button class="imp-otworz" id="sp-otworz" type="button">&#9835; Wczytaj playlist&#281; ze Spotify</button>
+
+    <div class="panel-import hide" id="panel-spotify">
+      <p>Spotify podpowie, <b>czego s&#322;uchasz</b> &#8212; d&#378;wi&#281;k i tak przyjdzie z katalogu Apple,
+         bo Spotify wycofa&#322;o swoje trzydziestosekundowe urywki. Cz&#281;&#347;&#263; nagra&#324; mo&#380;e si&#281;
+         nie znale&#378;&#263;; poka&#380;&#281; kt&#243;re.</p>
+      <div class="imp-rzad">
+        <button class="zloty" id="sp-zaloguj" type="button">Zaloguj przez Spotify</button>
+        <button class="srebrny hide" id="sp-wyloguj" type="button">Wyloguj</button>
+      </div>
+      <div class="sp-zrodla" id="sp-zrodla"></div>
+      <div id="sp-postep" class="hide">
+        <div class="pasek" style="margin-top:12px"><div class="wskaznik" id="sp-pasek" style="transition:width .3s"></div></div>
+        <div class="imp-licznik" id="sp-licznik"></div>
+        <div class="imp-teraz" id="sp-teraz"></div>
+      </div>
+      <div id="sp-wynik" class="hide"><p class="komunikat" id="sp-tresc"></p></div>
+    </div>
+
     <button class="imp-otworz" id="imp-otworz" type="button">&#9998; U&#322;&#243;&#380; w&#322;asny repertuar</button>
 
     <div class="panel-import hide" id="panel-import">
@@ -646,6 +676,7 @@ button{font-family:inherit; cursor:pointer; border:0}
 <script src="moje.js"></script>
 <script src="firebase.js"></script>
 <script src="pokoj.js"></script>
+<script src="spotify.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

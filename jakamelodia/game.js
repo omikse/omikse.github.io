@@ -98,7 +98,7 @@
     return S.wybor.gat + '/' + S.wybor.kraj + '/' + S.wybor.od + '-' + S.wybor.do;
   }
   function nazwaWyboru(){
-    if(S.wybor.moje) return 'Mój repertuar';
+    if(S.wybor.moje) return (window.Moje ? window.Moje.nazwa() : 'Mój repertuar');
     var g = S.wybor.gat === 'wszystko' ? 'Wszystko'
           : (window.GATUNKI.filter(function(x){ return x.id===S.wybor.gat; })[0]||{}).name;
     var k = S.wybor.kraj === 'pl' ? 'Polska' : (S.wybor.kraj === 'sw' ? 'Świat' : 'Polska i świat');
@@ -156,7 +156,7 @@
     });
     if(window.Moje && window.Moje.jest()){
       var m = el('button', 'gatunek' + (S.wybor.moje ? ' wybrany' : ''));
-      m.appendChild(el('span','gatunek-nazwa','Mój repertuar'));
+      m.appendChild(el('span','gatunek-nazwa', window.Moje.nazwa()));
       m.appendChild(el('span','gatunek-opis', window.Moje.lista().length + ' własnych melodii'));
       m.onclick = function(){ S.wybor.moje = true; rysujRepertuar(); odswiez(); };
       box.appendChild(m);
@@ -682,6 +682,7 @@
     });
 
     if(window.Pokoj) window.Pokoj.podepnij();
+    if(window.Spotify2) window.Spotify2.podepnij();
   }
 
   window.Gra = {

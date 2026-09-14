@@ -77,5 +77,40 @@
     });
   }
 
-  window.ITunes = { rozwiaz: rozwiaz };
+  /* ---- dopasowanie po tytule i wykonawcy -----------------------------
+     Uzywane przy wczytywaniu cudzej listy (Spotify, wklejony tekst).
+     Nie bierzemy pierwszego lepszego wyniku: tytul musi sie zgadzac,
+     inaczej do katalogu trafia przypadkowa piosenka tego wykonawcy. */
+  function norm(x){
+    return (x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+                  .replace(/\u0142/g,'l').replace(/[^a-z0-9]/g,'');
+  }
+  var ZLE = /\b(live|karaoke|cover|instrumental|koncert|remix|sped up|slowed)\b|\(live/i;
+
+  function dopasuj(tytul, wykonawca){
+    var fraza = (wykonawca ? wykonawca + ' ' : '') + tytul;
+    var url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(fraza) +
+              '&entity=song&limit=10&country=' + KRAJ;
+    return fetch(url).then(function(r){
+      if(!r.ok) throw new Error('iTunes HTTP ' + r.status);
+      return r.json();
+    }).then(function(j){
+      var t = norm(tytul), w = norm(wykonawca);
+      var kand = (j.results||[]).filter(function(x){
+        if(!x.previewUrl || ZLE.test(x.trackName)) return false;
+        var nt = norm(x.trackName);
+        return nt === t || nt.indexOf(t) === 0 || t.indexOf(nt) === 0;
+      });
+      if(w){
+        var swoi = kand.filter(function(x){ return norm(x.artistName).indexOf(w) >= 0 || w.indexOf(norm(x.artistName)) >= 0; });
+        if(swoi.length) kand = swoi;
+      }
+      if(!kand.length) return null;
+      var czyste = kand.filter(function(x){ return x.trackExplicitness !== 'explicit'; });
+      var x = czyste[0] || kand[0];
+      return { id:x.trackId, t:x.trackName, a:x.artistName, r:+((x.releaseDate||'').slice(0,4)) || 0 };
+    });
+  }
+
+  window.ITunes = { rozwiaz: rozwiaz, dopasuj: dopasuj };
 })();
