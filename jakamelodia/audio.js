@@ -87,59 +87,175 @@
     return dane;
   }
 
-  /* ---- dzwieki studia: wszystko syntezowane, zero plikow ---- */
+  /* ============================================================
+     dzwieki studia
+     ------------------------------------------------------------
+     Wszystko skladane z oscylatorow tutaj, na miejscu. W katalogu
+     nie ma ani jednego pliku dzwiekowego i nie moze byc: sygnal
+     teleturnieju jest cudzym nagraniem. To sa wlasne motywy w tej
+     samej konwencji — blaszany zespol i talerz perkusyjny.
+
+     Przelacznik dotyczy tylko tych dzwiekow. Melodie do zgadywania
+     graja zawsze, bo bez nich nie ma gry.
+     ============================================================ */
+  var stingi = true;
+  function stingiWl(v){ if(v!==undefined) stingi = !!v; return stingi; }
+
   var szum = null;
   function bufSzumu(c){
     if(szum && szum.sampleRate===c.sampleRate) return szum;
-    var n = Math.floor(c.sampleRate*0.5);
+    var n = Math.floor(c.sampleRate*1.2);
     var b = c.createBuffer(1,n,c.sampleRate), d = b.getChannelData(0);
     for(var i=0;i<n;i++) d[i] = Math.random()*2-1;
     szum = b; return b;
   }
-  function nuta(freq, kiedy, dlug, glos, typ){
+  function nutaHz(m){ return 440*Math.pow(2,(m-69)/12); }
+
+  /* blaszana szarza: dwie pily lekko rozstrojone, filtr otwiera sie z uderzeniem */
+  function blacha(freq, kiedy, dlug, glos){
+    var c = silnik(); if(!c) return;
+    var t = c.currentTime + kiedy;
+    var g = c.createGain(), f = c.createBiquadFilter();
+    f.type='lowpass'; f.Q.value = 6;
+    f.frequency.setValueAtTime(420, t);
+    f.frequency.linearRampToValueAtTime(Math.min(5200, freq*7), t+0.05);
+    f.frequency.exponentialRampToValueAtTime(Math.max(600, freq*2), t+dlug);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(glos, t+0.025);
+    g.gain.setValueAtTime(glos*0.85, t+dlug*0.6);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dlug);
+    [-7, 7].forEach(function(cent){
+      var o = c.createOscillator();
+      o.type='sawtooth';
+      o.frequency.value = freq * Math.pow(2, cent/1200);
+      o.connect(f); o.start(t); o.stop(t+dlug+0.05);
+    });
+    f.connect(g).connect(master);
+  }
+  function akord(freqs, kiedy, dlug, glos){
+    freqs.forEach(function(f){ blacha(f, kiedy, dlug, glos/Math.sqrt(freqs.length)); });
+  }
+  /* nisko pod spodem, zeby akord mial na czym stac */
+  function bas(freq, kiedy, dlug, glos){
     var c = silnik(); if(!c) return;
     var t = c.currentTime + kiedy;
     var o = c.createOscillator(), g = c.createGain();
-    o.type = typ || 'square'; o.frequency.setValueAtTime(freq, t);
+    o.type='triangle'; o.frequency.value = freq;
     g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(glos, t+0.012);
+    g.gain.linearRampToValueAtTime(glos, t+0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t+dlug);
     o.connect(g).connect(master); o.start(t); o.stop(t+dlug+0.05);
   }
-  /* wzlot na trafienie */
+  /* talerz — szum przez gorna polke, dlugi zjazd */
+  function talerz(kiedy, glos, dlug){
+    var c = silnik(); if(!c) return;
+    dlug = dlug || 1.1;
+    var t = c.currentTime + kiedy;
+    var s = c.createBufferSource(); s.buffer = bufSzumu(c);
+    var hp = c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value = 5200;
+    var g = c.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(glos, t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dlug);
+    s.connect(hp).connect(g).connect(master);
+    s.start(t); s.stop(t+dlug+0.05);
+  }
+  /* narastajacy szum przed uderzeniem */
+  function nalot(kiedy, dlug, glos){
+    var c = silnik(); if(!c) return;
+    var t = c.currentTime + kiedy;
+    var s = c.createBufferSource(); s.buffer = bufSzumu(c);
+    var bp = c.createBiquadFilter(); bp.type='bandpass'; bp.Q.value = 1.4;
+    bp.frequency.setValueAtTime(700, t);
+    bp.frequency.exponentialRampToValueAtTime(7000, t+dlug);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(glos, t+dlug);
+    g.gain.linearRampToValueAtTime(0, t+dlug+0.05);
+    s.connect(bp).connect(g).connect(master);
+    s.start(t); s.stop(t+dlug+0.1);
+  }
+
+  /* ---- wlasciwe sygnaly (wlasne motywy, C-dur) ---- */
+
+  /* czolowka: nalot, wbiegajaca po trojdzwieku blacha i trzymany akord */
+  function intro(){
+    if(!stingi) return;
+    var c = silnik(); if(!c) return;
+    nalot(0, 0.34, 0.11);
+    talerz(0.34, 0.13, 1.5);
+    bas(nutaHz(36), 0.34, 1.9, 0.20);
+    bas(nutaHz(43), 0.34, 1.9, 0.10);
+    [67, 72, 76, 79].forEach(function(m, i){
+      blacha(nutaHz(m), 0.34 + i*0.115, 0.14, 0.20);
+    });
+    akord([nutaHz(72), nutaHz(76), nutaHz(79), nutaHz(84)], 0.83, 1.25, 0.30);
+    talerz(0.83, 0.16, 1.5);
+  }
+
+  /* trafienie: trzy nuty w gore i akord na koniec */
   function fanfara(){
-    [0,1,2,3].forEach(function(i){
-      nuta([523.25,659.25,783.99,1046.5][i], i*0.085, 0.42, 0.17, 'square');
-      nuta([261.63,329.63,392.00,523.25][i], i*0.085, 0.42, 0.09, 'triangle');
+    if(!stingi) return;
+    if(!silnik()) return;
+    [76, 79, 84].forEach(function(m, i){ blacha(nutaHz(m), i*0.075, 0.12, 0.20); });
+    akord([nutaHz(84), nutaHz(88), nutaHz(91)], 0.225, 0.55, 0.24);
+    talerz(0.225, 0.09, 0.7);
+    bas(nutaHz(48), 0.225, 0.6, 0.16);
+  }
+
+  /* pudlo: dwutonowy klakson w dol */
+  function buczek(){
+    if(!stingi) return;
+    var c = silnik(); if(!c) return;
+    [0, 0.16].forEach(function(op, i){
+      var t = c.currentTime + op;
+      var g = c.createGain(), f = c.createBiquadFilter();
+      f.type='lowpass'; f.frequency.value = 1100;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.17, t+0.02);
+      g.gain.setValueAtTime(0.15, t+0.11);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.19);
+      [0, 11].forEach(function(cent){
+        var o = c.createOscillator();
+        o.type='sawtooth';
+        o.frequency.value = nutaHz(i ? 44 : 47) * Math.pow(2, cent/1200);
+        o.connect(f); o.start(t); o.stop(t+0.24);
+      });
+      f.connect(g).connect(master);
     });
   }
-  /* opadajacy buczek na pomylke */
-  function buczek(){
-    var c = silnik(); if(!c) return;
-    var t = c.currentTime;
-    var o = c.createOscillator(), g = c.createGain();
-    o.type='sawtooth';
-    o.frequency.setValueAtTime(220, t);
-    o.frequency.exponentialRampToValueAtTime(90, t+0.38);
-    g.gain.setValueAtTime(0.16, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+0.42);
-    o.connect(g).connect(master); o.start(t); o.stop(t+0.46);
-  }
-  /* werbel na odsloniecie odpowiedzi */
+
+  /* werbel przed odslonieciem odpowiedzi */
   function werbel(){
+    if(!stingi) return;
     var c = silnik(); if(!c) return;
-    for(var i=0;i<14;i++){
-      var t = c.currentTime + i*0.045;
+    for(var i=0;i<16;i++){
+      var t = c.currentTime + i*0.042;
       var s = c.createBufferSource(); s.buffer = bufSzumu(c);
-      var bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=0.8;
+      var bp = c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1900; bp.Q.value=0.8;
       var g = c.createGain();
-      g.gain.setValueAtTime(0.05 + i*0.006, t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t+0.06);
-      s.connect(bp).connect(g).connect(master); s.start(t); s.stop(t+0.08);
+      g.gain.setValueAtTime(0.045 + i*0.007, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.055);
+      s.connect(bp).connect(g).connect(master); s.start(t); s.stop(t+0.07);
     }
+    talerz(16*0.042, 0.1, 0.8);
   }
-  /* tykniecie zegara w rundzie */
+
+  /* koniec rundy: dluzsza wersja czolowki */
+  function final(){
+    if(!stingi) return;
+    if(!silnik()) return;
+    bas(nutaHz(36), 0, 2.4, 0.20);
+    [72, 76, 79, 84].forEach(function(m, i){ blacha(nutaHz(m), i*0.1, 0.13, 0.20); });
+    akord([nutaHz(77), nutaHz(81), nutaHz(84)], 0.42, 0.38, 0.22);
+    akord([nutaHz(79), nutaHz(83), nutaHz(86)], 0.80, 0.38, 0.22);
+    akord([nutaHz(72), nutaHz(76), nutaHz(79), nutaHz(84)], 1.16, 1.5, 0.30);
+    talerz(1.16, 0.17, 1.8);
+  }
+
+  /* tykniecie */
   function tik(mocne){
+    if(!stingi) return;
     var c = silnik(); if(!c) return;
     var t = c.currentTime;
     var o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
@@ -148,13 +264,13 @@
     o.frequency.exponentialRampToValueAtTime(mocne?760:560, t+0.03);
     f.type='bandpass'; f.frequency.value = mocne?1500:1000; f.Q.value=1.2;
     g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(mocne?0.3:0.16, t+0.002);
+    g.gain.linearRampToValueAtTime(mocne?0.26:0.14, t+0.002);
     g.gain.exponentialRampToValueAtTime(0.0001, t+0.05);
     o.connect(f).connect(g).connect(master); o.start(t); o.stop(t+0.08);
   }
-
   window.Audio2 = {
-    silnik: silnik, wczytaj: wczytaj, graj: graj, stop: stop, gra: gra,
-    poziomy: poziomy, fanfara: fanfara, buczek: buczek, werbel: werbel, tik: tik
+    silnik: silnik, wczytaj: wczytaj, graj: graj, stop: stop, gra: gra, poziomy: poziomy,
+    intro: intro, fanfara: fanfara, buczek: buczek, werbel: werbel, final: final, tik: tik,
+    stingiWl: stingiWl
   };
 })();

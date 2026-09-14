@@ -67,7 +67,12 @@
      ============================================================ */
   var wybranyPakiet = mem.get('pakiet', 'polskie');
 
-  function rysujPakiety(){
+  function rysujPakiety(wybierz){
+    if(wybierz) wybranyPakiet = wybierz;
+    /* wlasny repertuar mogl wlasnie zniknac — nie zostawiajmy wskazania w prozni */
+    if(!window.PACKS.some(function(p){ return p.id === wybranyPakiet; }))
+      wybranyPakiet = window.PACKS[0].id;
+    mem.set('pakiet', wybranyPakiet);
     var box = $('pakiety'); box.innerHTML = '';
     window.PACKS.forEach(function(p){
       var b = el('button', 'pakiet' + (p.id===wybranyPakiet ? ' wybrany' : ''));
@@ -104,6 +109,7 @@
 
   function start(tryb){
     window.Audio2.silnik();                 // kontekst musi powstac w gescie uzytkownika
+    window.Audio2.intro();                  // czolowka leci w trakcie pobierania listy
     przygotuj().then(function(){
       S.tryb = tryb;
       S.rundaNr = 0; S.rundaPkt = 0; S.rundaLog = [];
@@ -212,7 +218,7 @@
     S.odpowiedzi.forEach(function(o){
       var w = el('div','wpis wpis-'+o.typ);
       w.appendChild(el('span','wpis-ikona', o.typ==='dobrze'?'\u2713':(o.typ==='pas'?'\u2192':'\u2717')));
-      w.appendChild(el('span','wpis-tekst', o.typ==='pas' ? 'pas' : o.tekst));
+      w.appendChild(el('span','wpis-tekst', o.typ==='pas' ? 'pominięte podejście' : o.tekst));
       l.appendChild(w);
     });
 
@@ -224,6 +230,14 @@
     $('info-tryb').textContent = info;
     $('nazwa-pakietu').textContent = S.pakiet.name;
 
+    /* Nazwa przycisku ma mowic, co sie stanie po nacisnieciu. Kolejne
+       podejscie odslania dluzszy urywek; przy ostatnim nie ma juz czego
+       odslaniac, wiec jest to po prostu poddanie sie. */
+    var ostatnia = S.proba >= PROB-1;
+    $('btn-pas').textContent = ostatnia ? 'Poddaję się' : ('Dłuższy urywek · ' + DLUGOSCI[S.proba+1] + ' s');
+    $('btn-pas').title = ostatnia
+      ? 'Kończy rundę i pokazuje odpowiedź'
+      : 'Pomija to podejście i odsłania dłuższy fragment';
     $('odp').value = '';
     $('odp').disabled = S.koniec;
     $('btn-pas').disabled = S.koniec;
@@ -419,7 +433,7 @@
       w.appendChild(el('span','p-pkt' + (x.wygrana?'':' p-zero'), x.pkt + ' pkt'));
       l.appendChild(w);
     });
-    window.Audio2.fanfara();
+    window.Audio2.final();
   }
 
   function doMenu(){
@@ -462,9 +476,29 @@
     rysujPakiety();
     korektor();
 
+    /* dzwieki studia mozna wyciszyc — melodii do zgadywania to nie dotyczy */
+    var dzwiek = mem.get('stingi', true);
+    window.Audio2.stingiWl(dzwiek);
+    function odswiezDzwiek(){
+      $('btn-dzwiek').classList.toggle('wyl', !dzwiek);
+      $('btn-dzwiek').setAttribute('aria-pressed', String(dzwiek));
+      $('btn-dzwiek').title = dzwiek ? 'Dźwięki studia: włączone' : 'Dźwięki studia: wyłączone';
+    }
+    odswiezDzwiek();
+    $('btn-dzwiek').onclick = function(){
+      dzwiek = !dzwiek;
+      mem.set('stingi', dzwiek);
+      window.Audio2.stingiWl(dzwiek);
+      odswiezDzwiek();
+      if(dzwiek) window.Audio2.tik(true);
+    };
+
     $('tryb-dzienna').onclick  = function(){ start('dzienna'); };
     $('tryb-bezkonca').onclick = function(){ start('bezkonca'); };
     $('tryb-runda').onclick    = function(){ start('runda'); };
+
+    /* moje.js przebudowuje liste pakietow po imporcie */
+    window.odswiezPakiety = rysujPakiety;
 
     $('btn-graj').onclick = zagraj;
     $('btn-pas').onclick  = pas;

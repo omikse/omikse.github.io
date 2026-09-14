@@ -46,6 +46,44 @@ Urywki gramy przez Web Audio, a nie przez `<audio>`, z dwóch powodów:
 naprawdę trwa sekundę, a przy okazji dostajemy `AnalyserNode`, który napędza
 korektor graficzny na scenie. Słupki chodzą od prawdziwego dźwięku, nie z animacji.
 
+## Dźwięki studia
+
+Czołówka, fanfara po trafieniu, klakson po pudle, werbel przed odsłonięciem
+odpowiedzi i finał rundy są **składane z oscylatorów w locie** — blaszany zespół
+z filtrem dolnoprzepustowym, talerz z szumu, bas pod spodem. W katalogu nie ma
+ani jednego pliku dźwiękowego.
+
+To są **własne motywy w konwencji teleturnieju**, a nie sygnał z programu.
+Oryginalna czołówka jest cudzym nagraniem i nie może tu trafić — ani jako plik,
+ani z cudzego serwera.
+
+Złota nuta w prawym górnym rogu wycisza te dźwięki. Melodii do zgadywania
+przełącznik nie dotyczy, bo bez nich nie ma gry.
+
+## Własny repertuar
+
+„Ułóż własny repertuar" na ekranie startowym przyjmuje wklejoną listę piosenek —
+po jednej w wierszu, najlepiej `wykonawca - tytuł`. Każdy wiersz jest wyszukiwany
+w katalogu Apple, a tytuł i wykonawca brane są z odpowiedzi API, nie z wpisanego
+tekstu. Zniesie numerację listy, tabulatory z arkusza, cudzysłowy i brak ogonków.
+
+Zapytania idą po jednym co 1,3 sekundy, bo API nie lubi natarczywych; przy
+pięćdziesięciu tytułach to około minuty. Gotowy pakiet ląduje w `localStorage`
+i dołącza do listy repertuarów.
+
+### Dlaczego nie „zaloguj się przez Spotify"
+
+Bo Spotify nie da nam dźwięku. Pole `preview_url` w ich API jest **oznaczone jako
+wycofane**, bywa puste, a regulamin mówi wprost, że urywków nie wolno udostępniać
+jako osobnej usługi. Pełne odtwarzanie idzie przez Web Playback SDK, który wymaga
+konta Premium u każdego grającego.
+
+Sensowny podział jest więc taki: **Spotify mówi, czego słuchasz, a gra i tak
+odtwarza próbkę od Apple.** Logowanie przez Authorization Code z PKCE działa bez
+serwera, więc da się to zrobić na GitHub Pages — ale wymaga zarejestrowania
+własnej aplikacji w panelu Spotify i wpisania tu jej `client_id`. Do tego czasu
+wklejanie listy robi dokładnie to samo, tylko ręcznie.
+
 ## Jak dopisać piosenkę
 
 Wpis wygląda tak:
@@ -109,11 +147,9 @@ index.html   scena i cały wygląd
 songs.js     katalog — same trackId, tytuły i wykonawcy
 itunes.js    trackId -> adres próbki, z pamięcią podręczną
 audio.js     Web Audio: odtwarzanie urywków, korektor, dźwięki studia
+moje.js      budowanie własnego repertuaru z wklejonej listy
 game.js      tryby, punktacja, losowanie melodii dnia, obsługa ekranów
 ```
-
-Dźwięki studia — fanfara, buczek, werbel, tykanie — są syntezowane w locie.
-W katalogu nie ma ani jednego pliku dźwiękowego.
 
 ## Prawa
 

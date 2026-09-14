@@ -100,6 +100,21 @@ button{font-family:inherit; cursor:pointer; border:0}
 .zloty:disabled,.srebrny:disabled{filter:grayscale(.6) brightness(.7); cursor:not-allowed; transform:none}
 .duzy{font-size:1rem; padding:16px 30px}
 
+/* ---- przelacznik dzwiekow studia ---- */
+.dzwiek{
+  position:absolute; top:12px; right:12px; z-index:6;
+  width:40px; height:40px; border-radius:50%; font-size:1.15rem; line-height:1;
+  background:linear-gradient(180deg,var(--zloto-jasne) 0%,var(--zloto) 30%,#c8890d 100%);
+  border:2px solid #6b4405; color:#3a2400;
+  box-shadow:inset 0 2px 0 #fff8d0, 0 3px 0 var(--zloto-cien), 0 6px 12px rgba(0,0,0,.45);
+}
+.dzwiek:active{transform:translateY(3px); box-shadow:inset 0 2px 0 #fff8d0, 0 0 0 var(--zloto-cien)}
+.dzwiek.wyl{filter:grayscale(.85) brightness(.62)}
+.dzwiek.wyl::after{
+  content:''; position:absolute; left:6px; right:6px; top:50%; height:2px;
+  background:#3a2400; transform:rotate(-45deg); border-radius:2px;
+}
+
 /* ---- ekran startowy ---- */
 .hide{display:none !important}
 .sekcja-tytul{
@@ -123,6 +138,34 @@ button{font-family:inherit; cursor:pointer; border:0}
 .pakiet-ile{display:block; font-size:.68rem; letter-spacing:2px; text-transform:uppercase; color:rgba(255,210,74,.75)}
 .tryby{display:grid; gap:11px}
 .tryb-opis{display:block; font-weight:400; text-transform:none; letter-spacing:0; font-size:.74rem; opacity:.8; margin-top:3px}
+
+/* ---- wlasny repertuar ---- */
+.imp-otworz{
+  display:block; width:100%; margin:-8px 0 22px; padding:11px;
+  background:transparent; border:2px dashed rgba(255,210,74,.35); border-radius:12px;
+  color:var(--zloto); font-weight:700; font-size:.82rem; letter-spacing:1px; text-transform:uppercase;
+  transition:all .18s;
+}
+.imp-otworz:hover{border-color:var(--zloto); background:rgba(255,210,74,.08)}
+.panel-import{
+  border:2px solid rgba(255,210,74,.3); border-radius:12px; padding:15px; margin:-8px 0 22px;
+  background:rgba(0,0,0,.28);
+}
+.panel-import p{font-size:.8rem; color:var(--przygas); margin-bottom:10px; line-height:1.6}
+.panel-import textarea{
+  width:100%; height:130px; resize:vertical; padding:11px; border-radius:9px;
+  font-family:var(--sans); font-size:.86rem; line-height:1.5;
+  background:linear-gradient(180deg,#fffdf4,#efe6cd); color:#1d1503;
+  border:2px solid #6b4405; box-shadow:inset 0 3px 7px rgba(0,0,0,.25);
+}
+.panel-import textarea:focus{outline:3px solid rgba(255,210,74,.7); outline-offset:2px}
+.imp-rzad{display:flex; gap:9px; margin-top:11px; flex-wrap:wrap}
+.imp-rzad button{flex:1; min-width:140px}
+.imp-teraz{
+  font-size:.76rem; color:var(--zloto); margin-top:9px; text-align:center;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.imp-licznik{font-size:.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--przygas); text-align:center; margin-top:6px}
 
 /* ---- ladowanie i blad ---- */
 .komunikat{text-align:center; padding:16px; font-size:.9rem; color:var(--przygas)}
@@ -275,6 +318,8 @@ button{font-family:inherit; cursor:pointer; border:0}
 <div class="scena">
 <div class="ramka">
 
+  <button id="btn-dzwiek" class="dzwiek" type="button" aria-pressed="true" title="Dźwięki studia">&#9834;</button>
+
   <header class="naglowek">
     <div class="gwiazda"></div>
     <h1 class="logo">Jaka to melodia? <span class="nuta">&#9834;</span></h1>
@@ -285,6 +330,26 @@ button{font-family:inherit; cursor:pointer; border:0}
   <section id="ekran-start">
     <p class="sekcja-tytul">Wybierz repertuar</p>
     <div class="pakiety" id="pakiety"></div>
+
+    <button class="imp-otworz" id="imp-otworz" type="button">&#9998; U&#322;&#243;&#380; w&#322;asny repertuar</button>
+
+    <div class="panel-import hide" id="panel-import">
+      <p>Wklej list&#281; piosenek &#8212; po jednej w wierszu, najlepiej w postaci
+         <b>wykonawca &#8212; tytu&#322;</b>. Ka&#380;da zostanie odnaleziona w katalogu Apple.
+         Dzia&#322;a te&#380; lista skopiowana z arkusza. Szukanie idzie po jednej na sekund&#281;,
+         wi&#281;c d&#322;u&#380;sza lista chwil&#281; potrwa.</p>
+      <textarea id="imp-tekst" spellcheck="false" placeholder="Lady Pank - Mniej ni&#380; zero&#10;Queen - Bohemian Rhapsody&#10;Maryla Rodowicz - Ma&#322;go&#347;ka"></textarea>
+      <div class="imp-rzad">
+        <button class="zloty" id="imp-start" type="button">Zbuduj repertuar</button>
+        <button class="srebrny hide" id="imp-usun" type="button">Usu&#324; m&#243;j repertuar</button>
+      </div>
+      <div id="imp-postep" class="hide">
+        <div class="pasek" style="margin-top:12px"><div class="wskaznik" id="imp-pasek" style="transition:width .3s"></div></div>
+        <div class="imp-licznik" id="imp-licznik"></div>
+        <div class="imp-teraz" id="imp-teraz"></div>
+      </div>
+      <div id="imp-wynik" class="hide"><p class="komunikat" id="imp-tresc"></p></div>
+    </div>
 
     <p class="sekcja-tytul">Wybierz tryb gry</p>
     <div class="tryby">
@@ -369,6 +434,7 @@ button{font-family:inherit; cursor:pointer; border:0}
 <script src="songs.js"></script>
 <script src="itunes.js"></script>
 <script src="audio.js"></script>
+<script src="moje.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
