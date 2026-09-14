@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jaka to melodia?</title>
+<meta name="description" content="Rozpoznaj piosenke po krotkim urywku. Nieoficjalna gra inspirowana teleturniejem.">
+<style>
+:root{
+  --granat:#070628; --granat2:#1a0e55; --fiolet:#4a2a9c;
+  --zloto:#ffd24a; --zloto-jasne:#fff3b0; --zloto-ciemne:#b87a09; --zloto-cien:#5a3a05;
+  --srebro:#d8e0ea; --tekst:#fff7e0; --przygas:#b9a9e6;
+  --zle:#e0374a; --dobrze:#2fbf5c; --pas:#e8a81b;
+  --serif:Georgia,'Times New Roman',serif;
+  --sans:'Trebuchet MS','Segoe UI',Tahoma,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  font-family:var(--sans); color:var(--tekst);
+  background:
+    radial-gradient(ellipse at 50% -20%, var(--fiolet) 0%, var(--granat2) 42%, var(--granat) 78%),
+    var(--granat);
+  background-attachment:fixed;
+  padding:16px; overflow-x:hidden;
+}
+/* reflektory na scenie */
+body::before,body::after{
+  content:''; position:fixed; top:-30vh; width:60vw; height:150vh; pointer-events:none; z-index:0;
+  background:linear-gradient(180deg, rgba(180,150,255,.16), transparent 62%);
+  filter:blur(28px);
+}
+body::before{left:-18vw; transform:rotate(14deg);  animation:omiot 14s ease-in-out infinite alternate}
+body::after {right:-18vw; transform:rotate(-14deg); animation:omiot 17s ease-in-out infinite alternate-reverse}
+@keyframes omiot{from{opacity:.35;transform:rotate(12deg) translateX(-3vw)}to{opacity:.75;transform:rotate(20deg) translateX(4vw)}}
+
+.scena{position:relative; z-index:1; max-width:760px; margin:0 auto}
+
+/* ---- ramka z zarowkami, jak obudowa telewizyjnej scenografii ---- */
+.ramka{
+  border:14px solid transparent; border-radius:22px;
+  background:
+    linear-gradient(180deg, rgba(30,16,86,.92), rgba(10,8,52,.96)) padding-box,
+    repeating-linear-gradient(90deg,#8a5c06,#c99512 8px,#8a5c06 16px) border-box;
+  box-shadow:0 0 0 3px #3c2705, 0 18px 50px rgba(0,0,0,.65), inset 0 0 60px rgba(90,40,160,.35);
+  position:relative; padding:22px 18px 26px;
+}
+/* same zarowki */
+.ramka::before{
+  content:''; position:absolute; inset:-14px; border-radius:22px; pointer-events:none;
+  background-image:radial-gradient(circle, #fff6cf 0 3px, #e8b12b 3px 4.5px, transparent 5px);
+  background-size:28px 28px; background-position:0 0;
+  -webkit-mask:linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  padding:14px; animation:migaj 1.1s steps(2) infinite;
+}
+@keyframes migaj{0%{background-position:0 0;opacity:1}100%{background-position:14px 14px;opacity:.72}}
+
+/* ---- logo ---- */
+.naglowek{text-align:center; padding:6px 0 18px; position:relative}
+.gwiazda{
+  position:absolute; inset:-30px 0 auto; height:210px; z-index:-1; pointer-events:none;
+  background:repeating-conic-gradient(from 0deg at 50% 42%, rgba(255,210,74,.13) 0deg 7deg, transparent 7deg 14deg);
+  -webkit-mask:radial-gradient(circle at 50% 42%, #000 0%, transparent 68%);
+  mask:radial-gradient(circle at 50% 42%, #000 0%, transparent 68%);
+  animation:obrot 60s linear infinite;
+}
+@keyframes obrot{to{transform:rotate(360deg)}}
+.logo{
+  font-family:var(--serif); font-style:italic; font-weight:900;
+  font-size:clamp(2rem,8.5vw,3.6rem); line-height:1.05; letter-spacing:-1px;
+  background:linear-gradient(180deg,#fffbe6 0%,#ffe17a 28%,#dfa317 49%,#fff3b5 58%,#c9860c 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 2px 0 #6b4405) drop-shadow(0 7px 12px rgba(0,0,0,.65));
+}
+.podtytul{
+  font-size:.72rem; letter-spacing:4px; text-transform:uppercase; color:var(--przygas); margin-top:8px;
+}
+.nuta{font-style:normal; display:inline-block; animation:bujaj 3.4s ease-in-out infinite}
+@keyframes bujaj{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+/* ---- przyciski ---- */
+button{font-family:inherit; cursor:pointer; border:0}
+.zloty,.srebrny{
+  font-weight:900; text-transform:uppercase; letter-spacing:1.2px; font-size:.86rem;
+  padding:13px 22px; border-radius:11px; position:relative; transition:transform .06s, filter .18s;
+}
+.zloty{
+  background:linear-gradient(180deg,var(--zloto-jasne) 0%,var(--zloto) 20%,#e8a81b 54%,var(--zloto-ciemne) 100%);
+  border:2px solid #6b4405; color:#3a2400; text-shadow:0 1px 0 rgba(255,255,255,.55);
+  box-shadow:inset 0 2px 0 #fff8d0, inset 0 -3px 7px rgba(0,0,0,.4), 0 5px 0 var(--zloto-cien), 0 12px 20px rgba(0,0,0,.45);
+}
+.srebrny{
+  background:linear-gradient(180deg,#fdfdff 0%,#cfd8e6 22%,#94a2b8 60%,#69788f 100%);
+  border:2px solid #3d4859; color:#1b2331; text-shadow:0 1px 0 rgba(255,255,255,.5);
+  box-shadow:inset 0 2px 0 #fff, inset 0 -3px 7px rgba(0,0,0,.35), 0 5px 0 #2c3543, 0 12px 20px rgba(0,0,0,.4);
+}
+.zloty:hover,.srebrny:hover{filter:brightness(1.08)}
+.zloty:active,.srebrny:active{transform:translateY(4px); box-shadow:inset 0 2px 0 rgba(255,255,255,.7), inset 0 -2px 5px rgba(0,0,0,.45), 0 1px 0 var(--zloto-cien)}
+.zloty:disabled,.srebrny:disabled{filter:grayscale(.6) brightness(.7); cursor:not-allowed; transform:none}
+.duzy{font-size:1rem; padding:16px 30px}
+
+/* ---- ekran startowy ---- */
+.hide{display:none !important}
+.sekcja-tytul{
+  text-align:center; font-family:var(--serif); font-style:italic; font-size:1.15rem;
+  color:var(--zloto); margin:4px 0 14px; text-shadow:0 2px 0 #4a2f04;
+}
+.pakiety{display:grid; gap:10px; margin-bottom:22px}
+.pakiet{
+  display:block; text-align:left; padding:13px 16px; border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  border:2px solid rgba(255,210,74,.22); color:var(--tekst); transition:all .18s;
+}
+.pakiet:hover{border-color:rgba(255,210,74,.6); background:linear-gradient(180deg, rgba(255,210,74,.14), rgba(255,255,255,.03))}
+.pakiet.wybrany{
+  border-color:var(--zloto);
+  background:linear-gradient(180deg, rgba(255,210,74,.24), rgba(255,210,74,.06));
+  box-shadow:0 0 0 1px rgba(255,210,74,.5), 0 6px 22px rgba(255,180,20,.22);
+}
+.pakiet-nazwa{display:block; font-weight:900; font-size:1.02rem; color:var(--zloto-jasne)}
+.pakiet-opis{display:block; font-size:.82rem; color:var(--przygas); margin:3px 0 5px}
+.pakiet-ile{display:block; font-size:.68rem; letter-spacing:2px; text-transform:uppercase; color:rgba(255,210,74,.75)}
+.tryby{display:grid; gap:11px}
+.tryb-opis{display:block; font-weight:400; text-transform:none; letter-spacing:0; font-size:.74rem; opacity:.8; margin-top:3px}
+
+/* ---- ladowanie i blad ---- */
+.komunikat{text-align:center; padding:16px; font-size:.9rem; color:var(--przygas)}
+.komunikat.blad{color:#ffb9c1}
+.kreci{display:inline-block; width:15px; height:15px; margin-right:9px; vertical-align:-3px;
+  border:3px solid rgba(255,210,74,.28); border-top-color:var(--zloto); border-radius:50%;
+  animation:obrot 0.85s linear infinite}
+
+/* ---- pasek informacyjny ---- */
+.info-pas{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  font-size:.7rem; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--przygas); margin-bottom:14px; padding-bottom:10px;
+  border-bottom:1px solid rgba(255,210,74,.18);
+}
+.info-pas b{color:var(--zloto); font-weight:900}
+
+/* ---- zarowki podejsc ---- */
+.zarowki{display:flex; gap:7px; justify-content:center; margin-bottom:16px}
+.zar{
+  flex:1; max-width:74px; height:38px; border-radius:9px; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.28));
+  border:2px solid rgba(255,255,255,.14);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.4);
+  font-size:.72rem; font-weight:900; color:rgba(255,255,255,.42);
+}
+.zar-teraz{
+  border-color:var(--zloto); color:#3a2400;
+  background:linear-gradient(180deg,var(--zloto-jasne),var(--zloto) 45%,#e29d12);
+  box-shadow:0 0 18px rgba(255,210,74,.65), inset 0 2px 0 #fff8d0;
+  animation:puls 1.5s ease-in-out infinite;
+}
+@keyframes puls{0%,100%{box-shadow:0 0 14px rgba(255,210,74,.5), inset 0 2px 0 #fff8d0}50%{box-shadow:0 0 26px rgba(255,210,74,.9), inset 0 2px 0 #fff8d0}}
+.zar-dobrze{background:linear-gradient(180deg,#7ff0a5,var(--dobrze) 55%,#1a8a3f); border-color:#0f6b2e; color:#06381a}
+.zar-zle   {background:linear-gradient(180deg,#ff8f9c,var(--zle) 55%,#9b1626);   border-color:#7d1220; color:#3d0008}
+.zar-pas   {background:linear-gradient(180deg,#ffd98a,var(--pas) 55%,#a8700a);   border-color:#7d5406; color:#3d2700}
+
+/* ---- korektor + pasek czasu ---- */
+.tablica{
+  background:linear-gradient(180deg, #05041e, #0d0836);
+  border:2px solid rgba(255,210,74,.3); border-radius:14px;
+  padding:12px; margin-bottom:16px;
+  box-shadow:inset 0 3px 18px rgba(0,0,0,.75), 0 2px 0 rgba(255,255,255,.06);
+}
+#korektor{display:block; width:100%; height:82px}
+.pasek{
+  position:relative; height:16px; margin-top:11px; border-radius:9px; overflow:hidden;
+  background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.12);
+}
+.pasek-odkryty{position:absolute; inset:0 auto 0 0; background:rgba(255,210,74,.2); border-right:1px solid rgba(255,210,74,.5)}
+.wskaznik{position:absolute; inset:0 auto 0 0; width:0; background:linear-gradient(90deg,#ffe9a0,var(--zloto)); box-shadow:0 0 12px rgba(255,210,74,.8)}
+.dl-opis{text-align:center; font-size:.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--przygas); margin-top:8px}
+
+/* ---- przycisk grania ---- */
+.graj-rzad{display:flex; gap:11px; align-items:center; margin-bottom:16px}
+#btn-graj{
+  flex:1; font-size:1.05rem; padding:17px; display:flex; align-items:center; justify-content:center; gap:10px;
+}
+#btn-graj.gra{animation:puls 1.2s ease-in-out infinite}
+#btn-pas{flex:0 0 auto}
+
+/* ---- wpisywanie odpowiedzi ---- */
+.pole{position:relative; margin-bottom:12px}
+#odp{
+  width:100%; padding:15px 16px; font-size:1rem; font-family:inherit; border-radius:11px;
+  background:linear-gradient(180deg,#fffdf4,#efe6cd); color:#1d1503;
+  border:2px solid #6b4405; box-shadow:inset 0 3px 7px rgba(0,0,0,.28);
+}
+#odp:focus{outline:3px solid rgba(255,210,74,.75); outline-offset:2px}
+#odp:disabled{filter:grayscale(.5) brightness(.85)}
+.podpowiedzi{
+  position:absolute; left:0; right:0; top:calc(100% + 5px); z-index:30;
+  background:#120b3d; border:2px solid var(--zloto); border-radius:11px; overflow:hidden;
+  box-shadow:0 16px 34px rgba(0,0,0,.7); max-height:250px; overflow-y:auto;
+}
+.podp{
+  display:block; width:100%; text-align:left; padding:10px 14px; background:transparent;
+  color:var(--tekst); border-bottom:1px solid rgba(255,255,255,.08);
+}
+.podp:last-child{border-bottom:0}
+.podp:hover{background:rgba(255,210,74,.2)}
+.podp-t{display:block; font-weight:700; font-size:.92rem}
+.podp-a{display:block; font-size:.75rem; color:var(--przygas)}
+
+/* ---- lista dotychczasowych prob ---- */
+.lista{display:grid; gap:6px; margin-top:14px; min-height:4px}
+.wpis{
+  display:flex; align-items:center; gap:10px; padding:9px 13px; border-radius:9px;
+  font-size:.87rem; background:rgba(255,255,255,.05); border-left:4px solid rgba(255,255,255,.2);
+  animation:wjedz .22s ease-out;
+}
+@keyframes wjedz{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.wpis-ikona{font-weight:900; width:16px; text-align:center}
+.wpis-tekst{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.wpis-zle{border-left-color:var(--zle)}      .wpis-zle .wpis-ikona{color:var(--zle)}
+.wpis-pas{border-left-color:var(--pas)}      .wpis-pas .wpis-ikona{color:var(--pas)}
+.wpis-dobrze{border-left-color:var(--dobrze); background:rgba(47,191,92,.16)} .wpis-dobrze .wpis-ikona{color:var(--dobrze)}
+
+/* ---- ekran odslonietej odpowiedzi ---- */
+.wynik{text-align:center}
+.okladka-ramka{
+  width:180px; height:180px; margin:0 auto 16px; border-radius:14px; padding:7px;
+  background:linear-gradient(145deg,var(--zloto-jasne),var(--zloto-ciemne));
+  box-shadow:0 14px 34px rgba(0,0,0,.6);
+}
+.okladka-ramka img{width:100%; height:100%; object-fit:cover; border-radius:8px; display:block; background:#1a1040}
+.werdykt{font-family:var(--serif); font-style:italic; font-size:1.2rem; margin-bottom:12px}
+.werdykt-tak{color:#8df0ad} .werdykt-nie{color:#ffb0ba}
+.w-tytul{font-size:1.5rem; font-weight:900; color:var(--zloto-jasne); line-height:1.2}
+.w-wykonawca{color:var(--przygas); margin:4px 0 18px; font-size:1rem}
+.w-przyciski{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px}
+
+/* ---- podium ---- */
+.podium{text-align:center}
+.p-suma{
+  font-family:var(--serif); font-weight:900; font-size:4.5rem; line-height:1;
+  background:linear-gradient(180deg,#fffbe6,#ffe17a 40%,#dfa317 62%,#c9860c);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 3px 0 #6b4405);
+}
+.p-max{font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--przygas)}
+.p-ocena{font-family:var(--serif); font-style:italic; font-size:1.25rem; color:var(--zloto); margin:12px 0 6px}
+.p-lista{display:grid; gap:5px; margin:18px 0; text-align:left}
+.p-wiersz{display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,.05); font-size:.86rem}
+.p-nr{color:var(--przygas); width:22px; flex:0 0 auto}
+.p-tyt{flex:1; overflow:hidden}
+.p-tyt b{display:block; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.p-tyt i{display:block; font-style:normal; font-size:.75rem; color:var(--przygas)}
+.p-pkt{flex:0 0 auto; font-weight:900; color:var(--zloto)}
+.p-zero{color:#ff9aa5}
+
+/* ---- stopka ---- */
+.stopka{text-align:center; font-size:.68rem; color:rgba(185,169,230,.6); margin:18px auto 6px; max-width:560px; line-height:1.7}
+.stopka a{color:rgba(255,210,74,.75)}
+
+@media (max-width:520px){
+  body{padding:8px}
+  .ramka{border-width:10px; padding:16px 12px 20px}
+  .ramka::before{inset:-10px; padding:10px; background-size:22px 22px}
+  .zar{height:34px; font-size:.64rem}
+  .okladka-ramka{width:145px; height:145px}
+  .graj-rzad{flex-direction:column} #btn-pas{width:100%}
+  .p-suma{font-size:3.4rem}
+}
+</style>
+</head>
+<body>
+
+<div class="scena">
+<div class="ramka">
+
+  <header class="naglowek">
+    <div class="gwiazda"></div>
+    <h1 class="logo">Jaka to melodia? <span class="nuta">&#9834;</span></h1>
+    <p class="podtytul">Rozpoznaj piosenk&#281; po urywku</p>
+  </header>
+
+  <!-- ================= ekran startowy ================= -->
+  <section id="ekran-start">
+    <p class="sekcja-tytul">Wybierz repertuar</p>
+    <div class="pakiety" id="pakiety"></div>
+
+    <p class="sekcja-tytul">Wybierz tryb gry</p>
+    <div class="tryby">
+      <button class="zloty duzy" id="tryb-dzienna">Melodia dnia
+        <span class="tryb-opis">Jedna piosenka na dob&#281; &#8212; dla wszystkich ta sama</span></button>
+      <button class="srebrny" id="tryb-bezkonca">Gra bez ko&#324;ca
+        <span class="tryb-opis">Melodia za melodi&#261;, licz&#261;c seri&#281; trafie&#324;</span></button>
+      <button class="srebrny" id="tryb-runda">Runda na punkty
+        <span class="tryb-opis">Siedem melodii jak w odcinku teleturnieju</span></button>
+    </div>
+
+    <div id="ladowanie" class="komunikat hide"><span class="kreci"></span>Orkiestra stroi instrumenty&#8230;</div>
+    <div id="blad" class="komunikat blad hide">
+      <p id="blad-tresc"></p>
+      <button class="srebrny" id="blad-ponow" style="margin-top:12px">Spr&#243;buj jeszcze raz</button>
+    </div>
+  </section>
+
+  <!-- ================= ekran gry ================= -->
+  <section id="ekran-gra" class="hide">
+    <div class="info-pas"><span id="info-tryb"></span><b id="nazwa-pakietu"></b></div>
+
+    <div class="zarowki" id="zarowki"></div>
+
+    <div class="tablica">
+      <canvas id="korektor"></canvas>
+      <div class="pasek">
+        <div class="pasek-odkryty" id="pasek-odkryty"></div>
+        <div class="wskaznik" id="wskaznik"></div>
+      </div>
+      <div class="dl-opis" id="dl-opis"></div>
+    </div>
+
+    <div class="graj-rzad">
+      <button class="zloty" id="btn-graj">&#9654; Zagraj</button>
+      <button class="srebrny" id="btn-pas">Pas</button>
+    </div>
+
+    <div class="pole">
+      <input id="odp" type="text" placeholder="Jaki to tytu&#322;?" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="podpowiedzi" id="podpowiedzi"></div>
+    </div>
+    <button class="zloty" id="btn-zgadnij" style="width:100%">Odpowiadam</button>
+
+    <div class="lista" id="lista"></div>
+    <div style="text-align:center;margin-top:18px"><button class="srebrny" id="btn-menu">Menu</button></div>
+  </section>
+
+  <!-- ================= odsloniecie ================= -->
+  <section id="ekran-wynik" class="hide wynik">
+    <div class="okladka-ramka"><img id="w-okladka" alt="" width="180" height="180"></div>
+    <p class="werdykt" id="w-werdykt"></p>
+    <h2 class="w-tytul" id="w-tytul"></h2>
+    <p class="w-wykonawca" id="w-wykonawca"></p>
+    <button class="srebrny" id="w-graj">&#9654; Pos&#322;uchaj ca&#322;o&#347;ci</button>
+    <div class="w-przyciski" id="w-przyciski"></div>
+  </section>
+
+  <!-- ================= podium ================= -->
+  <section id="ekran-podium" class="hide podium">
+    <p class="sekcja-tytul">Koniec rundy</p>
+    <div class="p-suma" id="p-suma">0</div>
+    <div class="p-max" id="p-max"></div>
+    <p class="p-ocena" id="p-ocena"></p>
+    <p class="komunikat" id="p-podsumowanie"></p>
+    <div class="p-lista" id="p-lista"></div>
+    <div class="w-przyciski">
+      <button class="zloty duzy" id="p-jeszcze">Jeszcze raz</button>
+      <button class="srebrny" id="p-menu">Menu</button>
+    </div>
+  </section>
+
+</div>
+
+<p class="stopka">
+  Nieoficjalna gra fanowska. Nazwa i formu&#322;a teleturnieju nale&#380;&#261; do ich w&#322;a&#347;cicieli.
+  Trzydziestosekundowe urywki pochodz&#261; z publicznego API sklepu Apple i s&#261; odtwarzane z serwer&#243;w Apple &#8212;
+  nic nie jest tu przechowywane. &#183; <a href="../">omikse.github.io</a>
+</p>
+</div>
+
+<script src="songs.js"></script>
+<script src="itunes.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
