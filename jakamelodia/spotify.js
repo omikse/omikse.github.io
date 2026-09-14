@@ -35,9 +35,16 @@
     }catch(e){ return null; }
   }
 
-  /* adres powrotu musi byc co do znaku taki, jak wpisany w panelu Spotify */
+  /* Adres powrotu musi zgadzac sie CO DO ZNAKU z wpisanym w panelu Spotify.
+     Na stronie mozna wyladowac na dwa sposoby: przez /jakamelodia/ albo przez
+     /jakamelodia/index.html (tak linkuje karta na stronie glownej). Goly
+     location.pathname zwrocilby wtedy dwa rozne adresy i Spotify odrzucilby
+     ten z nazwa pliku. Dlatego obcinamy nazwe pliku i pilnujemy ukosnika. */
   function adresPowrotu(){
-    return location.origin + location.pathname;
+    var p = location.pathname;
+    if(/\/[^\/]*\.[^\/]*$/.test(p)) p = p.replace(/[^\/]*$/, '');  // /a/index.html -> /a/
+    if(p.charAt(p.length - 1) !== '/') p += '/';                    // /a -> /a/
+    return location.origin + p;
   }
 
   /* ---- PKCE ---------------------------------------------------------- */
@@ -87,6 +94,11 @@
   /* powrot z ekranu zgody — wymiana kodu na token */
   function obsluzPowrot(){
     var q = new URLSearchParams(location.search);
+    var blad = q.get('error');
+    if(blad){
+      history.replaceState({}, '', location.pathname);
+      return Promise.resolve({blad: blad});
+    }
     var kod = q.get('code');
     if(!kod) return Promise.resolve(false);
     var weryfikator = pam(WERYF);
@@ -249,8 +261,18 @@
     $('sp-zaloguj').onclick = zaloguj;
     $('sp-wyloguj').onclick = wyloguj;
 
-    obsluzPowrot().then(function(udalo){
-      if(udalo){ $('panel-spotify').classList.remove('hide'); rysujPanel(); }
+    obsluzPowrot().then(function(wynik){
+      if(!wynik) return;
+      $('panel-spotify').classList.remove('hide');
+      if(wynik.blad){
+        $('sp-wynik').classList.remove('hide');
+        $('sp-tresc').className = 'komunikat blad';
+        $('sp-tresc').textContent = wynik.blad === 'access_denied'
+          ? 'Logowanie zostalo przerwane.'
+          : ('Spotify odmowil: ' + wynik.blad + '. Adres powrotu, ktory wysylamy, to ' +
+             adresPowrotu() + ' — musi byc wpisany w panelu aplikacji co do znaku.');
+      }
+      rysujPanel();
     });
   }
 
