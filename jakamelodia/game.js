@@ -43,7 +43,7 @@
   /* ---- stan ---- */
   var S = {
     gracze: 'jeden',
-    wybor: { gat:'wszystko', kraj:'oba', od:ROK_MIN, do:ROK_MAX, moje:false },
+    wybor: { gat:'wszystko', kraj:'oba', od:ROK_MIN, do:ROK_MAX, sp:null },
     pula: [], gotowaDla: null,
     tryb: 'dzienna',
     utwor:null, proba:0, odpowiedzi:[], koniec:false, wygrana:false,
@@ -84,7 +84,7 @@
   }
 
   function pulaSurowa(){
-    if(S.wybor.moje) return window.Moje ? window.Moje.lista() : [];
+    if(S.wybor.sp) return (window.Spotify2 && window.Spotify2.repertuar(S.wybor.sp)) || [];
     return window.KATALOG.filter(function(s){
       if(S.wybor.gat !== 'wszystko' && s.g !== S.wybor.gat) return false;
       if(S.wybor.kraj !== 'oba' && s.k !== S.wybor.kraj) return false;
@@ -94,11 +94,11 @@
   /* podpis wyboru — wchodzi w losowanie melodii dnia i w tekst do skopiowania,
      zeby ta sama melodia dnia wypadla kazdemu, kto ustawil to samo */
   function podpisWyboru(){
-    if(S.wybor.moje) return 'moje';
+    if(S.wybor.sp) return 'sp:' + S.wybor.sp;
     return S.wybor.gat + '/' + S.wybor.kraj + '/' + S.wybor.od + '-' + S.wybor.do;
   }
   function nazwaWyboru(){
-    if(S.wybor.moje) return (window.Moje ? window.Moje.nazwa() : 'Mój repertuar');
+    if(S.wybor.sp) return window.Spotify2.nazwaZrodla(S.wybor.sp);
     var g = S.wybor.gat === 'wszystko' ? 'Wszystko'
           : (window.GATUNKI.filter(function(x){ return x.id===S.wybor.gat; })[0]||{}).name;
     var k = S.wybor.kraj === 'pl' ? 'Polska' : (S.wybor.kraj === 'sw' ? 'Świat' : 'Polska i świat');
@@ -116,9 +116,10 @@
       S.wybor.kraj = z.kraj || 'oba';
       S.wybor.od   = Math.max(ROK_MIN, Math.min(ROK_MAX, z.od || ROK_MIN));
       S.wybor.do   = Math.max(S.wybor.od, Math.min(ROK_MAX, z.do || ROK_MAX));
-      S.wybor.moje = !!z.moje;
+      S.wybor.sp   = z.sp || null;
     }
-    if(S.wybor.moje && !(window.Moje && window.Moje.jest())) S.wybor.moje = false;
+    /* repertuar ze Spotify mogl zostac wyczyszczony razem z wylogowaniem */
+    if(S.wybor.sp && !(window.Spotify2 && window.Spotify2.repertuar(S.wybor.sp))) S.wybor.sp = null;
   }
   function zapiszWybor(){ mem.set('wybor', S.wybor); }
 
@@ -148,19 +149,14 @@
     var box = $('kol-gatunki'); box.innerHTML = '';
     var pozycje = [{id:'wszystko', name:'Wszystko', opis:'Cały katalog'}].concat(window.GATUNKI);
     pozycje.forEach(function(g){
-      var b = el('button', 'gatunek' + (!S.wybor.moje && S.wybor.gat===g.id ? ' wybrany' : ''));
+      var b = el('button', 'gatunek' + (!S.wybor.sp && S.wybor.gat===g.id ? ' wybrany' : ''));
       b.appendChild(el('span','gatunek-nazwa', g.name));
       b.appendChild(el('span','gatunek-opis', g.opis));
-      b.onclick = function(){ S.wybor.gat = g.id; S.wybor.moje = false; rysujRepertuar(); odswiez(); };
+      b.onclick = function(){ S.wybor.gat = g.id; S.wybor.sp = null; rysujRepertuar(); odswiez(); };
       box.appendChild(b);
     });
-    if(window.Moje && window.Moje.jest()){
-      var m = el('button', 'gatunek' + (S.wybor.moje ? ' wybrany' : ''));
-      m.appendChild(el('span','gatunek-nazwa', window.Moje.nazwa()));
-      m.appendChild(el('span','gatunek-opis', window.Moje.lista().length + ' własnych melodii'));
-      m.onclick = function(){ S.wybor.moje = true; rysujRepertuar(); odswiez(); };
-      box.appendChild(m);
-    }
+
+    rysujSpotify();
 
     /* kraj */
     var kbox = $('kol-kraj'); kbox.innerHTML = '';
@@ -173,8 +169,76 @@
     $('lata-od').value = S.wybor.od;
     $('lata-do').value = S.wybor.do;
     rysujSuwak();
-    $('kol-kraj').classList.toggle('przygaszone', S.wybor.moje);
-    $('blok-lata').classList.toggle('przygaszone', S.wybor.moje);
+    /* filtry kraju i lat dotycza katalogu, nie cudzej playlisty */
+    $('kol-kraj').classList.toggle('przygaszone', !!S.wybor.sp);
+    $('blok-lata').classList.toggle('przygaszone', !!S.wybor.sp);
+  }
+
+  /* ---- playlisty ze Spotify ------------------------------------------
+     Po zalogowaniu stoja w tej samej kolumnie co gatunki. Pierwsze
+     wejscie w playliste buduje z niej repertuar (kazdy tytul trzeba
+     odszukac w katalogu Apple, po jednym co 1,3 s), kolejne sa
+     natychmiastowe, bo wynik lezy w pamieci przegladarki. */
+  function rysujSpotify(){
+    var sp = window.Spotify2;
+    var lista = $('sp-lista'); lista.innerHTML = '';
+    $('sp-auth').textContent = sp.zalogowany() ? 'Wyloguj ze Spotify' : 'Zaloguj przez Spotify';
+    if(!sp.zalogowany()){
+      lista.appendChild(el('p','sp-teraz','Zaloguj się, żeby grać ze swoich playlist.'));
+      return;
+    }
+    var spis = sp.spis();
+    if(!spis.length){ lista.appendChild(el('p','sp-teraz','Pobieram playlisty…')); return; }
+    spis.forEach(function(p){
+      var gotowy = sp.repertuar(p.id);
+      var b = el('button','sp-poz' + (S.wybor.sp===p.id ? ' wybrany' : ''));
+      b.appendChild(el('b', null, p.nazwa));
+      b.appendChild(el('i', null, gotowy ? (gotowy.length + ' melodii gotowych')
+                                         : (p.ile ? p.ile + ' utworów — kliknij, żeby wczytać'
+                                                  : 'kliknij, żeby wczytać')));
+      b.onclick = function(){ wezPlayliste(p); };
+      lista.appendChild(b);
+    });
+  }
+
+  function spKomunikat(tekst, czyBlad){
+    var e = $('sp-blad');
+    e.classList.remove('hide');
+    e.className = 'komunikat' + (czyBlad ? ' blad' : '');
+    e.textContent = tekst;
+  }
+
+  function wezPlayliste(p){
+    var sp = window.Spotify2;
+    if(sp.repertuar(p.id)){ S.wybor.sp = p.id; rysujRepertuar(); odswiez(); return; }
+    $('sp-blad').classList.add('hide');
+    $('sp-postep').classList.remove('hide');
+    sp.buduj(p, function(i, ile, opis){
+      $('sp-licznik').textContent = i + ' z ' + ile;
+      $('sp-pasek').style.width = (100*i/ile).toFixed(1) + '%';
+      $('sp-teraz').textContent = opis;
+    }).then(function(w){
+      $('sp-postep').classList.add('hide');
+      if(w.ok < MIN_PULA){
+        spKomunikat('Z tej playlisty dopasowałem tylko ' + w.ok + ' melodii — za mało do gry.', true);
+        rysujSpotify();
+        return;
+      }
+      S.wybor.sp = p.id;
+      rysujRepertuar(); odswiez();
+      if(w.brak.length)
+        spKomunikat('Nie znalazłem w katalogu Apple ' + w.brak.length + ': ' +
+                    w.brak.slice(0,4).join('; ') + (w.brak.length > 4 ? '…' : ''), false);
+    }).catch(function(e){
+      $('sp-postep').classList.add('hide');
+      spKomunikat(e.message || 'Nie udało się wczytać playlisty.', true);
+    });
+  }
+
+  function odswiezSpis(){
+    return window.Spotify2.pobierzSpis()
+      .then(function(){ rysujSpotify(); })
+      .catch(function(e){ spKomunikat(e.message, true); });
   }
 
   function rysujSuwak(){
@@ -327,7 +391,7 @@
     var l = $('lista'); l.innerHTML = '';
     S.odpowiedzi.forEach(function(o){
       var w = el('div','wpis wpis-'+o.typ);
-      w.appendChild(el('span','wpis-ikona', o.typ==='dobrze'?'✓':(o.typ==='pas'?'→':'✗')));
+      w.appendChild(el('span','wpis-ikona', o.typ==='dobrze'?'+':(o.typ==='pas'?'-':'x')));
       w.appendChild(el('span','wpis-tekst', o.typ==='pas' ? 'pominięte podejście' : o.tekst));
       l.appendChild(w);
     });
@@ -503,7 +567,7 @@
     var s = '';
     for(var i=0;i<PROB;i++){
       var o = S.odpowiedzi[i];
-      s += !o ? '⬛' : (o.typ==='dobrze' ? '🟩' : (o.typ==='pas' ? '🟨' : '🟥'));
+      s += !o ? '.' : (o.typ==='dobrze' ? '+' : (o.typ==='pas' ? '-' : 'x'));
     }
     return s;
   }
@@ -682,7 +746,27 @@
     });
 
     if(window.Pokoj) window.Pokoj.podepnij();
-    if(window.Spotify2) window.Spotify2.podepnij();
+    $('sp-auth').onclick = function(){
+      if(window.Spotify2.zalogowany()){
+        window.Spotify2.wyloguj();
+        S.wybor.sp = null;
+        rysujRepertuar(); odswiez();
+      } else {
+        window.Spotify2.zaloguj();
+      }
+    };
+
+    /* powrot z ekranu zgody Spotify */
+    window.Spotify2.obsluzPowrot().then(function(w){
+      if(!w) return;
+      if(w.blad){
+        spKomunikat('Spotify: ' + w.blad + '  (adres powrotu: ' + window.Spotify2.adresPowrotu() + ')', true);
+        return;
+      }
+      odswiezSpis();
+    });
+    /* zalogowany z poprzedniej wizyty — odswiez spis w tle */
+    if(window.Spotify2.zalogowany() && !window.Spotify2.spis().length) odswiezSpis();
   }
 
   window.Gra = {

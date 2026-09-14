@@ -34,7 +34,7 @@ body::before{left:-18vw; transform:rotate(14deg);  animation:omiot 14s ease-in-o
 body::after {right:-18vw; transform:rotate(-14deg); animation:omiot 17s ease-in-out infinite alternate-reverse}
 @keyframes omiot{from{opacity:.35;transform:rotate(12deg) translateX(-3vw)}to{opacity:.75;transform:rotate(20deg) translateX(4vw)}}
 
-.scena{position:relative; z-index:1; max-width:760px; margin:0 auto}
+.scena{position:relative; z-index:1; max-width:940px; margin:0 auto}
 
 /* ---- ramka z zarowkami, jak obudowa telewizyjnej scenografii ---- */
 .ramka{
@@ -103,20 +103,19 @@ button{font-family:inherit; cursor:pointer; border:0}
 /* ---- przelacznik dzwiekow studia ---- */
 .dzwiek{
   position:absolute; top:12px; right:12px; z-index:6;
-  width:40px; height:40px; border-radius:50%; font-size:1.15rem; line-height:1;
+  padding:7px 13px; border-radius:20px; font-size:.64rem; font-weight:900;
+  letter-spacing:1.5px; text-transform:uppercase; line-height:1;
   background:linear-gradient(180deg,var(--zloto-jasne) 0%,var(--zloto) 30%,#c8890d 100%);
   border:2px solid #6b4405; color:#3a2400;
   box-shadow:inset 0 2px 0 #fff8d0, 0 3px 0 var(--zloto-cien), 0 6px 12px rgba(0,0,0,.45);
 }
 .dzwiek:active{transform:translateY(3px); box-shadow:inset 0 2px 0 #fff8d0, 0 0 0 var(--zloto-cien)}
 .dzwiek.wyl{filter:grayscale(.85) brightness(.62)}
-.dzwiek.wyl::after{
-  content:''; position:absolute; left:6px; right:6px; top:50%; height:2px;
-  background:#3a2400; transform:rotate(-45deg); border-radius:2px;
-}
+.dzwiek.wyl{text-decoration:line-through}
 
 /* ---- ekran startowy ---- */
 .hide{display:none !important}
+#ekran-gra, #ekran-wynik, #ekran-podium, #ekran-pokoj, #ekran-tablica{max-width:620px; margin:0 auto}
 .sekcja-tytul{
   text-align:center; font-family:var(--serif); font-style:italic; font-size:1.15rem;
   color:var(--zloto); margin:4px 0 14px; text-shadow:0 2px 0 #4a2f04;
@@ -140,10 +139,11 @@ button{font-family:inherit; cursor:pointer; border:0}
 .tryb-opis{display:block; font-weight:400; text-transform:none; letter-spacing:0; font-size:.74rem; opacity:.8; margin-top:3px}
 
 /* ---- menu w trzech kolumnach, czytane od lewej do prawej ---- */
-.menu-kolumny{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; align-items:start}
+.menu-kolumny{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; align-items:stretch}
 .kolumna{
   background:rgba(0,0,0,.22); border:2px solid rgba(255,210,74,.2);
   border-radius:13px; padding:13px; position:relative;
+  display:flex; flex-direction:column;
 }
 .kol-naglowek{
   display:flex; align-items:center; gap:9px; margin-bottom:11px;
@@ -280,6 +280,28 @@ button{font-family:inherit; cursor:pointer; border:0}
 .sp-zrodlo:hover{border-color:var(--zloto); background:rgba(255,210,74,.12)}
 .sp-nazwa{display:block; font-weight:700; font-size:.88rem}
 .sp-ile{display:block; font-size:.7rem; color:var(--przygas)}
+
+/* ---- Spotify w kolumnie repertuaru ---- */
+.sp-auth{
+  display:block; width:100%; margin-top:8px; padding:9px; border-radius:9px;
+  font-size:.72rem; font-weight:700; letter-spacing:.5px; color:var(--zloto);
+  background:transparent; border:2px dashed rgba(255,210,74,.35); transition:all .16s;
+}
+.sp-auth:hover{border-style:solid; border-color:var(--zloto); background:rgba(255,210,74,.1)}
+.sp-poz{
+  display:block; width:100%; text-align:left; margin-bottom:6px; padding:8px 11px; border-radius:9px;
+  background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  border:2px solid rgba(255,210,74,.18); color:var(--tekst); transition:all .16s;
+}
+.sp-poz:hover{border-color:rgba(255,210,74,.55); background:rgba(255,210,74,.1)}
+.sp-poz.wybrany{
+  border-color:var(--zloto);
+  background:linear-gradient(180deg, rgba(255,210,74,.26), rgba(255,210,74,.07));
+}
+.sp-poz b{display:block; font-weight:900; font-size:.84rem; color:var(--zloto-jasne)}
+.sp-poz i{display:block; font-style:normal; font-size:.68rem; color:var(--przygas); margin-top:1px}
+.sp-licznik{font-size:.66rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--przygas); text-align:center; margin-top:5px}
+.sp-teraz{font-size:.68rem; color:var(--zloto); text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
 /* ---- wlasny repertuar ---- */
 .imp-otworz{
@@ -449,6 +471,8 @@ button{font-family:inherit; cursor:pointer; border:0}
 }
 @media (max-width:520px){
   body{padding:8px}
+  /* na waskim ekranie pigulka wchodzila na logo — niech stanie nad naglowkiem */
+  .dzwiek{position:static; display:block; width:max-content; margin:0 0 4px auto}
   .ramka{border-width:10px; padding:16px 12px 20px}
   .ramka::before{inset:-10px; padding:10px; background-size:22px 22px}
   .zar{height:34px; font-size:.64rem}
@@ -463,11 +487,11 @@ button{font-family:inherit; cursor:pointer; border:0}
 <div class="scena">
 <div class="ramka">
 
-  <button id="btn-dzwiek" class="dzwiek" type="button" aria-pressed="true" title="Dźwięki studia">&#9834;</button>
+  <button id="btn-dzwiek" class="dzwiek" type="button" aria-pressed="true">Dźwięk</button>
 
   <header class="naglowek">
     <div class="gwiazda"></div>
-    <h1 class="logo">Jaka to melodia? <span class="nuta">&#9834;</span></h1>
+    <h1 class="logo">Jaka to melodia?</h1>
     <p class="podtytul">Rozpoznaj piosenk&#281; po urywku</p>
   </header>
 
@@ -507,6 +531,18 @@ button{font-family:inherit; cursor:pointer; border:0}
           </div>
         </div>
         <div class="licznik" id="licznik-melodii"></div>
+
+        <div class="pod-blok" id="blok-spotify">
+          <div class="pod-tytul">Ze Spotify</div>
+          <div id="sp-lista"></div>
+          <button class="sp-auth" id="sp-auth" type="button">Zaloguj przez Spotify</button>
+          <div id="sp-postep" class="hide">
+            <div class="pasek" style="margin-top:9px"><div class="wskaznik" id="sp-pasek" style="transition:width .3s"></div></div>
+            <div class="sp-licznik" id="sp-licznik"></div>
+            <div class="sp-teraz" id="sp-teraz"></div>
+          </div>
+          <p class="komunikat blad hide" id="sp-blad"></p>
+        </div>
       </div>
 
       <div class="kolumna">
@@ -523,45 +559,6 @@ button{font-family:inherit; cursor:pointer; border:0}
            poszerz lata albo wybierz inny gatunek.</p>
       </div>
 
-    </div>
-
-    <button class="imp-otworz" id="sp-otworz" type="button">&#9835; Wczytaj playlist&#281; ze Spotify</button>
-
-    <div class="panel-import hide" id="panel-spotify">
-      <p>Spotify podpowie, <b>czego s&#322;uchasz</b> &#8212; d&#378;wi&#281;k i tak przyjdzie z katalogu Apple,
-         bo Spotify wycofa&#322;o swoje trzydziestosekundowe urywki. Cz&#281;&#347;&#263; nagra&#324; mo&#380;e si&#281;
-         nie znale&#378;&#263;; poka&#380;&#281; kt&#243;re.</p>
-      <div class="imp-rzad">
-        <button class="zloty" id="sp-zaloguj" type="button">Zaloguj przez Spotify</button>
-        <button class="srebrny hide" id="sp-wyloguj" type="button">Wyloguj</button>
-      </div>
-      <div class="sp-zrodla" id="sp-zrodla"></div>
-      <div id="sp-postep" class="hide">
-        <div class="pasek" style="margin-top:12px"><div class="wskaznik" id="sp-pasek" style="transition:width .3s"></div></div>
-        <div class="imp-licznik" id="sp-licznik"></div>
-        <div class="imp-teraz" id="sp-teraz"></div>
-      </div>
-      <div id="sp-wynik" class="hide"><p class="komunikat" id="sp-tresc"></p></div>
-    </div>
-
-    <button class="imp-otworz" id="imp-otworz" type="button">&#9998; U&#322;&#243;&#380; w&#322;asny repertuar</button>
-
-    <div class="panel-import hide" id="panel-import">
-      <p>Wklej list&#281; piosenek &#8212; po jednej w wierszu, najlepiej w postaci
-         <b>wykonawca &#8212; tytu&#322;</b>. Ka&#380;da zostanie odnaleziona w katalogu Apple.
-         Dzia&#322;a te&#380; lista skopiowana z arkusza. Szukanie idzie po jednej na sekund&#281;,
-         wi&#281;c d&#322;u&#380;sza lista chwil&#281; potrwa.</p>
-      <textarea id="imp-tekst" spellcheck="false" placeholder="Lady Pank - Mniej ni&#380; zero&#10;Queen - Bohemian Rhapsody&#10;Maryla Rodowicz - Ma&#322;go&#347;ka"></textarea>
-      <div class="imp-rzad">
-        <button class="zloty" id="imp-start" type="button">Zbuduj repertuar</button>
-        <button class="srebrny hide" id="imp-usun" type="button">Usu&#324; m&#243;j repertuar</button>
-      </div>
-      <div id="imp-postep" class="hide">
-        <div class="pasek" style="margin-top:12px"><div class="wskaznik" id="imp-pasek" style="transition:width .3s"></div></div>
-        <div class="imp-licznik" id="imp-licznik"></div>
-        <div class="imp-teraz" id="imp-teraz"></div>
-      </div>
-      <div id="imp-wynik" class="hide"><p class="komunikat" id="imp-tresc"></p></div>
     </div>
 
     <div id="ladowanie" class="komunikat hide"><span class="kreci"></span>Orkiestra stroi instrumenty&#8230;</div>
@@ -589,7 +586,7 @@ button{font-family:inherit; cursor:pointer; border:0}
     </div>
 
     <div class="graj-rzad">
-      <button class="zloty" id="btn-graj">&#9654; Zagraj</button>
+      <button class="zloty" id="btn-graj">Zagraj</button>
       <button class="srebrny" id="btn-pas">Pas</button>
     </div>
 
@@ -643,7 +640,7 @@ button{font-family:inherit; cursor:pointer; border:0}
     <p class="werdykt" id="w-werdykt"></p>
     <h2 class="w-tytul" id="w-tytul"></h2>
     <p class="w-wykonawca" id="w-wykonawca"></p>
-    <button class="srebrny" id="w-graj">&#9654; Pos&#322;uchaj ca&#322;o&#347;ci</button>
+    <button class="srebrny" id="w-graj">Pos&#322;uchaj ca&#322;o&#347;ci</button>
     <div class="w-przyciski" id="w-przyciski"></div>
   </section>
 
@@ -673,7 +670,6 @@ button{font-family:inherit; cursor:pointer; border:0}
 <script src="songs.js"></script>
 <script src="itunes.js"></script>
 <script src="audio.js"></script>
-<script src="moje.js"></script>
 <script src="firebase.js"></script>
 <script src="pokoj.js"></script>
 <script src="spotify.js"></script>

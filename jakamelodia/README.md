@@ -12,7 +12,7 @@ Sześć podejść na melodię.
 Czyta się od lewej do prawej, trzema kolumnami:
 
 1. **Gracze** — jeden gracz albo wspólny pokój
-2. **Repertuar** — gatunek, skąd (Polska / świat / oba) i przedział lat na suwaku
+2. **Repertuar** — gatunek albo Twoja playlista ze Spotify, skąd (Polska / świat) i lata
 3. **Tryb gry** — melodia dnia, gra bez końca albo runda na punkty
 
 Repertuar nie jest gotową listą. Powstaje z filtrów nałożonych na płaski katalog
@@ -91,31 +91,27 @@ zagrać niczego przed gestem użytkownika. Złota nuta w prawym górnym rogu wyc
 wszystkie te dźwięki; melodii do zgadywania przełącznik nie dotyczy, bo bez nich
 nie ma gry.
 
-## Własny repertuar
+## Repertuar ze Spotify
 
-„Ułóż własny repertuar" przyjmuje wklejoną listę piosenek — po jednej w wierszu,
-najlepiej `wykonawca - tytuł`. Każdy wiersz jest wyszukiwany w katalogu Apple,
-a tytuł i wykonawca brane są z odpowiedzi API, nie z wpisanego tekstu. Zniesie
-numerację listy, tabulatory z arkusza, cudzysłowy i brak ogonków.
+Kolumna „Repertuar" ma na dole przycisk **Zaloguj przez Spotify**. Po zalogowaniu
+Twoje playlisty stają tam obok gatunków z katalogu — bez żadnych okien i bez
+osobnego kroku „wczytaj". Wybranie playlisty po raz pierwszy buduje z niej
+repertuar, każde następne wejście jest natychmiastowe, bo wynik leży
+w `localStorage`. Wylogowanie kasuje te repertuary razem z tokenem.
 
-Zapytania idą po jednym co 1,3 sekundy, bo API nie lubi natarczywych; przy
-pięćdziesięciu tytułach to około minuty. Gotowy repertuar ląduje w `localStorage`
-i dołącza do listy gatunków jako osobna pozycja. Filtry lat i kraju go nie
-dotyczą — to Twoja lista, nie wycinek katalogu.
-
-## Playlista ze Spotify
-
-„Wczytaj playlistę ze Spotify" loguje przez **Authorization Code z PKCE** — działa
-bez serwera i bez sekretu, więc nadaje się na stronę statyczną. Potem wybierasz
-playlistę, najczęściej słuchane albo polubione utwory, a gra buduje z tego repertuar.
+Budowanie chwilę trwa: każdy tytuł trzeba odszukać w katalogu Apple, a zapytania
+idą po jednym co 1,3 sekundy, bo API nie lubi natarczywych. Przy pięćdziesięciu
+utworach to około minuty; widać pasek postępu i to, czego akurat szuka.
 
 **Spotify mówi tylko, czego słuchasz — dźwięk i tak przychodzi od Apple.** Ich pole
 `preview_url` jest oznaczone jako wycofane i często puste, a regulamin zabrania
 robić z tych urywków osobnej usługi; pełne odtwarzanie wymagałoby konta Premium
-u każdego grającego. Dlatego każdy tytuł z playlisty jest wyszukiwany w katalogu
-Apple. Tytuł musi się zgadzać — inaczej do repertuaru trafiłaby przypadkowa
-piosenka tego wykonawcy. Czego nie da się dopasować, pokazuje się wprost, zamiast
-po cichu skracać playlistę.
+u każdego grającego. Dlatego tytuł z playlisty musi się zgadzać z tym z katalogu
+Apple — inaczej do repertuaru trafiałaby przypadkowa piosenka tego wykonawcy.
+Czego nie da się dopasować, gra wypisuje wprost, zamiast po cichu skracać listę.
+
+Filtry kraju i lat dotyczą katalogu, nie playlisty — przy wybranej playliście
+przygasają, bo to Twoja lista, a nie wycinek katalogu.
 
 ### Tryb deweloperski — ważne
 
@@ -213,10 +209,9 @@ index.html   scena i cały wygląd
 songs.js     katalog — trackId, tytuł, wykonawca, rok, kraj, gatunek
 itunes.js    trackId -> adres próbki, z pamięcią podręczną
 audio.js     Web Audio: odtwarzanie urywków, korektor, dźwięki studia
-moje.js      budowanie własnego repertuaru z wklejonej listy
 firebase.js  jawna konfiguracja projektu + opis układu danych
 pokoj.js     gra w wielu graczy: pokoje, synchronizacja rund, punkty
-spotify.js   logowanie PKCE i budowanie repertuaru z playlisty
+spotify.js   logowanie PKCE, spis playlist i budowanie z nich repertuaru
 game.js      menu, filtry, tryby, punktacja, losowanie melodii dnia
 ```
 

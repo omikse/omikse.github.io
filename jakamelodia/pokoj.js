@@ -173,7 +173,8 @@
     var g = d.gracze || {};
     Object.keys(g).forEach(function(uid){
       var w = el('div','pokoj-gracz');
-      w.appendChild(el('span','pg-imie', g[uid].imie + (uid===d.host ? '  ★' : '')));
+      w.appendChild(el('span','pg-imie', g[uid].imie));
+      if(uid === d.host) w.appendChild(el('span','pg-rola','gospodarz'));
       if(uid === P.uid) w.appendChild(el('span','pg-ty','to Ty'));
       lista.appendChild(w);
     });
