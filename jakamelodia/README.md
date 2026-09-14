@@ -3,19 +3,28 @@
 Gra w rozpoznawanie piosenek po krótkim urywku, ubrana w scenografię teleturnieju
 z lat dziewięćdziesiątych. Nieoficjalny projekt fanowski.
 
-Zasada jest prosta: leci jedna sekunda utworu. Nie wiesz — pasujesz albo strzelasz,
-a urywek rośnie do 2, 4, 7, 11 i wreszcie 16 sekund. Sześć podejść na melodię.
+Zasada jest prosta: leci jedna sekunda utworu. Nie wiesz — odsłaniasz dłuższy
+fragment albo strzelasz, a urywek rośnie do 2, 4, 7, 11 i wreszcie 16 sekund.
+Sześć podejść na melodię.
 
-**Tryby**
+## Menu
+
+Czyta się od lewej do prawej, trzema kolumnami:
+
+1. **Gracze** — jeden gracz albo wielu (to drugie jeszcze w budowie)
+2. **Repertuar** — gatunek, skąd (Polska / świat / oba) i przedział lat na suwaku
+3. **Tryb gry** — melodia dnia, gra bez końca albo runda na punkty
+
+Repertuar nie jest gotową listą. Powstaje z filtrów nałożonych na płaski katalog
+w `songs.js`, a licznik pod spodem pokazuje na bieżąco, ile melodii zostało.
+Poniżej sześciu tytułów tryby się blokują — z tak wąskiej puli nie da się zrobić
+sensownych podpowiedzi.
 
 | tryb | na czym polega |
 |---|---|
-| Melodia dnia | jedna piosenka na dobę, ta sama dla wszystkich, z wynikiem do skopiowania |
+| Melodia dnia | jedna piosenka na dobę, ta sama dla wszystkich z tym samym wyborem |
 | Gra bez końca | melodia za melodią, z licznikiem serii i rekordem |
 | Runda na punkty | siedem utworów, 6 punktów za trafienie w pierwszym podejściu, 1 w szóstym |
-
-Do wyboru pięć repertuarów: polskie przeboje, polski rock, lata 80. i 90.,
-hity świata oraz muzyka filmowa i telewizyjna. Razem blisko dwieście melodii.
 
 ## Uruchomienie
 
@@ -37,9 +46,8 @@ bezpośrednio ze strony statycznej.
 W `songs.js` leżą wyłącznie **trackId** — stałe identyfikatory utworów.
 Adresy trzydziestosekundowych próbek (`previewUrl`) zmieniają się co jakiś czas,
 więc nie ma sensu ich zapisywać; `itunes.js` zamienia identyfikatory na świeże
-adresy przy starcie i chowa wynik w `localStorage` na tydzień.
-
-Sama próbka nie jest u nas przechowywana ani przepisywana — leci prosto z serwerów Apple.
+adresy przy starcie i chowa wynik w `localStorage` na tydzień. Sama próbka nie
+jest u nas przechowywana ani przepisywana — leci prosto z serwerów Apple.
 
 Urywki gramy przez Web Audio, a nie przez `<audio>`, z dwóch powodów:
 `source.start(kiedy, 0, ile)` ucina dźwięk co do próbki, więc „jedna sekunda"
@@ -48,28 +56,31 @@ korektor graficzny na scenie. Słupki chodzą od prawdziwego dźwięku, nie z an
 
 ## Dźwięki studia
 
-Czołówka, fanfara po trafieniu, klakson po pudle, werbel przed odsłonięciem
-odpowiedzi i finał rundy są **składane z oscylatorów w locie** — blaszany zespół
-z filtrem dolnoprzepustowym, talerz z szumu, bas pod spodem. W katalogu nie ma
-ani jednego pliku dźwiękowego.
+Motyw menu, czołówka, fanfara po trafieniu, klakson po pudle, werbel przed
+odsłonięciem odpowiedzi i finał rundy są **składane z oscylatorów w locie** —
+blaszany zespół z filtrem dolnoprzepustowym, talerz z szumu, bas pod spodem.
+W katalogu nie ma ani jednego pliku dźwiękowego.
 
 To są **własne motywy w konwencji teleturnieju**, a nie sygnał z programu.
 Oryginalna czołówka jest cudzym nagraniem i nie może tu trafić — ani jako plik,
-ani z cudzego serwera.
+ani odtwarzana z cudzego serwera.
 
-Złota nuta w prawym górnym rogu wycisza te dźwięki. Melodii do zgadywania
-przełącznik nie dotyczy, bo bez nich nie ma gry.
+Motyw menu rusza dopiero przy pierwszym kliknięciu, bo przeglądarki nie pozwalają
+zagrać niczego przed gestem użytkownika. Złota nuta w prawym górnym rogu wycisza
+wszystkie te dźwięki; melodii do zgadywania przełącznik nie dotyczy, bo bez nich
+nie ma gry.
 
 ## Własny repertuar
 
-„Ułóż własny repertuar" na ekranie startowym przyjmuje wklejoną listę piosenek —
-po jednej w wierszu, najlepiej `wykonawca - tytuł`. Każdy wiersz jest wyszukiwany
-w katalogu Apple, a tytuł i wykonawca brane są z odpowiedzi API, nie z wpisanego
-tekstu. Zniesie numerację listy, tabulatory z arkusza, cudzysłowy i brak ogonków.
+„Ułóż własny repertuar" przyjmuje wklejoną listę piosenek — po jednej w wierszu,
+najlepiej `wykonawca - tytuł`. Każdy wiersz jest wyszukiwany w katalogu Apple,
+a tytuł i wykonawca brane są z odpowiedzi API, nie z wpisanego tekstu. Zniesie
+numerację listy, tabulatory z arkusza, cudzysłowy i brak ogonków.
 
 Zapytania idą po jednym co 1,3 sekundy, bo API nie lubi natarczywych; przy
-pięćdziesięciu tytułach to około minuty. Gotowy pakiet ląduje w `localStorage`
-i dołącza do listy repertuarów.
+pięćdziesięciu tytułach to około minuty. Gotowy repertuar ląduje w `localStorage`
+i dołącza do listy gatunków jako osobna pozycja. Filtry lat i kraju go nie
+dotyczą — to Twoja lista, nie wycinek katalogu.
 
 ### Dlaczego nie „zaloguj się przez Spotify"
 
@@ -81,25 +92,28 @@ konta Premium u każdego grającego.
 Sensowny podział jest więc taki: **Spotify mówi, czego słuchasz, a gra i tak
 odtwarza próbkę od Apple.** Logowanie przez Authorization Code z PKCE działa bez
 serwera, więc da się to zrobić na GitHub Pages — ale wymaga zarejestrowania
-własnej aplikacji w panelu Spotify i wpisania tu jej `client_id`. Do tego czasu
-wklejanie listy robi dokładnie to samo, tylko ręcznie.
+własnej aplikacji w panelu Spotify i wpisania tu jej `client_id`.
 
 ## Jak dopisać piosenkę
 
-Wpis wygląda tak:
+Katalog to jedna płaska lista `window.KATALOG`. Wpis wygląda tak:
 
 ```js
-{ id:1484081264, t:'Mniej niż zero', a:'Lady Pank' },
-{ id:1375814284, t:'Gwiezdne wojny', a:'John Williams', alt:['Star Wars','Main Title'] },
+{ id:1484081264, t:"Mniej niż zero", a:"Lady Pank", r:1983, k:"pl", g:"rock" },
+{ id:1375814284, t:"Gwiezdne wojny", a:"John Williams", r:1977, k:"sw", g:"film",
+  alt:["Star Wars","Main Title"] },
 ```
 
-* `t` — tytuł, który gracz widzi na podpowiedziach i wpisuje w odpowiedzi
+* `t` — tytuł, który gracz widzi i wpisuje w odpowiedzi
 * `a` — wykonawca
-* `alt` — inne uznawane pisownie (przydatne przy muzyce filmowej, gdzie Apple
-  trzyma utwór pod nazwą w rodzaju „Main Title", a gracz myśli „Gwiezdne wojny")
+* `r` — rok premiery **utworu**, nie data pliku w sklepie (patrz niżej)
+* `k` — `pl` albo `sw` (świat)
+* `g` — `hity`, `rock`, `rap` albo `film`
+* `alt` — inne uznawane pisownie; przydatne przy muzyce filmowej, gdzie Apple
+  trzyma utwór jako „Main Title", a gracz myśli „Gwiezdne wojny"
 
 Porównywanie tytułów pomija wielkość liter, znaki interpunkcyjne i polskie ogonki,
-więc „malgoska" zalicza się jako „Małgośka". Nie trzeba wypisywać takich wariantów.
+więc „malgoska" zalicza się jako „Małgośka". Takich wariantów nie trzeba wypisywać.
 
 **Identyfikator znajdziesz tak** — w konsoli przeglądarki:
 
@@ -109,21 +123,24 @@ fetch('https://itunes.apple.com/search?term=lady+pank+mniej+niz+zero&entity=song
   .then(j=>console.table(j.results.map(x=>({id:x.trackId, t:x.trackName, a:x.artistName, rok:(x.releaseDate||'').slice(0,4)}))));
 ```
 
-Dwie pułapki, na które trzeba uważać przy wybieraniu:
+Trzy pułapki:
 
 1. **Wersje.** Wyszukiwarka chętnie podsuwa nagrania koncertowe, remiksy i nowe
-   nagrania z gościnnym udziałem. Przy „Niech żyje bal" pierwszy wynik to
-   przeróbka z 2024 roku, a nie oryginał z 1986. Patrz na rok wydania i omijaj
-   tytuły z dopiskiem *Live*, *Remix* czy *feat.* Same *Remastered* są w porządku
-   — to to samo nagranie.
-2. **Refren zdradza tytuł.** Próbka Apple zwykle zaczyna się w połowie utworu,
-   często dokładnie na refrenie, w którym wokalista śpiewa tytuł. Nic na to nie
-   poradzimy — tak są przycięte.
+   nagrania z gościnnym udziałem. Przy „Niech żyje bal" pierwszy wynik to przeróbka
+   z 2024 roku, a nie oryginał z 1986. Omijaj *Live*, *Remix* i *feat.*; samo
+   *Remastered* jest w porządku, bo to to samo nagranie.
+2. **Rocznik z API to data pliku, nie premiery.** Apple podaje przy klasykach datę
+   wznowienia: „Biały krzyż" jako 2009, „Autobiografia" jako 2003. Dlatego pole `r`
+   jest ustawiane ręcznie. Przy mniej znanych nagraniach może się mylić o rok — do
+   suwaka dekad to wystarcza, ale nie jest to dane źródłowe.
+3. **Refren zdradza tytuł.** Próbka Apple zwykle zaczyna się w połowie utworu,
+   często na refrenie, w którym wokalista śpiewa tytuł. Tak są przycięte i nic na
+   to nie poradzimy.
 
 Po dopisaniu warto sprawdzić, czy wszystko się rozwiązuje. W konsoli gry:
 
 ```js
-ITunes.rozwiaz(PACKS.find(p=>p.id==='rock').songs).then(r=>console.log('martwe:', r.martwe));
+ITunes.rozwiaz(KATALOG.filter(s=>s.g==='rock')).then(r=>console.log('martwe:', r.martwe));
 ```
 
 Pusta lista znaczy, że komplet gra.
@@ -133,10 +150,14 @@ Pusta lista znaczy, że komplet gra.
 Dzień liczony jest w UTC, więc wszyscy dostają tę samą piosenkę niezależnie od strefy.
 
 Samo haszowanie daty potrafiło wrócić do tej samej piosenki po trzech dniach,
-a innej nie pokazać ani razu. Dlatego cały pakiet jest tasowany raz na obieg
-(tyle dni, ile melodii w pakiecie) — każda wypada dokładnie raz, zanim którakolwiek
-się powtórzy, a następny obieg ma inną kolejność. Zmiana liczby utworów w pakiecie
-przestawia harmonogram i to jest w porządku.
+a innej nie pokazać ani razu. Dlatego repertuar jest tasowany raz na obieg
+(tyle dni, ile melodii) — każda wypada dokładnie raz, zanim którakolwiek się
+powtórzy, a następny obieg ma inną kolejność.
+
+W losowanie wchodzi też **podpis wyboru** (gatunek, kraj, lata). Dzięki temu
+melodia dnia jest ta sama dla każdego, kto ustawił to samo, a wynik do skopiowania
+nazywa ten wybór — żeby było wiadomo, o którą stawkę chodzi. Zmiana liczby utworów
+w katalogu przestawia harmonogram i to jest w porządku.
 
 Do testów można podać datę ręcznie: `?date=2026-12-24`.
 
@@ -144,11 +165,11 @@ Do testów można podać datę ręcznie: `?date=2026-12-24`.
 
 ```
 index.html   scena i cały wygląd
-songs.js     katalog — same trackId, tytuły i wykonawcy
+songs.js     katalog — trackId, tytuł, wykonawca, rok, kraj, gatunek
 itunes.js    trackId -> adres próbki, z pamięcią podręczną
 audio.js     Web Audio: odtwarzanie urywków, korektor, dźwięki studia
 moje.js      budowanie własnego repertuaru z wklejonej listy
-game.js      tryby, punktacja, losowanie melodii dnia, obsługa ekranów
+game.js      menu, filtry, tryby, punktacja, losowanie melodii dnia
 ```
 
 ## Prawa

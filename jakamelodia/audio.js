@@ -253,6 +253,39 @@
     talerz(1.16, 0.17, 1.8);
   }
 
+  /* ---- motyw menu ----------------------------------------------------
+     Wlasna, zapetlona przygrywka pod menu glownym. Osiem taktow: chodzacy
+     bas, akordy na slabych czesciach taktu i prosty motyw na wierzchu.
+     Gra ciszej niz sygnaly, zeby nie zagluszala rozmowy przy komputerze. -- */
+  var motywDo = null;
+  var TAKT = 0.46;                    // dlugosc cwiercnuty
+
+  function motywPrzebieg(){
+    var c = silnik(); if(!c) return 8*TAKT;
+    var basy    = [36, 36, 43, 43, 33, 33, 41, 41];          // C  C  G  G  A  A  F  F
+    var akordy  = [[60,64,67], [60,64,67], [62,67,71], [62,67,71],
+                   [57,60,64], [57,60,64], [59,65,68], [59,65,68]];
+    var melodia = [72, 74, 76, 79, 76, 74, 72, 71];
+    for(var i=0;i<8;i++){
+      var t = i*TAKT;
+      bas(nutaHz(basy[i]), t, TAKT*0.9, 0.13);
+      if(i % 2 === 1) akord(akordy[i].map(nutaHz), t + TAKT*0.5, TAKT*0.45, 0.07);
+      blacha(nutaHz(melodia[i]), t + TAKT*0.25, TAKT*0.55, 0.075);
+      if(i % 4 === 0) talerz(t, 0.035, 0.32);
+    }
+    return 8*TAKT;
+  }
+  function motywStart(){
+    motywStop();
+    if(!stingi) return;
+    var dl = motywPrzebieg();
+    motywDo = setTimeout(motywStart, dl*1000);
+  }
+  function motywStop(){
+    if(motywDo){ clearTimeout(motywDo); motywDo = null; }
+  }
+  function motywGra(){ return !!motywDo; }
+
   /* tykniecie */
   function tik(mocne){
     if(!stingi) return;
@@ -270,7 +303,7 @@
   }
   window.Audio2 = {
     silnik: silnik, wczytaj: wczytaj, graj: graj, stop: stop, gra: gra, poziomy: poziomy,
-    intro: intro, fanfara: fanfara, buczek: buczek, werbel: werbel, final: final, tik: tik,
+    intro: intro, fanfara: fanfara, motywStart: motywStart, motywStop: motywStop, motywGra: motywGra, buczek: buczek, werbel: werbel, final: final, tik: tik,
     stingiWl: stingiWl
   };
 })();

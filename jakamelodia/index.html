@@ -139,6 +139,84 @@ button{font-family:inherit; cursor:pointer; border:0}
 .tryby{display:grid; gap:11px}
 .tryb-opis{display:block; font-weight:400; text-transform:none; letter-spacing:0; font-size:.74rem; opacity:.8; margin-top:3px}
 
+/* ---- menu w trzech kolumnach, czytane od lewej do prawej ---- */
+.menu-kolumny{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; align-items:start}
+.kolumna{
+  background:rgba(0,0,0,.22); border:2px solid rgba(255,210,74,.2);
+  border-radius:13px; padding:13px; position:relative;
+}
+.kol-naglowek{
+  display:flex; align-items:center; gap:9px; margin-bottom:11px;
+  font-family:var(--serif); font-style:italic; font-size:1.02rem; color:var(--zloto);
+}
+.kol-nr{
+  flex:0 0 auto; width:23px; height:23px; border-radius:50%; font-style:normal;
+  display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:900;
+  background:linear-gradient(180deg,var(--zloto-jasne),var(--zloto) 45%,#c8890d);
+  color:#3a2400; border:1px solid #6b4405; box-shadow:inset 0 1px 0 #fff8d0;
+}
+.wybierak,.gatunek{
+  display:block; width:100%; text-align:left; margin-bottom:7px; padding:9px 12px; border-radius:10px;
+  background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  border:2px solid rgba(255,210,74,.18); color:var(--tekst); transition:all .16s; position:relative;
+}
+.wybierak:hover:not(:disabled),.gatunek:hover{border-color:rgba(255,210,74,.55); background:rgba(255,210,74,.1)}
+.wybierak.wybrany,.gatunek.wybrany{
+  border-color:var(--zloto);
+  background:linear-gradient(180deg, rgba(255,210,74,.26), rgba(255,210,74,.07));
+  box-shadow:0 0 0 1px rgba(255,210,74,.45);
+}
+.wybierak-nazwa,.gatunek-nazwa{display:block; font-weight:900; font-size:.92rem; color:var(--zloto-jasne)}
+.wybierak-opis,.gatunek-opis{display:block; font-size:.74rem; color:var(--przygas); margin-top:2px}
+.wybierak.niegotowe{opacity:.45; cursor:not-allowed}
+.plakietka{
+  position:absolute; top:8px; right:9px; font-size:.56rem; letter-spacing:1.4px; text-transform:uppercase;
+  background:rgba(255,210,74,.2); color:var(--zloto); padding:2px 6px; border-radius:4px;
+  border:1px solid rgba(255,210,74,.35);
+}
+.pod-blok{margin-top:13px}
+.pod-tytul{font-size:.66rem; letter-spacing:2px; text-transform:uppercase; color:var(--przygas); margin-bottom:6px}
+.pod-tytul b{color:var(--zloto); letter-spacing:1px}
+.przelaczniki{display:flex; gap:5px; flex-wrap:wrap}
+.przelacznik{
+  flex:1; min-width:64px; padding:7px 6px; border-radius:8px; font-size:.72rem; font-weight:700;
+  background:rgba(255,255,255,.06); border:2px solid rgba(255,210,74,.18); color:var(--tekst); transition:all .16s;
+}
+.przelacznik:hover{border-color:rgba(255,210,74,.5)}
+.przelacznik.wybrany{
+  border-color:var(--zloto); color:#3a2400;
+  background:linear-gradient(180deg,var(--zloto-jasne),var(--zloto) 55%,#e29d12);
+}
+.przygaszone{opacity:.35; pointer-events:none}
+
+/* suwak lat: dwa uchwyty na wspolnym torze */
+.suwak{position:relative; height:30px}
+.suwak-tor{position:absolute; left:0; right:0; top:12px; height:6px; border-radius:4px;
+  background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.12); overflow:hidden}
+.suwak-wybor{position:absolute; top:0; bottom:0; background:linear-gradient(90deg,#ffe9a0,var(--zloto))}
+.suwak input[type=range]{
+  position:absolute; left:0; top:5px; width:100%; height:20px; margin:0;
+  -webkit-appearance:none; appearance:none; background:transparent; pointer-events:none;
+}
+.suwak input[type=range]:focus-visible{outline:2px solid var(--zloto); outline-offset:4px}
+.suwak input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; pointer-events:auto; width:20px; height:20px; border-radius:50%; cursor:pointer;
+  background:linear-gradient(180deg,#fff3b0,var(--zloto) 45%,#c8890d);
+  border:2px solid #6b4405; box-shadow:0 2px 5px rgba(0,0,0,.55);
+}
+.suwak input[type=range]::-moz-range-thumb{
+  pointer-events:auto; width:18px; height:18px; border-radius:50%; cursor:pointer;
+  background:linear-gradient(180deg,#fff3b0,var(--zloto) 45%,#c8890d);
+  border:2px solid #6b4405; box-shadow:0 2px 5px rgba(0,0,0,.55);
+}
+.suwak input[type=range]::-moz-range-track{background:transparent; border:0}
+.licznik{
+  margin-top:13px; text-align:center; font-size:.72rem; letter-spacing:2px; text-transform:uppercase;
+  color:var(--zloto); padding:7px; border-radius:8px; background:rgba(255,210,74,.09);
+  border:1px solid rgba(255,210,74,.22);
+}
+.licznik.za-malo{color:#ffb9c1; background:rgba(224,55,74,.12); border-color:rgba(224,55,74,.3)}
+
 /* ---- wlasny repertuar ---- */
 .imp-otworz{
   display:block; width:100%; margin:-8px 0 22px; padding:11px;
@@ -277,7 +355,7 @@ button{font-family:inherit; cursor:pointer; border:0}
 .werdykt-tak{color:#8df0ad} .werdykt-nie{color:#ffb0ba}
 .w-tytul{font-size:1.5rem; font-weight:900; color:var(--zloto-jasne); line-height:1.2}
 .w-wykonawca{color:var(--przygas); margin:4px 0 18px; font-size:1rem}
-.w-przyciski{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px}
+.w-przyciski{display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start; margin-top:20px}
 
 /* ---- podium ---- */
 .podium{text-align:center}
@@ -302,6 +380,9 @@ button{font-family:inherit; cursor:pointer; border:0}
 .stopka{text-align:center; font-size:.68rem; color:rgba(185,169,230,.6); margin:18px auto 6px; max-width:560px; line-height:1.7}
 .stopka a{color:rgba(255,210,74,.75)}
 
+@media (max-width:760px){
+  .menu-kolumny{grid-template-columns:1fr}
+}
 @media (max-width:520px){
   body{padding:8px}
   .ramka{border-width:10px; padding:16px 12px 20px}
@@ -328,8 +409,46 @@ button{font-family:inherit; cursor:pointer; border:0}
 
   <!-- ================= ekran startowy ================= -->
   <section id="ekran-start">
-    <p class="sekcja-tytul">Wybierz repertuar</p>
-    <div class="pakiety" id="pakiety"></div>
+    <div class="menu-kolumny">
+
+      <div class="kolumna">
+        <div class="kol-naglowek"><span class="kol-nr">1</span>Gracze</div>
+        <div id="kol-gracze"></div>
+      </div>
+
+      <div class="kolumna">
+        <div class="kol-naglowek"><span class="kol-nr">2</span>Repertuar</div>
+        <div id="kol-gatunki"></div>
+        <div class="pod-blok">
+          <div class="pod-tytul">Sk&#261;d</div>
+          <div class="przelaczniki" id="kol-kraj"></div>
+        </div>
+        <div class="pod-blok" id="blok-lata">
+          <div class="pod-tytul">Lata <b id="lata-etykieta"></b></div>
+          <div class="suwak">
+            <div class="suwak-tor"><div class="suwak-wybor" id="lata-wybor"></div></div>
+            <input type="range" id="lata-od" aria-label="Rok pocz&#261;tkowy">
+            <input type="range" id="lata-do" aria-label="Rok ko&#324;cowy">
+          </div>
+        </div>
+        <div class="licznik" id="licznik-melodii"></div>
+      </div>
+
+      <div class="kolumna">
+        <div class="kol-naglowek"><span class="kol-nr">3</span>Tryb gry</div>
+        <div class="tryby">
+          <button class="zloty duzy" id="tryb-dzienna">Melodia dnia
+            <span class="tryb-opis">Jedna piosenka na dob&#281; &#8212; dla wszystkich ta sama</span></button>
+          <button class="srebrny" id="tryb-bezkonca">Gra bez ko&#324;ca
+            <span class="tryb-opis">Melodia za melodi&#261;, licz&#261;c seri&#281; trafie&#324;</span></button>
+          <button class="srebrny" id="tryb-runda">Runda na punkty
+            <span class="tryb-opis">Siedem melodii jak w odcinku teleturnieju</span></button>
+        </div>
+        <p class="komunikat blad hide" id="za-waski">Za ma&#322;o melodii przy tych ustawieniach &#8212;
+           poszerz lata albo wybierz inny gatunek.</p>
+      </div>
+
+    </div>
 
     <button class="imp-otworz" id="imp-otworz" type="button">&#9998; U&#322;&#243;&#380; w&#322;asny repertuar</button>
 
@@ -349,16 +468,6 @@ button{font-family:inherit; cursor:pointer; border:0}
         <div class="imp-teraz" id="imp-teraz"></div>
       </div>
       <div id="imp-wynik" class="hide"><p class="komunikat" id="imp-tresc"></p></div>
-    </div>
-
-    <p class="sekcja-tytul">Wybierz tryb gry</p>
-    <div class="tryby">
-      <button class="zloty duzy" id="tryb-dzienna">Melodia dnia
-        <span class="tryb-opis">Jedna piosenka na dob&#281; &#8212; dla wszystkich ta sama</span></button>
-      <button class="srebrny" id="tryb-bezkonca">Gra bez ko&#324;ca
-        <span class="tryb-opis">Melodia za melodi&#261;, licz&#261;c seri&#281; trafie&#324;</span></button>
-      <button class="srebrny" id="tryb-runda">Runda na punkty
-        <span class="tryb-opis">Siedem melodii jak w odcinku teleturnieju</span></button>
     </div>
 
     <div id="ladowanie" class="komunikat hide"><span class="kreci"></span>Orkiestra stroi instrumenty&#8230;</div>

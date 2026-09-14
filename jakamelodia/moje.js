@@ -114,7 +114,7 @@
       if(nieznane.length) txt += ' Nie udało się dopasować ' + nieznane.length + ': ' + nieznane.slice(0,6).join('; ') + (nieznane.length>6 ? '…' : '');
       $('imp-tresc').textContent = txt;
       $('imp-tresc').className = 'komunikat';
-      if(window.odswiezPakiety) window.odswiezPakiety('moje');
+      if(window.odswiezMenu) window.odswiezMenu('moje');
     }
 
     krok();
@@ -126,13 +126,13 @@
     $('imp-tresc').className = 'komunikat blad';
   }
 
-  /* ---- wpiecie zapisanego pakietu do listy ---- */
-  function wepnij(){
+  /* ---- zapisany repertuar jako zwykla lista utworow ---- */
+  function lista(){
     var zapis = mem(KLUCZ);
-    window.PACKS = (window.PACKS || []).filter(function(p){ return p.id !== 'moje'; });
-    if(zapis && zapis.songs && zapis.songs.length) window.PACKS.push(zapis);
-    return !!zapis;
+    return (zapis && zapis.songs) ? zapis.songs : [];
   }
+  function jest(){ return lista().length > 0; }
+  function wepnij(){ return jest(); }   // zostaje dla zgodnosci
 
   function usun(){
     mem(KLUCZ, null);
@@ -141,7 +141,7 @@
     $('imp-tresc').textContent = 'Twój repertuar został usunięty.';
     $('imp-tresc').className = 'komunikat';
     odswiezPrzyciskUsun();
-    if(window.odswiezPakiety) window.odswiezPakiety();
+    if(window.odswiezMenu) window.odswiezMenu();
   }
 
   function odswiezPrzyciskUsun(){
@@ -163,5 +163,5 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', podepnijUI);
   else podepnijUI();
 
-  window.Moje = { importuj: importuj, wepnij: wepnij, usun: usun };
+  window.Moje = { importuj: importuj, lista: lista, jest: jest, usun: usun };
 })();

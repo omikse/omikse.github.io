@@ -1,31 +1,37 @@
 /* ============================================================
    game.js — logika teleturnieju
    ------------------------------------------------------------
-   Trzy tryby: melodia dnia, gra bez konca i runda na siedem
-   utworow. Kazda runda to jeden utwor i szesc podejsc; po
-   kazdym pudle albo pasie odslania sie dluzszy urywek.
+   Menu czyta sie od lewej do prawej: najpierw ilu graczy, potem
+   z czego ma byc repertuar (gatunek, kraj, lata), a na koncu
+   tryb gry. Repertuar nie jest juz gotowa lista — powstaje
+   z filtrow nalozonych na plaski katalog w songs.js.
+
+   Sama runda to jeden utwor i szesc podejsc; po kazdym pudle
+   albo pominieciu odslania sie dluzszy urywek.
    ============================================================ */
 (function(){
   'use strict';
 
-  var DLUGOSCI = [1, 2, 4, 7, 11, 16];      // sekundy urywka w kolejnych podejsciach
+  var DLUGOSCI = [1, 2, 4, 7, 11, 16];   // sekundy urywka w kolejnych podejsciach
   var PROB     = DLUGOSCI.length;
-  var RUNDA_N  = 7;                          // ile utworow w rundzie
-  var PELNA    = 30;                         // dlugosc calej probki
+  var RUNDA_N  = 7;                       // ile utworow w rundzie
+  var PELNA    = 30;                      // dlugosc calej probki
+  var MIN_PULA = 6;                       // ponizej tego nie ma sensownych podpowiedzi
+  var ROK_MIN  = 1950;
+  var ROK_MAX  = new Date().getFullYear();
 
   var $  = function(id){ return document.getElementById(id); };
   var el = function(t, k, tx){ var e=document.createElement(t); if(k) e.className=k; if(tx!=null) e.textContent=tx; return e; };
 
-  /* ---- pamiec przegladarki, zawsze w try/catch ---- */
   var mem = {
     get: function(k, d){ try{ var v=localStorage.getItem('jtm.'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
     set: function(k, v){ try{ localStorage.setItem('jtm.'+k, JSON.stringify(v)); }catch(e){} }
   };
 
-  /* ---- porownywanie tytulow: bez wielkosci liter, bez ogonkow, bez znakow ---- */
+  /* porownywanie tytulow: bez wielkosci liter, bez ogonkow, bez znakow */
   function norm(s){
-    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-                  .replace(/\u0142/g,'l').replace(/[^a-z0-9]/g,'');
+    return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+                  .replace(/ł/g,'l').replace(/[^a-z0-9]/g,'');
   }
   function pasuje(wpis, utwor){
     var w = norm(wpis);
@@ -36,10 +42,12 @@
 
   /* ---- stan ---- */
   var S = {
-    pakiet:null, pula:[], tryb:'dzienna',
+    gracze: 'jeden',
+    wybor: { gat:'wszystko', kraj:'oba', od:ROK_MIN, do:ROK_MAX, moje:false },
+    pula: [], gotowaDla: null,
+    tryb: 'dzienna',
     utwor:null, proba:0, odpowiedzi:[], koniec:false, wygrana:false,
-    rundaNr:0, rundaPkt:0, rundaLog:[],
-    data:null, zajete:false
+    rundaNr:0, rundaPkt:0, rundaLog:[], data:null
   };
 
   function dzisiaj(){
@@ -48,14 +56,12 @@
     var d = new Date();
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
-  /* FNV-1a — krotki, stabilny, ten sam wynik wszedzie */
   function hasz(s){
     var h = 2166136261;
     for(var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
     return h >>> 0;
   }
 
-  /* ---- ekrany ---- */
   function pokaz(id){
     ['ekran-start','ekran-gra','ekran-wynik','ekran-podium'].forEach(function(e){
       $(e).classList.toggle('hide', e!==id);
@@ -63,40 +69,139 @@
   }
 
   /* ============================================================
-     ekran startowy — wybor pakietu i trybu
+     repertuar z filtrow
      ============================================================ */
-  var wybranyPakiet = mem.get('pakiet', 'polskie');
+  function pulaSurowa(){
+    if(S.wybor.moje) return window.Moje ? window.Moje.lista() : [];
+    return window.KATALOG.filter(function(s){
+      if(S.wybor.gat !== 'wszystko' && s.g !== S.wybor.gat) return false;
+      if(S.wybor.kraj !== 'oba' && s.k !== S.wybor.kraj) return false;
+      return s.r >= S.wybor.od && s.r <= S.wybor.do;
+    });
+  }
+  /* podpis wyboru — wchodzi w losowanie melodii dnia i w tekst do skopiowania,
+     zeby ta sama melodia dnia wypadla kazdemu, kto ustawil to samo */
+  function podpisWyboru(){
+    if(S.wybor.moje) return 'moje';
+    return S.wybor.gat + '/' + S.wybor.kraj + '/' + S.wybor.od + '-' + S.wybor.do;
+  }
+  function nazwaWyboru(){
+    if(S.wybor.moje) return 'Mój repertuar';
+    var g = S.wybor.gat === 'wszystko' ? 'Wszystko'
+          : (window.GATUNKI.filter(function(x){ return x.id===S.wybor.gat; })[0]||{}).name;
+    var k = S.wybor.kraj === 'pl' ? 'Polska' : (S.wybor.kraj === 'sw' ? 'Świat' : 'Polska i świat');
+    var l = (S.wybor.od <= ROK_MIN && S.wybor.do >= ROK_MAX) ? 'wszystkie lata' : (S.wybor.od + '–' + S.wybor.do);
+    return g + ' · ' + k + ' · ' + l;
+  }
 
-  function rysujPakiety(wybierz){
-    if(wybierz) wybranyPakiet = wybierz;
-    /* wlasny repertuar mogl wlasnie zniknac — nie zostawiajmy wskazania w prozni */
-    if(!window.PACKS.some(function(p){ return p.id === wybranyPakiet; }))
-      wybranyPakiet = window.PACKS[0].id;
-    mem.set('pakiet', wybranyPakiet);
-    var box = $('pakiety'); box.innerHTML = '';
-    window.PACKS.forEach(function(p){
-      var b = el('button', 'pakiet' + (p.id===wybranyPakiet ? ' wybrany' : ''));
-      b.appendChild(el('span','pakiet-nazwa', p.name));
-      b.appendChild(el('span','pakiet-opis', p.desc));
-      b.appendChild(el('span','pakiet-ile', p.songs.length + ' melodii'));
-      b.onclick = function(){ wybranyPakiet = p.id; mem.set('pakiet', p.id); rysujPakiety(); };
+  /* ============================================================
+     menu — trzy kolumny od lewej do prawej
+     ============================================================ */
+  function wczytajWybor(){
+    var z = mem.get('wybor', null);
+    if(z && typeof z === 'object'){
+      S.wybor.gat  = z.gat  || 'wszystko';
+      S.wybor.kraj = z.kraj || 'oba';
+      S.wybor.od   = Math.max(ROK_MIN, Math.min(ROK_MAX, z.od || ROK_MIN));
+      S.wybor.do   = Math.max(S.wybor.od, Math.min(ROK_MAX, z.do || ROK_MAX));
+      S.wybor.moje = !!z.moje;
+    }
+    if(S.wybor.moje && !(window.Moje && window.Moje.jest())) S.wybor.moje = false;
+  }
+  function zapiszWybor(){ mem.set('wybor', S.wybor); }
+
+  /* kolumna 1 — ilu graczy */
+  function rysujGraczy(){
+    var box = $('kol-gracze'); box.innerHTML = '';
+    [['jeden','Jeden gracz','Grasz sam, przy swoim ekranie'],
+     ['wielu','Wielu graczy','Wspólny pokój — jeszcze w budowie']
+    ].forEach(function(o){
+      var b = el('button', 'wybierak' + (S.gracze===o[0] ? ' wybrany' : '') + (o[0]==='wielu' ? ' niegotowe' : ''));
+      b.appendChild(el('span','wybierak-nazwa', o[1]));
+      b.appendChild(el('span','wybierak-opis', o[2]));
+      if(o[0]==='wielu'){
+        b.disabled = true;
+        b.appendChild(el('span','plakietka','wkrótce'));
+      } else {
+        b.onclick = function(){ S.gracze = o[0]; rysujGraczy(); };
+      }
       box.appendChild(b);
     });
   }
 
-  function pakietPoId(id){
-    return window.PACKS.filter(function(p){ return p.id===id; })[0] || window.PACKS[0];
+  /* kolumna 2 — z czego repertuar */
+  function rysujRepertuar(){
+    var box = $('kol-gatunki'); box.innerHTML = '';
+    var pozycje = [{id:'wszystko', name:'Wszystko', opis:'Cały katalog'}].concat(window.GATUNKI);
+    pozycje.forEach(function(g){
+      var b = el('button', 'gatunek' + (!S.wybor.moje && S.wybor.gat===g.id ? ' wybrany' : ''));
+      b.appendChild(el('span','gatunek-nazwa', g.name));
+      b.appendChild(el('span','gatunek-opis', g.opis));
+      b.onclick = function(){ S.wybor.gat = g.id; S.wybor.moje = false; rysujRepertuar(); odswiez(); };
+      box.appendChild(b);
+    });
+    if(window.Moje && window.Moje.jest()){
+      var m = el('button', 'gatunek' + (S.wybor.moje ? ' wybrany' : ''));
+      m.appendChild(el('span','gatunek-nazwa','Mój repertuar'));
+      m.appendChild(el('span','gatunek-opis', window.Moje.lista().length + ' własnych melodii'));
+      m.onclick = function(){ S.wybor.moje = true; rysujRepertuar(); odswiez(); };
+      box.appendChild(m);
+    }
+
+    /* kraj */
+    var kbox = $('kol-kraj'); kbox.innerHTML = '';
+    [['oba','Polska i świat'],['pl','Polska'],['sw','Świat']].forEach(function(o){
+      var b = el('button','przelacznik' + (S.wybor.kraj===o[0] ? ' wybrany' : ''), o[1]);
+      b.onclick = function(){ S.wybor.kraj = o[0]; rysujRepertuar(); odswiez(); };
+      kbox.appendChild(b);
+    });
+
+    $('lata-od').value = S.wybor.od;
+    $('lata-do').value = S.wybor.do;
+    rysujSuwak();
+    $('kol-kraj').classList.toggle('przygaszone', S.wybor.moje);
+    $('blok-lata').classList.toggle('przygaszone', S.wybor.moje);
   }
 
-  /* pobranie adresow probek — jedyny moment, w ktorym gra potrzebuje sieci */
+  function rysujSuwak(){
+    var a = (S.wybor.od - ROK_MIN) / (ROK_MAX - ROK_MIN) * 100;
+    var b = (S.wybor.do - ROK_MIN) / (ROK_MAX - ROK_MIN) * 100;
+    $('lata-wybor').style.left  = a + '%';
+    $('lata-wybor').style.width = (b - a) + '%';
+    $('lata-etykieta').textContent = S.wybor.od + ' – ' + S.wybor.do;
+  }
+
+  /* kolumna 3 — tryb; odblokowana dopiero, gdy jest z czego grac */
+  function odswiez(){
+    S.gotowaDla = null;                       // wybor sie zmienil, trzeba pobrac na nowo
+    var n = pulaSurowa().length;
+    var dosc = n >= MIN_PULA;
+    $('licznik-melodii').textContent = n === 0 ? 'brak melodii'
+        : (n + (n===1 ? ' melodia' : (n<5 ? ' melodie' : ' melodii')));
+    $('licznik-melodii').classList.toggle('za-malo', !dosc);
+    $('za-waski').classList.toggle('hide', dosc);
+    ['tryb-dzienna','tryb-bezkonca','tryb-runda'].forEach(function(id){ $(id).disabled = !dosc; });
+    zapiszWybor();
+  }
+
+  function rysujMenu(preselect){
+    if(preselect === 'moje') S.wybor.moje = true;
+    rysujGraczy(); rysujRepertuar(); odswiez();
+  }
+
+  /* ============================================================
+     pobranie adresow probek
+     ============================================================ */
   function przygotuj(){
-    var p = pakietPoId(wybranyPakiet);
-    if(S.pakiet && S.pakiet.id===p.id && S.pula.length) return Promise.resolve();
+    var podpis = podpisWyboru();
+    if(S.gotowaDla === podpis && S.pula.length) return Promise.resolve();
+    var surowa = pulaSurowa();
+    if(surowa.length < MIN_PULA) return Promise.reject(new Error('za waski wybor'));
     $('ladowanie').classList.remove('hide');
     $('blad').classList.add('hide');
-    return window.ITunes.rozwiaz(p.songs).then(function(r){
-      if(!r.ok.length) throw new Error('pusty pakiet');
-      S.pakiet = p; S.pula = r.ok;
+    return window.ITunes.rozwiaz(surowa).then(function(r){
+      if(r.ok.length < MIN_PULA) throw new Error('za malo probek');
+      S.pula = r.ok; S.gotowaDla = podpis;
       $('ladowanie').classList.add('hide');
     }).catch(function(e){
       $('ladowanie').classList.add('hide');
@@ -108,14 +213,15 @@
   }
 
   function start(tryb){
-    window.Audio2.silnik();                 // kontekst musi powstac w gescie uzytkownika
-    window.Audio2.intro();                  // czolowka leci w trakcie pobierania listy
+    window.Audio2.silnik();
+    window.Audio2.motywStop();
+    window.Audio2.intro();
     przygotuj().then(function(){
       S.tryb = tryb;
       S.rundaNr = 0; S.rundaPkt = 0; S.rundaLog = [];
       if(tryb==='dzienna'){
         S.data = dzisiaj();
-        var zapis = mem.get('dzienna.'+S.pakiet.id+'.'+S.data, null);
+        var zapis = mem.get('dzienna.' + podpisWyboru() + '.' + S.data, null);
         nowaRunda();
         if(zapis){ wczytajZapis(zapis); return; }
       } else {
@@ -129,7 +235,7 @@
   /* ============================================================
      wybor utworu
      ============================================================ */
-  var ostatnie = [];                         // zeby to samo nie wracalo od razu
+  var ostatnie = [];
 
   function losowy(){
     var wolne = S.pula.filter(function(u){ return ostatnie.indexOf(u.id)<0; });
@@ -140,12 +246,10 @@
     return u;
   }
 
-  /* numer dnia od 1970 — liczony w UTC, wiec ten sam w kazdej strefie */
   function numerDnia(iso){
     var p = iso.split('-');
     return Math.floor(Date.UTC(+p[0], +p[1]-1, +p[2]) / 86400000);
   }
-  /* maly powtarzalny generator, potrzebny wylacznie do tasowania */
   function mulberry(a){
     return function(){
       a = a + 0x6D2B79F5 | 0;
@@ -154,17 +258,17 @@
       return ((t ^ t>>>14) >>> 0) / 4294967296;
     };
   }
-  /* Utwor dnia: samo haszowanie daty potrafi wrocic do tej samej piosenki
-     po trzech dniach, a innej nie pokazac nigdy. Zamiast tego tasujemy caly
-     pakiet raz na obieg — kazda melodia wypada dokladnie raz, zanim
-     ktorakolwiek sie powtorzy, a kolejny obieg ma inna kolejnosc. */
+  /* Samo haszowanie daty potrafi wrocic do tej samej piosenki po trzech
+     dniach, a innej nie pokazac nigdy. Tasujemy wiec caly repertuar raz na
+     obieg: kazda melodia wypada dokladnie raz, zanim ktorakolwiek sie
+     powtorzy, a nastepny obieg ma inna kolejnosc. */
   function utworDnia(){
     var n = S.pula.length;
     var dzien = numerDnia(S.data);
     var obieg = Math.floor(dzien / n);
     var miejsce = ((dzien % n) + n) % n;
     var idx = []; for(var i=0;i<n;i++) idx.push(i);
-    var rnd = mulberry(hasz(S.pakiet.id + ':' + obieg));
+    var rnd = mulberry(hasz(podpisWyboru() + ':' + obieg));
     for(var j=n-1;j>0;j--){
       var k = Math.floor(rnd()*(j+1));
       var t = idx[j]; idx[j] = idx[k]; idx[k] = t;
@@ -173,14 +277,9 @@
   }
 
   function nowaRunda(){
-    if(S.tryb==='dzienna'){
-      S.utwor = utworDnia();
-    } else {
-      S.utwor = losowy();
-    }
+    S.utwor = (S.tryb==='dzienna') ? utworDnia() : losowy();
     S.proba = 0; S.odpowiedzi = []; S.koniec = false; S.wygrana = false;
     window.Audio2.stop();
-    /* podgrzewamy bufor, zeby pierwszy przycisk zagral natychmiast */
     window.Audio2.wczytaj(S.utwor.preview).catch(function(){});
   }
 
@@ -192,10 +291,9 @@
   }
 
   /* ============================================================
-     rysowanie ekranu gry
+     ekran gry
      ============================================================ */
   function rysujGre(){
-    /* zarowki podejsc */
     var z = $('zarowki'); z.innerHTML = '';
     for(var i=0;i<PROB;i++){
       var o = S.odpowiedzi[i];
@@ -208,52 +306,44 @@
       e.appendChild(el('b', null, DLUGOSCI[i]+'s'));
       z.appendChild(e);
     }
-    /* pasek odslonietego czasu */
     var ile = DLUGOSCI[Math.min(S.proba, PROB-1)];
     $('pasek-odkryty').style.width = (100*ile/PELNA).toFixed(1)+'%';
     $('dl-opis').textContent = S.koniec ? 'cała próbka' : ile + (ile===1?' sekunda':(ile<5?' sekundy':' sekund'));
 
-    /* lista dotychczasowych odpowiedzi */
     var l = $('lista'); l.innerHTML = '';
     S.odpowiedzi.forEach(function(o){
       var w = el('div','wpis wpis-'+o.typ);
-      w.appendChild(el('span','wpis-ikona', o.typ==='dobrze'?'\u2713':(o.typ==='pas'?'\u2192':'\u2717')));
+      w.appendChild(el('span','wpis-ikona', o.typ==='dobrze'?'✓':(o.typ==='pas'?'→':'✗')));
       w.appendChild(el('span','wpis-tekst', o.typ==='pas' ? 'pominięte podejście' : o.tekst));
       l.appendChild(w);
     });
 
-    /* licznik rundy / serii */
     var info = '';
-    if(S.tryb==='runda')    info = 'Utwór ' + (S.rundaNr+1) + ' z ' + RUNDA_N + '  \u00b7  ' + S.rundaPkt + ' pkt';
-    if(S.tryb==='bezkonca') info = 'Seria: ' + (mem.get('seria',0)) + '  \u00b7  rekord: ' + mem.get('rekord',0);
-    if(S.tryb==='dzienna')  info = 'Melodia dnia \u00b7 ' + S.data;
+    if(S.tryb==='runda')    info = 'Utwór ' + (S.rundaNr+1) + ' z ' + RUNDA_N + '  ·  ' + S.rundaPkt + ' pkt';
+    if(S.tryb==='bezkonca') info = 'Seria: ' + mem.get('seria',0) + '  ·  rekord: ' + mem.get('rekord',0);
+    if(S.tryb==='dzienna')  info = 'Melodia dnia · ' + S.data;
     $('info-tryb').textContent = info;
-    $('nazwa-pakietu').textContent = S.pakiet.name;
+    $('nazwa-pakietu').textContent = nazwaWyboru();
 
     /* Nazwa przycisku ma mowic, co sie stanie po nacisnieciu. Kolejne
        podejscie odslania dluzszy urywek; przy ostatnim nie ma juz czego
        odslaniac, wiec jest to po prostu poddanie sie. */
     var ostatnia = S.proba >= PROB-1;
     $('btn-pas').textContent = ostatnia ? 'Poddaję się' : ('Dłuższy urywek · ' + DLUGOSCI[S.proba+1] + ' s');
-    $('btn-pas').title = ostatnia
-      ? 'Kończy rundę i pokazuje odpowiedź'
-      : 'Pomija to podejście i odsłania dłuższy fragment';
+    $('btn-pas').title = ostatnia ? 'Kończy rundę i pokazuje odpowiedź'
+                                  : 'Pomija to podejście i odsłania dłuższy fragment';
     $('odp').value = '';
     $('odp').disabled = S.koniec;
     $('btn-pas').disabled = S.koniec;
     $('podpowiedzi').innerHTML = '';
   }
 
-  /* ============================================================
-     odtwarzanie urywka
-     ============================================================ */
   function zagraj(){
     if(!S.utwor) return;
     var sek = S.koniec ? PELNA : DLUGOSCI[Math.min(S.proba, PROB-1)];
     $('btn-graj').classList.add('gra');
-    /* wskaznik biegnie po pasku razem z dzwiekiem.
-       Przestawienie robimy synchronicznie z wymuszonym przeliczeniem ukladu,
-       a nie w requestAnimationFrame — ten stoi, kiedy karta jest w tle. */
+    /* przestawienie robimy synchronicznie z wymuszonym przeliczeniem ukladu,
+       a nie w requestAnimationFrame — ten stoi, kiedy karta jest w tle */
     var w = $('wskaznik');
     w.style.transition = 'none';
     w.style.width = '0%';
@@ -268,17 +358,13 @@
     });
   }
 
-  /* ============================================================
-     podpowiedzi do wpisywania (lista tytulow z pakietu)
-     ============================================================ */
   function rysujPodpowiedzi(){
     var box = $('podpowiedzi'); box.innerHTML = '';
     var w = norm($('odp').value);
-    if(!w){ return; }
-    var trafione = S.pula.filter(function(u){
+    if(!w) return;
+    S.pula.filter(function(u){
       return norm(u.t).indexOf(w) >= 0 || norm(u.a).indexOf(w) >= 0;
-    }).slice(0, 8);
-    trafione.forEach(function(u){
+    }).slice(0, 8).forEach(function(u){
       var b = el('button','podp');
       b.appendChild(el('span','podp-t', u.t));
       b.appendChild(el('span','podp-a', u.a));
@@ -287,19 +373,15 @@
     });
   }
 
-  /* ============================================================
-     odpowiedz i pas
-     ============================================================ */
   function sprawdz(tekst){
-    if(S.koniec || S.zajete) return;
+    if(S.koniec) return;
     tekst = (tekst||'').trim();
     if(!tekst) return;
     if(pasuje(tekst, S.utwor)){
       S.odpowiedzi.push({typ:'dobrze', tekst:S.utwor.t});
       S.wygrana = true; S.koniec = true;
       window.Audio2.fanfara();
-      zapiszWynik();
-      rysujGre();
+      zapiszWynik(); rysujGre();
       setTimeout(function(){ odsloniecie(false); }, 700);
     } else {
       S.odpowiedzi.push({typ:'zle', tekst:tekst});
@@ -307,35 +389,31 @@
       dalejAlboKoniec();
     }
   }
-
   function pas(){
-    if(S.koniec || S.zajete) return;
+    if(S.koniec) return;
     S.odpowiedzi.push({typ:'pas', tekst:'pas'});
     window.Audio2.tik(false);
     dalejAlboKoniec();
   }
-
   function dalejAlboKoniec(){
     S.proba++;
     if(S.proba >= PROB){
       S.koniec = true; S.wygrana = false;
-      zapiszWynik();
-      rysujGre();
+      zapiszWynik(); rysujGre();
       setTimeout(function(){ odsloniecie(false); }, 600);
     } else {
-      rysujGre();
-      zagraj();
+      rysujGre(); zagraj();
     }
   }
 
   /* ============================================================
-     zapisywanie wynikow
+     wyniki
      ============================================================ */
-  function punkty(){ return S.wygrana ? (PROB - S.proba) : 0; }   // 6 pkt za pierwsze podejscie, 1 za szoste
+  function punkty(){ return S.wygrana ? (PROB - S.proba) : 0; }
 
   function zapiszWynik(){
     if(S.tryb==='dzienna'){
-      mem.set('dzienna.'+S.pakiet.id+'.'+S.data,
+      mem.set('dzienna.' + podpisWyboru() + '.' + S.data,
               {proba:S.proba, odpowiedzi:S.odpowiedzi, wygrana:S.wygrana});
     }
     if(S.tryb==='bezkonca'){
@@ -349,22 +427,21 @@
     }
   }
 
-  /* ============================================================
-     odsloniecie odpowiedzi
-     ============================================================ */
   function odsloniecie(cicho){
     if(!cicho) window.Audio2.werbel();
     pokaz('ekran-wynik');
     $('w-okladka').src = S.utwor.art || '';
     $('w-okladka').alt = S.utwor.t;
     $('w-tytul').textContent  = S.utwor.t;
-    $('w-wykonawca').textContent = S.utwor.a;
+    $('w-wykonawca').textContent = S.utwor.a + (S.utwor.r ? '  ·  ' + S.utwor.r : '');
     $('w-werdykt').textContent = S.wygrana
       ? ['Brawo! Za pierwszym razem!','Świetnie — dwa podejścia.','Dobrze, trzecie podejście.',
          'Jest! Czwarte podejście.','Udało się za piątym razem.','W ostatniej chwili!'][S.proba]
       : 'Niestety. To było to.';
     $('w-werdykt').className = 'werdykt ' + (S.wygrana ? 'werdykt-tak' : 'werdykt-nie');
 
+    /* Dalej gra sie w lewo: przycisk, ktory prowadzi do nastepnej melodii,
+       stoi pierwszy z brzegu, a Menu na koncu rzedu. */
     var stopka = $('w-przyciski'); stopka.innerHTML = '';
     if(S.tryb==='runda'){
       var ostatni = (S.rundaNr+1) >= RUNDA_N;
@@ -376,42 +453,36 @@
       n.onclick = function(){ nowaRunda(); pokaz('ekran-gra'); rysujGre(); };
       stopka.appendChild(n);
     } else {
-      var s = el('button','zloty duzy','Skopiuj wynik');
+      var d = el('button','zloty duzy','Graj dalej bez końca');
+      d.onclick = function(){ start('bezkonca'); };
+      stopka.appendChild(d);
+      var s = el('button','srebrny','Skopiuj wynik');
       s.onclick = function(){ udostepnij(s); };
       stopka.appendChild(s);
-      var e = el('button','srebrny','Graj bez końca');
-      e.onclick = function(){ start('bezkonca'); };
-      stopka.appendChild(e);
     }
     var m = el('button','srebrny','Menu');
     m.onclick = doMenu;
     stopka.appendChild(m);
   }
 
-  /* siatka do wklejenia znajomym */
   function kratka(){
     var s = '';
     for(var i=0;i<PROB;i++){
       var o = S.odpowiedzi[i];
-      s += !o ? '\u2b1b' : (o.typ==='dobrze' ? '\ud83d\udfe9' : (o.typ==='pas' ? '\ud83d\udfe8' : '\ud83d\udfe5'));
+      s += !o ? '⬛' : (o.typ==='dobrze' ? '🟩' : (o.typ==='pas' ? '🟨' : '🟥'));
     }
     return s;
   }
   function udostepnij(btn){
-    var naglowek = 'Jaka to melodia? \u2014 ' + S.pakiet.name + '\n' + S.data + '  ' +
-                   (S.wygrana ? (S.proba+1)+'/'+PROB : 'X/'+PROB);
-    var txt = naglowek + '\n' + kratka() + '\n' + location.origin + location.pathname;
-    var pokazOk = function(){ var t=btn.textContent; btn.textContent='Skopiowano!'; setTimeout(function(){ btn.textContent=t; },1600); };
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(pokazOk, function(){ window.prompt('Skopiuj wynik:', txt); });
-    } else {
-      window.prompt('Skopiuj wynik:', txt);
-    }
+    var txt = 'Jaka to melodia? — ' + nazwaWyboru() + '\n' +
+              S.data + '  ' + (S.wygrana ? (S.proba+1)+'/'+PROB : 'X/'+PROB) + '\n' +
+              kratka() + '\n' + location.origin + location.pathname;
+    var ok = function(){ var t=btn.textContent; btn.textContent='Skopiowano!'; setTimeout(function(){ btn.textContent=t; },1600); };
+    if(navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(txt).then(ok, function(){ window.prompt('Skopiuj wynik:', txt); });
+    else window.prompt('Skopiuj wynik:', txt);
   }
 
-  /* ============================================================
-     podium na koniec rundy
-     ============================================================ */
   function podium(){
     pokaz('ekran-podium');
     var max = RUNDA_N * PROB;
@@ -439,15 +510,15 @@
   function doMenu(){
     window.Audio2.stop();
     pokaz('ekran-start');
-    rysujPakiety();
+    rysujMenu();
+    window.Audio2.motywStart();
   }
 
   /* ============================================================
      korektor graficzny — slupki chodza od prawdziwego dzwieku
      ============================================================ */
   function korektor(){
-    var c = $('korektor');
-    if(!c) return;
+    var c = $('korektor'); if(!c) return;
     var g = c.getContext('2d'), N = 28;
     function klatka(){
       var szer = c.clientWidth, wys = c.clientHeight;
@@ -457,7 +528,7 @@
       var w = c.width / N;
       for(var i=0;i<N;i++){
         var v = d ? d[Math.floor(i*(d.length*0.6)/N)]/255 : 0;
-        if(!window.Audio2.gra()) v *= 0.12;                 // w ciszy tylko delikatny oddech
+        if(!window.Audio2.gra()) v *= 0.12;
         var h = Math.max(2, v*c.height);
         var grad = g.createLinearGradient(0, c.height-h, 0, c.height);
         grad.addColorStop(0, '#ffe98a'); grad.addColorStop(0.5,'#ffc531'); grad.addColorStop(1,'#c8760a');
@@ -473,8 +544,10 @@
      start
      ============================================================ */
   function init(){
-    rysujPakiety();
+    wczytajWybor();
+    rysujMenu();
     korektor();
+    window.odswiezMenu = rysujMenu;
 
     /* dzwieki studia mozna wyciszyc — melodii do zgadywania to nie dotyczy */
     var dzwiek = mem.get('stingi', true);
@@ -490,15 +563,38 @@
       mem.set('stingi', dzwiek);
       window.Audio2.stingiWl(dzwiek);
       odswiezDzwiek();
-      if(dzwiek) window.Audio2.tik(true);
+      if(dzwiek){ window.Audio2.tik(true); if(!$('ekran-start').classList.contains('hide')) window.Audio2.motywStart(); }
+      else window.Audio2.motywStop();
     };
+
+    /* Przegladarka nie pozwoli zagrac niczego, zanim gracz czegos nie dotknie,
+       wiec motyw menu wchodzi przy pierwszym klknieciu gdziekolwiek. */
+    var pierwszyGest = function(){
+      window.Audio2.silnik();
+      if(!$('ekran-start').classList.contains('hide')) window.Audio2.motywStart();
+      document.removeEventListener('pointerdown', pierwszyGest);
+      document.removeEventListener('keydown', pierwszyGest);
+    };
+    document.addEventListener('pointerdown', pierwszyGest);
+    document.addEventListener('keydown', pierwszyGest);
 
     $('tryb-dzienna').onclick  = function(){ start('dzienna'); };
     $('tryb-bezkonca').onclick = function(){ start('bezkonca'); };
     $('tryb-runda').onclick    = function(){ start('runda'); };
 
-    /* moje.js przebudowuje liste pakietow po imporcie */
-    window.odswiezPakiety = rysujPakiety;
+    /* suwak lat — dwa uchwyty na wspolnym torze, pilnujemy, by sie nie minely */
+    var od = $('lata-od'), doo = $('lata-do');
+    [od, doo].forEach(function(inp){
+      inp.min = ROK_MIN; inp.max = ROK_MAX;
+      inp.addEventListener('input', function(){
+        var a = +od.value, b = +doo.value;
+        if(inp === od && a > b) { b = a; doo.value = b; }
+        if(inp === doo && b < a) { a = b; od.value = a; }
+        S.wybor.od = a; S.wybor.do = b; S.wybor.moje = false;
+        rysujSuwak(); odswiez();
+      });
+      inp.addEventListener('change', rysujRepertuar);
+    });
 
     $('btn-graj').onclick = zagraj;
     $('btn-pas').onclick  = pas;
@@ -506,7 +602,7 @@
     $('w-graj').onclick   = function(){ window.Audio2.graj(S.utwor.preview, PELNA).catch(function(){}); };
     $('p-menu').onclick   = doMenu;
     $('p-jeszcze').onclick= function(){ start('runda'); };
-    $('blad-ponow').onclick = function(){ S.pakiet=null; S.pula=[]; start(S.tryb); };
+    $('blad-ponow').onclick = function(){ S.gotowaDla = null; start(S.tryb); };
 
     var odp = $('odp');
     odp.addEventListener('input', rysujPodpowiedzi);
@@ -517,7 +613,6 @@
     odp.addEventListener('blur', function(){ setTimeout(function(){ $('podpowiedzi').innerHTML=''; }, 120); });
     $('btn-zgadnij').onclick = function(){ sprawdz(odp.value); };
 
-    /* spacja gra urywek, gdy nie piszemy */
     document.addEventListener('keydown', function(e){
       if(e.code==='Space' && document.activeElement !== odp && !$('ekran-gra').classList.contains('hide')){
         e.preventDefault(); zagraj();
