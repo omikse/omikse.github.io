@@ -21,11 +21,10 @@ w `songs.js`, a licznik pod spodem pokazuje na bieżąco, ile melodii zostało.
 Poniżej sześciu tytułów tryby się blokują — z tak wąskiej puli nie da się zrobić
 sensownych podpowiedzi.
 
-Gatunki nie są już ręcznie ułożone jedna po drugiej — poza Hitami i Filmowymi
-(oryginalny polski wybór) każdy z nich pochodzi z rzeczywistej, popularnej
-playlisty Spotify dla danego gatunku (Rock, Rap, Pop, Jazz, Elektronika, Indie,
-Soul/R&B), przepuszczonej przez to samo dopasowanie do katalogu Apple, którego
-używa „Moje". Zobacz sekcję **Skąd się wzięły gatunki** niżej.
+Gatunki nie są już ręcznie ułożone jeden po drugim — każdy powstał z prawdziwych,
+popularnych publicznych playlist Spotify dla danego gatunku, przepuszczonych przez
+to samo dopasowanie do katalogu Apple, którego używa „Moje". Zobacz sekcję
+**Skąd się wzięły gatunki** niżej.
 
 | tryb | na czym polega |
 |---|---|
@@ -94,9 +93,11 @@ Oryginalna czołówka jest cudzym nagraniem i nie może tu trafić — ani jako 
 ani odtwarzana z cudzego serwera.
 
 Motyw menu rusza dopiero przy pierwszym kliknięciu, bo przeglądarki nie pozwalają
-zagrać niczego przed gestem użytkownika. Złota nuta w prawym górnym rogu wycisza
-wszystkie te dźwięki; melodii do zgadywania przełącznik nie dotyczy, bo bez nich
-nie ma gry.
+zagrać niczego przed gestem użytkownika. Przycisk **Dźwięk** w prawym górnym rogu
+wycisza wszystkie te dźwięki; melodii do zgadywania przełącznik nie dotyczy, bo bez
+nich nie ma gry. Wyciszenie tnie też to, co akurat gra — stingi i motyw idą przez
+własny bus głośności, osobny od melodii, więc takt zaczęty przed kliknięciem nie
+dogrywa się do końca.
 
 ## Repertuar ze Spotify
 
@@ -150,13 +151,14 @@ Do pracy na własnym komputerze trzeba wchodzić przez **127.0.0.1**, a nie
 
 ## Skąd się wzięły gatunki
 
-Rock, Rap, Pop, Jazz, Elektronika, Indie i Soul/R&B nie są ułożone ręcznie —
-każdy pochodzi z jednej realnej, popularnej publicznej playlisty Spotify dla tego
-gatunku (np. „Jazz Top 100 — Most Popular on Spotify", „100 Greatest Indie Rock
-of All Time"). Spis utworów z każdej z nich przeszedł przez to samo dopasowanie
-tytuł+wykonawca do katalogu Apple, którego używa „Moje" — opisane wyżej wymaganie
-zgodności wykonawcy dotyczy więc też tych gatunków. Hity i Filmowe zostały przy
-oryginalnym, ręcznie ułożonym polskim wyborze.
+Każdy gatunek powstał z realnych, popularnych publicznych playlist Spotify dla
+tego gatunku — po jednej lub dwóch na kategorię (np. „Jazz Top 100 — Most Popular
+on Spotify" i „100 Essential Jazz Standards", „100 Most Iconic EDM Songs",
+„100 Greatest Movie Songs", „Polskie hity lat 90' 00'"). Spis utworów z każdej
+przeszedł przez to samo dopasowanie tytuł+wykonawca do katalogu Apple, którego
+używa „Moje" — opisane wyżej wymaganie zgodności wykonawcy dotyczy więc też
+gatunków. Hity i Filmowe zaczynały od ręcznie ułożonego polskiego wyboru
+i zostały dosypane z playlist tak samo jak reszta.
 
 Spotify od listopada 2024 blokuje aplikacjom w trybie Development odczyt cudzych
 playlist przez swoje API (nawet zwykłe „Get Playlist Items" na oficjalnej
@@ -165,11 +167,22 @@ zatwierdzenie *Extended Quota Mode*. Listy utworów dla tych siedmiu playlist
 zostały więc odczytane z ich publicznych stron na open.spotify.com (to, co widać
 bez logowania), a nie przez API.
 
-Nie każdy utwór z playlisty źródłowej znalazł się w katalogu — część nie ma
-w Apple Music nagrania z poprawnie przypisanym wykonawcą i podglądem audio,
-zwłaszcza wśród świeższych hitów rapu. Orientacyjna skuteczność dopasowania:
-Rock ~94%, Indie ~66%, Jazz ~66%, Soul/R&B ~82%, Pop ~70%, Elektronika ~75%,
-Rap ~54% (dużo remixów i "type beat" bez oficjalnego wydania).
+Każda kategoria ma co najmniej setkę melodii, więc żadna nie jest za wąska,
+żeby w nią grać. Dobierane były z kilku playlist na gatunek — Hity i Filmowe
+też, mimo że zaczynały od ręcznego polskiego wyboru.
+
+Nie każdy utwór z playlisty źródłowej wchodzi do katalogu: część nie ma w Apple
+Music nagrania z poprawnie przypisanym wykonawcą i podglądem audio. Pierwsza
+partia, szukana tytuł po tytule, wypadała między 54% (rap) a 94% (rock).
+
+Druga partia poszła inaczej i dużo lepiej: zamiast pytać o każdy tytuł osobno,
+skrypt grupuje utwory po wykonawcy i pobiera jego katalog **jednym** zapytaniem
+(`search?term=<wykonawca>&limit=200`), a potem dopasowuje tytuły lokalnie.
+Mniej zapytań (460 utworów zmieściło się w 364 zapytaniach), rzadziej odbija się
+od limitu iTunes i trafia celniej, bo wyszukiwanie po nazwie wykonawcy zwraca
+jego prawdziwy katalog zamiast tytułowego szumu. Skuteczność wyszła 94% łącznie:
+Elektronika 98%, Filmowe i Pop 97%, Indie i Hity 96%, Soul 95%, Jazz 85%,
+Rap 79%.
 
 ## Jak dopisać piosenkę
 
