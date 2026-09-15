@@ -100,9 +100,20 @@ button{font-family:inherit; cursor:pointer; border:0}
 .zloty:disabled,.srebrny:disabled{filter:grayscale(.6) brightness(.7); cursor:not-allowed; transform:none}
 .duzy{font-size:1rem; padding:16px 30px}
 
-/* ---- przelacznik dzwiekow studia ---- */
-.dzwiek{
+/* ---- prawy gorny rog: wyjscie do menu i przelacznik dzwiekow ---- */
+.gora-prawo{
   position:absolute; top:12px; right:12px; z-index:6;
+  display:flex; align-items:center; gap:8px;
+}
+.rog-menu{
+  padding:7px 13px; border-radius:20px; font-size:.64rem; font-weight:900;
+  letter-spacing:1.5px; text-transform:uppercase; line-height:1;
+  background:linear-gradient(180deg,#f2f4f8,#c3c9d6 45%,#9aa2b4);
+  border:2px solid #5d6577; color:#1d2230;
+  box-shadow:inset 0 2px 0 #fff, 0 3px 0 #4a5060, 0 6px 12px rgba(0,0,0,.4);
+}
+.rog-menu:active{transform:translateY(3px); box-shadow:inset 0 2px 0 #fff, 0 0 0 #4a5060}
+.dzwiek{
   padding:7px 13px; border-radius:20px; font-size:.64rem; font-weight:900;
   letter-spacing:1.5px; text-transform:uppercase; line-height:1;
   background:linear-gradient(180deg,var(--zloto-jasne) 0%,var(--zloto) 30%,#c8890d 100%);
@@ -359,6 +370,11 @@ button{font-family:inherit; cursor:pointer; border:0}
 
 /* ---- przycisk grania ---- */
 .graj-rzad{display:flex; gap:11px; align-items:center; margin-bottom:16px}
+/* stala szerokosc: napis chodzi od "Dluzszy urywek - 2 s" przez dwucyfrowe
+   "16 s" po "Poddaje sie", a przycisk ma przy tym stac w miejscu.
+   Samo min-width nie wystarczalo — najdluzszy napis i tak go rozpychal. */
+#btn-pas{flex:0 0 232px; width:232px; padding-left:8px; padding-right:8px; text-align:center}
+#btn-skip{flex:0 0 auto; min-width:78px}
 #btn-graj{
   flex:1; font-size:1.05rem; padding:17px; display:flex; align-items:center; justify-content:center; gap:10px;
 }
@@ -414,7 +430,7 @@ button{font-family:inherit; cursor:pointer; border:0}
 .werdykt-tak{color:#8df0ad} .werdykt-nie{color:#ffb0ba}
 .w-tytul{font-size:1.5rem; font-weight:900; color:var(--zloto-jasne); line-height:1.2}
 .w-wykonawca{color:var(--przygas); margin:4px 0 18px; font-size:1rem}
-.w-przyciski{display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start; margin-top:20px}
+.w-przyciski{display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end; margin-top:20px}
 
 /* ---- podium ---- */
 .podium{text-align:center}
@@ -447,13 +463,14 @@ button{font-family:inherit; cursor:pointer; border:0}
 }
 @media (max-width:520px){
   body{padding:8px}
-  /* na waskim ekranie pigulka wchodzila na logo — niech stanie nad naglowkiem */
-  .dzwiek{position:static; display:block; width:max-content; margin:0 0 4px auto}
+  /* na waskim ekranie pigulki wchodzily na logo — niech stana nad naglowkiem */
+  .gora-prawo{position:static; justify-content:flex-end; margin:0 0 4px}
   .ramka{border-width:10px; padding:16px 12px 20px}
   .ramka::before{inset:-10px; padding:10px; background-size:22px 22px}
   .zar{height:34px; font-size:.64rem}
   .okladka-ramka{width:145px; height:145px}
-  .graj-rzad{flex-direction:column} #btn-pas{width:100%}
+  .graj-rzad{flex-direction:column}
+  #btn-pas, #btn-skip{width:100%; min-width:0}
   .p-suma{font-size:3.4rem}
 }
 </style>
@@ -463,7 +480,10 @@ button{font-family:inherit; cursor:pointer; border:0}
 <div class="scena">
 <div class="ramka">
 
-  <button id="btn-dzwiek" class="dzwiek" type="button" aria-pressed="true">Dźwięk</button>
+  <div class="gora-prawo">
+    <button class="rog-menu hide" id="btn-menu" type="button">Menu</button>
+    <button id="btn-dzwiek" class="dzwiek" type="button" aria-pressed="true">Dźwięk</button>
+  </div>
 
   <header class="naglowek">
     <div class="gwiazda"></div>
@@ -573,6 +593,7 @@ button{font-family:inherit; cursor:pointer; border:0}
     <div class="graj-rzad">
       <button class="zloty" id="btn-graj">Zagraj</button>
       <button class="srebrny" id="btn-pas">Pas</button>
+      <button class="srebrny" id="btn-skip" title="Pomi&#324; t&#281; melodi&#281; i we&#378; nast&#281;pn&#261;">Skip</button>
     </div>
 
     <div class="pole">
@@ -582,7 +603,6 @@ button{font-family:inherit; cursor:pointer; border:0}
     <button class="zloty" id="btn-zgadnij" style="width:100%">Odpowiadam</button>
 
     <div class="lista" id="lista"></div>
-    <div style="text-align:center;margin-top:18px"><button class="srebrny" id="btn-menu">Menu</button></div>
   </section>
 
   <!-- ================= poczekalnia pokoju ================= -->

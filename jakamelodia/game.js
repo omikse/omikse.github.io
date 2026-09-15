@@ -66,6 +66,8 @@
     ['ekran-start','ekran-gra','ekran-wynik','ekran-podium','ekran-pokoj','ekran-tablica'].forEach(function(e){
       $(e).classList.toggle('hide', e!==id);
     });
+    /* wyjscie do menu siedzi w prawym gornym rogu i jest zbedne w samym menu */
+    $('btn-menu').classList.toggle('hide', id === 'ekran-start');
   }
 
   /* ============================================================
@@ -425,6 +427,9 @@
        odslaniac, wiec jest to po prostu poddanie sie. */
     /* w pokoju nie ma czego pomijac — urywek rosnie sam */
     $('btn-pas').classList.toggle('hide', S.tryb === 'pokoj');
+    /* skip ma sens tylko tam, gdzie jest z czego losowac nastepny utwor */
+    $('btn-skip').classList.toggle('hide', S.tryb === 'pokoj' || S.tryb === 'dzienna');
+    $('btn-skip').disabled = S.koniec;
     $('pasek-graczy').classList.toggle('hide', S.tryb !== 'pokoj');
     $('btn-menu').textContent = S.tryb === 'pokoj' ? 'Opuść pokój' : 'Menu';
     var ostatnia = S.proba >= PROB-1;
@@ -509,6 +514,27 @@
     window.Audio2.tik(false);
     dalejAlboKoniec();
   }
+
+  /* Skip — ta melodia mnie nie bawi, dawaj nastepna. Rozni sie od "Poddaje sie"
+     tym, ze nie odslania odpowiedzi i nie zatrzymuje na ekranie wyniku; liczy
+     sie jednak jak nietrafiona, zeby nie dalo sie nia podkrecac serii ani punktow.
+     W melodii dnia i w pokoju nie ma go wcale — tam wszyscy maja ten sam utwor. */
+  function skip(){
+    if(S.tryb === 'dzienna' || S.tryb === 'pokoj') return;
+    window.Audio2.stop();
+    window.Audio2.tik(false);
+    if(S.tryb === 'bezkonca'){
+      mem.set('seria', 0);
+      nowaRunda(); rysujGre();
+      return;
+    }
+    if(S.tryb === 'runda'){
+      S.rundaLog.push({t:S.utwor.t, a:S.utwor.a, pkt:0, wygrana:false});
+      S.rundaNr++;
+      if(S.rundaNr >= RUNDA_N){ podium(); return; }
+      nowaRunda(); rysujGre();
+    }
+  }
   function dalejAlboKoniec(){
     S.proba++;
     if(S.proba >= PROB){
@@ -554,8 +580,8 @@
       : 'Niestety. To było to.';
     $('w-werdykt').className = 'werdykt ' + (S.wygrana ? 'werdykt-tak' : 'werdykt-nie');
 
-    /* Dalej gra sie w lewo: przycisk, ktory prowadzi do nastepnej melodii,
-       stoi pierwszy z brzegu, a Menu na koncu rzedu. */
+    /* Rzad jest wyrownany do prawej, a Menu wyprowadzone do rogu ekranu —
+       zostaje wiec sam przycisk prowadzacy dalej, pod prawym kciukiem. */
     var stopka = $('w-przyciski'); stopka.innerHTML = '';
     if(S.tryb==='runda'){
       var ostatni = (S.rundaNr+1) >= RUNDA_N;
@@ -567,16 +593,13 @@
       n.onclick = function(){ nowaRunda(); pokaz('ekran-gra'); rysujGre(); };
       stopka.appendChild(n);
     } else {
-      var d = el('button','zloty duzy','Graj dalej bez końca');
-      d.onclick = function(){ start('bezkonca'); };
-      stopka.appendChild(d);
       var s = el('button','srebrny','Skopiuj wynik');
       s.onclick = function(){ udostepnij(s); };
       stopka.appendChild(s);
+      var d = el('button','zloty duzy','Graj dalej bez końca');
+      d.onclick = function(){ start('bezkonca'); };
+      stopka.appendChild(d);
     }
-    var m = el('button','srebrny','Menu');
-    m.onclick = doMenu;
-    stopka.appendChild(m);
   }
 
   function kratka(){
@@ -737,6 +760,7 @@
 
     $('btn-graj').onclick = zagraj;
     $('btn-pas').onclick  = pas;
+    $('btn-skip').onclick = skip;
     $('btn-menu').onclick = function(){
       if(S.tryb === 'pokoj' && window.Pokoj){ window.Pokoj.wyjdz(); return; }
       doMenu();

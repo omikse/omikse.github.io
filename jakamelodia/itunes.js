@@ -87,6 +87,24 @@
   }
   var ZLE = /\b(live|karaoke|cover|instrumental|koncert|remix|sped up|slowed)\b|\(live/i;
 
+  /* Rdzen tytulu: to, co zostaje po odcieciu dopisku wydawcy — "- Remastered 2011",
+     "(feat. ...)", "[Radio Edit]". Porownujemy rdzen z rdzeniem, bo zwykly prefiks
+     jest za luzny: "Feels" jest prefiksem "Feel So Close", a "Body" prefiksem
+     "Bodybuilder", i tak wlasnie do katalogu wchodzily obce piosenki.
+     Nawias na samym poczatku zostaje — "(Don't Fear) The Reaper" to caly tytul. */
+  function rdzen(x){
+    var s = (x || '').replace(/\s+[-–—]\s.*$/, '')
+                     .replace(/\s+[\(\[].*$/, '')
+                     .replace(/\s+(feat|ft)\.?\s.*$/i, '');
+    return norm(s);
+  }
+  function tytulPasuje(szukany, znaleziony){
+    var a = norm(szukany), b = norm(znaleziony);
+    if(a === b) return true;
+    var ra = rdzen(szukany), rb = rdzen(znaleziony);
+    return ra.length >= 3 && ra === rb;
+  }
+
   function dopasuj(tytul, wykonawca){
     var fraza = (wykonawca ? wykonawca + ' ' : '') + tytul;
     var url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(fraza) +
@@ -95,11 +113,10 @@
       if(!r.ok) throw new Error('iTunes HTTP ' + r.status);
       return r.json();
     }).then(function(j){
-      var t = norm(tytul), w = norm(wykonawca);
+      var w = norm(wykonawca);
       var kand = (j.results||[]).filter(function(x){
         if(!x.previewUrl || ZLE.test(x.trackName)) return false;
-        var nt = norm(x.trackName);
-        return nt === t || nt.indexOf(t) === 0 || t.indexOf(nt) === 0;
+        return tytulPasuje(tytul, x.trackName);
       });
       /* wykonawca musi sie zgadzac — sam tytul nie wystarczy: wsrod wynikow
          trafiaja sie coverowe wersje i "soundalike" nagrania innych artystow
