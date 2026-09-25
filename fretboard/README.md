@@ -202,8 +202,25 @@ and then by string, and a barre is only used when three strings share the lowest
 or when there are more notes than free fingers. That last condition is what stops D
 coming out as a barre chord. The results match the chord book — C is ring, middle,
 index; D is index, middle, ring; F is index barre, middle, ring, little; Bm is the
-barre at the second fret with the little finger on the D string. Click one to strum it; the selected shape appears on a
-full neck with its notes named.
+barre at the second fret with the little finger on the D string. Click one to strum it.
+
+**The neck is the main view, not a footnote to the little diagrams.** Pick a root
+from the twelve chips and a type from the twenty-one, and the chord appears on the
+whole fifteen-fret neck the way a chord chart draws it: the dots you hold carry
+their finger numbers, open strings are ringed, and a string you must not play gets
+a red **×** at the nut. The alternatives are numbered buttons under the board — nine
+ways to play C, one click each — so comparing positions is a click rather than a
+scroll.
+
+Two toggles decide how much of the neck speaks. *In the dots* switches the shape's
+dots between **fingers**, **note names** and **degrees** (R, 3, 5, ♭7), which is the
+difference between "where do my fingers go" and "what am I actually playing".
+*The rest of the neck* goes from bare, to **every other place the chord's own notes
+live** — the shape you hold in strong colour, the same notes elsewhere ghosted in
+the same colours — to **every fret labelled**, all ninety-six positions named at
+once with the chord tones still standing out of the field. That last one is the
+answer to "fine, but what note is that?", and it is why the chord view doubles as a
+map of the neck. Both choices are remembered between visits.
 
 There is a capo calculator alongside it, because that is what a capo is actually
 for. E♭ has three flats and no friendly open shapes; the table says take the C
