@@ -33,6 +33,7 @@ edits appear to do nothing. Same trap as `tools/web-renderer`.
 | Attempt-history shape for the essay | `../tools/web-renderer/P-ESSAY_projekt_oceniania.md` §22 |
 | Who can read/write what | `firestore.rules` |
 | How exams get here | `sync.py` |
+| Why is that arkusz greyed out? | `exams/papers.json` — **generated**, see below |
 | How the site goes live | `publish.py` |
 
 ## Rules that cost real money or damage to break
@@ -63,6 +64,15 @@ edits appear to do nothing. Same trap as `tools/web-renderer`.
    fills them from the aggregator.
 6. **Firebase config values are public identifiers, not secrets** — safe in this
    repo. `GEMINI_API_KEY` is a real secret and never goes in a file here.
+7a. **The picker shows papers we do not have, on purpose.** `exams/papers.json`
+   comes from the pipeline (`python -m pipeline index`) and carries a state for
+   every paper CKE ever printed. Four states, because "not converted yet",
+   "held but CKE published no marking scheme", "published but never fetched"
+   and "never printed" are different facts and one greyed card asserts the same
+   wrong thing for three of them. It is generated — fix it in
+   `../tools/pdf-json/pipeline/assemble.py`, never here. Scope in rule 7 still
+   governs what gets *converted*; this only governs what gets *listed*.
+
 7. **Scope is the standard `100` papers only.** Everything else is an *arkusz
    dostosowany*; `sync.py` skips them.
 8. **There are exactly two roles: admin and uczeń. There is no teacher.**

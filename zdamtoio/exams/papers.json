@@ -1,0 +1,4598 @@
+{
+  "source": "https://cke.gov.pl/egzamin-maturalny/egzamin-maturalny-w-formule-2023/arkusze/",
+  "sessions": [
+    "2305",
+    "2405",
+    "2505",
+    "2605"
+  ],
+  "papers": [
+    {
+      "id": "MBIP-R0-100-2305",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MBIP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MBIP-R0-100-2405",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MBIP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MBIP-R0-100-2505",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MBIP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MBIP-R0-100-2605",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MBIP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MBIP-R0-660-2305",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MBIP-R0-660-2405",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MBIP-R0-660-2405"
+      ]
+    },
+    {
+      "id": "MBIP-R0-660-2505",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MBIP-R0-660-2505"
+      ]
+    },
+    {
+      "id": "MBIP-R0-660-2605",
+      "subject": "MBIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MCHP-R0-100-2305",
+      "subject": "MCHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MCHP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MCHP-R0-100-2405",
+      "subject": "MCHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MCHP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MCHP-R0-100-2505",
+      "subject": "MCHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MCHP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MCHP-R0-100-2605",
+      "subject": "MCHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MCHP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MFAP-R0-100-2305",
+      "subject": "MFAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MFAP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MFAP-R0-100-2405",
+      "subject": "MFAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MFAP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MFAP-R0-100-2505",
+      "subject": "MFAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MFAP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MFAP-R0-100-2605",
+      "subject": "MFAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MFAP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MFIP-R0-100-2305",
+      "subject": "MFIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MFIP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MFIP-R0-100-2405",
+      "subject": "MFIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MFIP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MFIP-R0-100-2505",
+      "subject": "MFIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MFIP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MFIP-R0-100-2605",
+      "subject": "MFIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MFIP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MGEP-R0-100-2305",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MGEP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MGEP-R0-100-2405",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MGEP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MGEP-R0-100-2505",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MGEP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MGEP-R0-100-2605",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MGEP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MGEP-R0-600-2305",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2305",
+      "state": "partial",
+      "versions": [],
+      "parts": [
+        "MGEP-R0-600-2305"
+      ]
+    },
+    {
+      "id": "MGEP-R0-600-2405",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MGEP-R0-600-2505",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MGEP-R0-600-2605",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MGEP-R0-660-2305",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MGEP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MGEP-R0-660-2405",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MGEP-R0-660-2405"
+      ]
+    },
+    {
+      "id": "MGEP-R0-660-2505",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MGEP-R0-660-2505"
+      ]
+    },
+    {
+      "id": "MGEP-R0-660-2605",
+      "subject": "MGEP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MHIP-R0-100-2305",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MHIP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MHIP-R0-100-2405",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHIP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MHIP-R0-100-2505",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHIP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MHIP-R0-100-2605",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHIP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MHIP-R0-660-2305",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MHIP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MHIP-R0-660-2405",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MHIP-R0-660-2505",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MHIP-R0-660-2605",
+      "subject": "MHIP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MHMP-R0-100-2305",
+      "subject": "MHMP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MHMP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MHMP-R0-100-2405",
+      "subject": "MHMP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHMP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MHMP-R0-100-2505",
+      "subject": "MHMP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHMP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MHMP-R0-100-2605",
+      "subject": "MHMP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHMP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MHSP-R0-100-2305",
+      "subject": "MHSP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MHSP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MHSP-R0-100-2405",
+      "subject": "MHSP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHSP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MHSP-R0-100-2505",
+      "subject": "MHSP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHSP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MHSP-R0-100-2605",
+      "subject": "MHSP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MHSP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MINP-R0-100-2305",
+      "subject": "MINP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MINP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MINP-R0-100-2405",
+      "subject": "MINP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MINP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MINP-R0-100-2505",
+      "subject": "MINP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MINP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MINP-R0-100-2605",
+      "subject": "MINP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MINP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJAA-D0-100-2305",
+      "subject": "MJAA",
+      "level": "D0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJAA-D0-100-2305"
+      ]
+    },
+    {
+      "id": "MJAA-D0-100-2405",
+      "subject": "MJAA",
+      "level": "D0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAA-D0-100-2405"
+      ]
+    },
+    {
+      "id": "MJAA-D0-100-2505",
+      "subject": "MJAA",
+      "level": "D0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAA-D0-100-2505"
+      ]
+    },
+    {
+      "id": "MJAA-D0-100-2605",
+      "subject": "MJAA",
+      "level": "D0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAA-D0-100-2605"
+      ]
+    },
+    {
+      "id": "MJAP-P0-100-2305",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJAP-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJAP-P0-100-2405",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJAP-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJAP-P0-100-2505",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJAP-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJAP-P0-100-2605",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJAP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MJAP-P0-200-2305",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-P0-200-2305"
+      ]
+    },
+    {
+      "id": "MJAP-P0-200-2405",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-200-2405"
+      ]
+    },
+    {
+      "id": "MJAP-P0-200-2505",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-200-2505"
+      ]
+    },
+    {
+      "id": "MJAP-P0-200-2605",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-200-2605"
+      ]
+    },
+    {
+      "id": "MJAP-P0-400-2305",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-P0-400-2305"
+      ]
+    },
+    {
+      "id": "MJAP-P0-400-2405",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-400-2505",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-400-2605",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-600-2305",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-P0-600-2305"
+      ]
+    },
+    {
+      "id": "MJAP-P0-600-2405",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-600-2505",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-600-2605",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-660-2305",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-P0-660-2305"
+      ]
+    },
+    {
+      "id": "MJAP-P0-660-2405",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-660-2405"
+      ]
+    },
+    {
+      "id": "MJAP-P0-660-2505",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-660-2505"
+      ]
+    },
+    {
+      "id": "MJAP-P0-660-2605",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-660-2605"
+      ]
+    },
+    {
+      "id": "MJAP-P0-700-2305",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJAP-P0-700-2305"
+      ]
+    },
+    {
+      "id": "MJAP-P0-700-2405",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-700-2405"
+      ]
+    },
+    {
+      "id": "MJAP-P0-700-2505",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-700-2505"
+      ]
+    },
+    {
+      "id": "MJAP-P0-700-2605",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-700-2605"
+      ]
+    },
+    {
+      "id": "MJAP-P0-K00-2305",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-K00-2405",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-P0-K00-2405"
+      ]
+    },
+    {
+      "id": "MJAP-P0-K00-2505",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-P0-K00-2605",
+      "subject": "MJAP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-100-2305",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJAP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MJAP-R0-100-2405",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJAP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MJAP-R0-100-2505",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJAP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MJAP-R0-100-2605",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJAP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJAP-R0-200-2305",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-R0-200-2305"
+      ]
+    },
+    {
+      "id": "MJAP-R0-200-2405",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-200-2405"
+      ]
+    },
+    {
+      "id": "MJAP-R0-200-2505",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-200-2505"
+      ]
+    },
+    {
+      "id": "MJAP-R0-200-2605",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-200-2605"
+      ]
+    },
+    {
+      "id": "MJAP-R0-400-2305",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-R0-400-2305"
+      ]
+    },
+    {
+      "id": "MJAP-R0-400-2405",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-400-2505",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-400-2605",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-600-2305",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-R0-600-2305"
+      ]
+    },
+    {
+      "id": "MJAP-R0-600-2405",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-600-2505",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-600-2605",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-660-2305",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJAP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MJAP-R0-660-2405",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-660-2405"
+      ]
+    },
+    {
+      "id": "MJAP-R0-660-2505",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-660-2505"
+      ]
+    },
+    {
+      "id": "MJAP-R0-660-2605",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-660-2605"
+      ]
+    },
+    {
+      "id": "MJAP-R0-700-2305",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "700",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJAP-R0-700-2305"
+      ]
+    },
+    {
+      "id": "MJAP-R0-700-2405",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "700",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-700-2405"
+      ]
+    },
+    {
+      "id": "MJAP-R0-700-2505",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "700",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-700-2505"
+      ]
+    },
+    {
+      "id": "MJAP-R0-700-2605",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "700",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-700-2605"
+      ]
+    },
+    {
+      "id": "MJAP-R0-K00-2305",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-K00-2405",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAP-R0-K00-2405"
+      ]
+    },
+    {
+      "id": "MJAP-R0-K00-2505",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAP-R0-K00-2605",
+      "subject": "MJAP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJAU-P0-100-2305",
+      "subject": "MJAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "no_scheme",
+      "versions": [],
+      "parts": [
+        "MJAU-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJAU-P0-100-2405",
+      "subject": "MJAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAU-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJAU-P0-100-2505",
+      "subject": "MJAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJAU-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJAU-P0-100-2605",
+      "subject": "MJAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJFF-D0-100-2305",
+      "subject": "MJFF",
+      "level": "D0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJFF-D0-100-2305"
+      ]
+    },
+    {
+      "id": "MJFF-D0-100-2405",
+      "subject": "MJFF",
+      "level": "D0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFF-D0-100-2405"
+      ]
+    },
+    {
+      "id": "MJFF-D0-100-2505",
+      "subject": "MJFF",
+      "level": "D0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFF-D0-100-2505"
+      ]
+    },
+    {
+      "id": "MJFF-D0-100-2605",
+      "subject": "MJFF",
+      "level": "D0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFF-D0-100-2605"
+      ]
+    },
+    {
+      "id": "MJFP-P0-100-2305",
+      "subject": "MJFP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJFP-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJFP-P0-100-2405",
+      "subject": "MJFP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFP-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJFP-P0-100-2505",
+      "subject": "MJFP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFP-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJFP-P0-100-2605",
+      "subject": "MJFP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MJFP-R0-100-2305",
+      "subject": "MJFP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJFP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MJFP-R0-100-2405",
+      "subject": "MJFP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MJFP-R0-100-2505",
+      "subject": "MJFP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MJFP-R0-100-2605",
+      "subject": "MJFP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJFP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJHH-D0-100-2305",
+      "subject": "MJHH",
+      "level": "D0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJHH-D0-100-2305"
+      ]
+    },
+    {
+      "id": "MJHH-D0-100-2405",
+      "subject": "MJHH",
+      "level": "D0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHH-D0-100-2405"
+      ]
+    },
+    {
+      "id": "MJHH-D0-100-2505",
+      "subject": "MJHH",
+      "level": "D0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHH-D0-100-2505"
+      ]
+    },
+    {
+      "id": "MJHH-D0-100-2605",
+      "subject": "MJHH",
+      "level": "D0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHH-D0-100-2605"
+      ]
+    },
+    {
+      "id": "MJHP-P0-100-2305",
+      "subject": "MJHP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJHP-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJHP-P0-100-2405",
+      "subject": "MJHP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHP-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJHP-P0-100-2505",
+      "subject": "MJHP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHP-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJHP-P0-100-2605",
+      "subject": "MJHP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MJHP-R0-100-2305",
+      "subject": "MJHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJHP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MJHP-R0-100-2405",
+      "subject": "MJHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MJHP-R0-100-2505",
+      "subject": "MJHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MJHP-R0-100-2605",
+      "subject": "MJHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJHP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJLP-R0-100-2305",
+      "subject": "MJLP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJLP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MJLP-R0-100-2405",
+      "subject": "MJLP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJLP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MJLP-R0-100-2505",
+      "subject": "MJLP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJLP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MJLP-R0-100-2605",
+      "subject": "MJLP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJLP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJNN-D0-100-2305",
+      "subject": "MJNN",
+      "level": "D0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJNN-D0-100-2305"
+      ]
+    },
+    {
+      "id": "MJNN-D0-100-2405",
+      "subject": "MJNN",
+      "level": "D0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNN-D0-100-2405"
+      ]
+    },
+    {
+      "id": "MJNN-D0-100-2505",
+      "subject": "MJNN",
+      "level": "D0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNN-D0-100-2505"
+      ]
+    },
+    {
+      "id": "MJNN-D0-100-2605",
+      "subject": "MJNN",
+      "level": "D0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNN-D0-100-2605"
+      ]
+    },
+    {
+      "id": "MJNP-P0-100-2305",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJNP-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJNP-P0-100-2405",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJNP-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJNP-P0-100-2505",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJNP-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJNP-P0-100-2605",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJNP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MJNP-P0-200-2305",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-P0-200-2305"
+      ]
+    },
+    {
+      "id": "MJNP-P0-200-2405",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-P0-200-2405"
+      ]
+    },
+    {
+      "id": "MJNP-P0-200-2505",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-P0-200-2505"
+      ]
+    },
+    {
+      "id": "MJNP-P0-200-2605",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-P0-200-2605"
+      ]
+    },
+    {
+      "id": "MJNP-P0-400-2305",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-P0-400-2305"
+      ]
+    },
+    {
+      "id": "MJNP-P0-400-2405",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-400-2505",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-400-2605",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-600-2305",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-P0-600-2305"
+      ]
+    },
+    {
+      "id": "MJNP-P0-600-2405",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-600-2505",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-600-2605",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-660-2305",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-P0-660-2305"
+      ]
+    },
+    {
+      "id": "MJNP-P0-660-2405",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-P0-660-2405"
+      ]
+    },
+    {
+      "id": "MJNP-P0-660-2505",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-P0-660-2505"
+      ]
+    },
+    {
+      "id": "MJNP-P0-660-2605",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-P0-660-2605"
+      ]
+    },
+    {
+      "id": "MJNP-P0-K00-2305",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-K00-2405",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-P0-K00-2405"
+      ]
+    },
+    {
+      "id": "MJNP-P0-K00-2505",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-P0-K00-2605",
+      "subject": "MJNP",
+      "level": "P0",
+      "variant": "K00",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-100-2305",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJNP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MJNP-R0-100-2405",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJNP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MJNP-R0-100-2505",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJNP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MJNP-R0-100-2605",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MJNP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJNP-R0-200-2305",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-R0-200-2305"
+      ]
+    },
+    {
+      "id": "MJNP-R0-200-2405",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-R0-200-2405"
+      ]
+    },
+    {
+      "id": "MJNP-R0-200-2505",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-R0-200-2505"
+      ]
+    },
+    {
+      "id": "MJNP-R0-200-2605",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-R0-200-2605"
+      ]
+    },
+    {
+      "id": "MJNP-R0-400-2305",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-R0-400-2305"
+      ]
+    },
+    {
+      "id": "MJNP-R0-400-2405",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-400-2505",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-400-2605",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-600-2305",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-R0-600-2305"
+      ]
+    },
+    {
+      "id": "MJNP-R0-600-2405",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-600-2505",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-600-2605",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-660-2305",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJNP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MJNP-R0-660-2405",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-R0-660-2405"
+      ]
+    },
+    {
+      "id": "MJNP-R0-660-2505",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-R0-660-2505"
+      ]
+    },
+    {
+      "id": "MJNP-R0-660-2605",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-R0-660-2605"
+      ]
+    },
+    {
+      "id": "MJNP-R0-K00-2305",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-K00-2405",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJNP-R0-K00-2405"
+      ]
+    },
+    {
+      "id": "MJNP-R0-K00-2505",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJNP-R0-K00-2605",
+      "subject": "MJNP",
+      "level": "R0",
+      "variant": "K00",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJRP-P0-100-2305",
+      "subject": "MJRP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJRP-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJRP-P0-100-2405",
+      "subject": "MJRP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRP-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJRP-P0-100-2505",
+      "subject": "MJRP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRP-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJRP-P0-100-2605",
+      "subject": "MJRP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MJRP-R0-100-2305",
+      "subject": "MJRP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJRP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MJRP-R0-100-2405",
+      "subject": "MJRP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MJRP-R0-100-2505",
+      "subject": "MJRP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MJRP-R0-100-2605",
+      "subject": "MJRP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJRR-D0-100-2305",
+      "subject": "MJRR",
+      "level": "D0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJRR-D0-100-2305"
+      ]
+    },
+    {
+      "id": "MJRR-D0-100-2405",
+      "subject": "MJRR",
+      "level": "D0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRR-D0-100-2405"
+      ]
+    },
+    {
+      "id": "MJRR-D0-100-2505",
+      "subject": "MJRR",
+      "level": "D0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRR-D0-100-2505"
+      ]
+    },
+    {
+      "id": "MJRR-D0-100-2605",
+      "subject": "MJRR",
+      "level": "D0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRR-D0-100-2605"
+      ]
+    },
+    {
+      "id": "MJRU-P0-100-2305",
+      "subject": "MJRU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "no_scheme",
+      "versions": [],
+      "parts": [
+        "MJRU-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJRU-P0-100-2405",
+      "subject": "MJRU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRU-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJRU-P0-100-2505",
+      "subject": "MJRU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJRU-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJRU-P0-100-2605",
+      "subject": "MJRU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJUP-P0-100-2305",
+      "subject": "MJUP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJUP-P0-100-2405",
+      "subject": "MJUP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJUP-P0-100-2505",
+      "subject": "MJUP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJUP-P0-100-2605",
+      "subject": "MJUP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJUP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MJUP-R0-100-2305",
+      "subject": "MJUP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJUP-R0-100-2405",
+      "subject": "MJUP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJUP-R0-100-2505",
+      "subject": "MJUP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJUP-R0-100-2605",
+      "subject": "MJUP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJUP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJWP-P0-100-2305",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJWP-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MJWP-P0-100-2405",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJWP-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MJWP-P0-100-2505",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJWP-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MJWP-P0-100-2605",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJWP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MJWP-P0-200-2305",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-P0-200-2305"
+      ]
+    },
+    {
+      "id": "MJWP-P0-200-2405",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-200-2505",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-200-2605",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-400-2305",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-P0-400-2305"
+      ]
+    },
+    {
+      "id": "MJWP-P0-400-2405",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-400-2505",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-400-2605",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "400",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-600-2305",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-P0-600-2305"
+      ]
+    },
+    {
+      "id": "MJWP-P0-600-2405",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-600-2505",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-600-2605",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-660-2305",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-P0-660-2305"
+      ]
+    },
+    {
+      "id": "MJWP-P0-660-2405",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-660-2505",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-P0-660-2605",
+      "subject": "MJWP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-100-2305",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MJWP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MJWP-R0-100-2405",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJWP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MJWP-R0-100-2505",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJWP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MJWP-R0-100-2605",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MJWP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MJWP-R0-200-2305",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-R0-200-2305"
+      ]
+    },
+    {
+      "id": "MJWP-R0-200-2405",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-200-2505",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-200-2605",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-400-2305",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-R0-400-2305"
+      ]
+    },
+    {
+      "id": "MJWP-R0-400-2405",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-400-2505",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-400-2605",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "400",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-600-2305",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-R0-600-2305"
+      ]
+    },
+    {
+      "id": "MJWP-R0-600-2405",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-600-2505",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-600-2605",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-660-2305",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MJWP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MJWP-R0-660-2405",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-660-2505",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MJWP-R0-660-2605",
+      "subject": "MJWP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MMAP-P0-100-2305",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMAP-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MMAP-P0-100-2405",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MMAP-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MMAP-P0-100-2505",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MMAP-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MMAP-P0-100-2605",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A",
+        "B"
+      ],
+      "parts": [
+        "MMAP-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MMAP-P0-200-2305",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MMAP-P0-200-2405",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-P0-200-2405"
+      ]
+    },
+    {
+      "id": "MMAP-P0-200-2505",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2505",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-P0-200-2505"
+      ]
+    },
+    {
+      "id": "MMAP-P0-200-2605",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-P0-200-2605"
+      ]
+    },
+    {
+      "id": "MMAP-P0-660-2305",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MMAP-P0-660-2305"
+      ]
+    },
+    {
+      "id": "MMAP-P0-660-2405",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-P0-660-2405"
+      ]
+    },
+    {
+      "id": "MMAP-P0-660-2505",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-P0-660-2505"
+      ]
+    },
+    {
+      "id": "MMAP-P0-660-2605",
+      "subject": "MMAP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-P0-660-2605"
+      ]
+    },
+    {
+      "id": "MMAP-R0-100-2305",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMAP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MMAP-R0-100-2405",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MMAP-R0-100-2505",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MMAP-R0-100-2605",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MMAP-R0-200-2305",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MMAP-R0-200-2405",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-R0-200-2405"
+      ]
+    },
+    {
+      "id": "MMAP-R0-200-2505",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-R0-200-2505"
+      ]
+    },
+    {
+      "id": "MMAP-R0-200-2605",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAP-R0-200-2605"
+      ]
+    },
+    {
+      "id": "MMAP-R0-660-2305",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MMAP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MMAP-R0-660-2405",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MMAP-R0-660-2505",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MMAP-R0-660-2605",
+      "subject": "MMAP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MMAU-P0-100-2305",
+      "subject": "MMAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "no_scheme",
+      "versions": [],
+      "parts": [
+        "MMAU-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MMAU-P0-100-2405",
+      "subject": "MMAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAU-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MMAU-P0-100-2505",
+      "subject": "MMAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMAU-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MMAU-P0-100-2605",
+      "subject": "MMAU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MMBB-P0-100-2305",
+      "subject": "MMBB",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMBB-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MMBB-P0-100-2405",
+      "subject": "MMBB",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMBB-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MMBB-P0-100-2505",
+      "subject": "MMBB",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMBB-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MMBB-P0-100-2605",
+      "subject": "MMBB",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMBB-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MMBB-R0-100-2305",
+      "subject": "MMBB",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMBB-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MMBB-R0-100-2405",
+      "subject": "MMBB",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMBB-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MMBB-R0-100-2505",
+      "subject": "MMBB",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMBB-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MMBB-R0-100-2605",
+      "subject": "MMBB",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMBB-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MMKK-R0-100-2305",
+      "subject": "MMKK",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMKK-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MMKK-R0-100-2405",
+      "subject": "MMKK",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMKK-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MMKK-R0-100-2505",
+      "subject": "MMKK",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMKK-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MMKK-R0-100-2605",
+      "subject": "MMKK",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMKK-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MMLL-P0-100-2305",
+      "subject": "MMLL",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMLL-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MMLL-P0-100-2405",
+      "subject": "MMLL",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMLL-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MMLL-P0-100-2505",
+      "subject": "MMLL",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMLL-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MMLL-P0-100-2605",
+      "subject": "MMLL",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMLL-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MMLL-R0-100-2305",
+      "subject": "MMLL",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMLL-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MMLL-R0-100-2405",
+      "subject": "MMLL",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMLL-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MMLL-R0-100-2505",
+      "subject": "MMLL",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMLL-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MMLL-R0-100-2605",
+      "subject": "MMLL",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMLL-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MMUU-P0-100-2305",
+      "subject": "MMUU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMUU-P0-100-2305"
+      ]
+    },
+    {
+      "id": "MMUU-P0-100-2405",
+      "subject": "MMUU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMUU-P0-100-2405"
+      ]
+    },
+    {
+      "id": "MMUU-P0-100-2505",
+      "subject": "MMUU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMUU-P0-100-2505"
+      ]
+    },
+    {
+      "id": "MMUU-P0-100-2605",
+      "subject": "MMUU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMUU-P0-100-2605"
+      ]
+    },
+    {
+      "id": "MMUU-R0-100-2305",
+      "subject": "MMUU",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MMUU-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MMUU-R0-100-2405",
+      "subject": "MMUU",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMUU-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MMUU-R0-100-2505",
+      "subject": "MMUU",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMUU-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MMUU-R0-100-2605",
+      "subject": "MMUU",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MMUU-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MPOP-P0-100-2305",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "converted",
+      "versions": [],
+      "parts": [
+        "MPOP-P1-100-2305",
+        "MPOP-P2-100-2305"
+      ]
+    },
+    {
+      "id": "MPOP-P0-100-2405",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "converted",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-100-2405",
+        "MPOP-P2-100-2405"
+      ]
+    },
+    {
+      "id": "MPOP-P0-100-2505",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "converted",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-100-2505",
+        "MPOP-P2-100-2505"
+      ]
+    },
+    {
+      "id": "MPOP-P0-100-2605",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-100-2605",
+        "MPOP-P2-100-2605"
+      ]
+    },
+    {
+      "id": "MPOP-P0-200-2305",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MPOP-P0-200-2405",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-200-2405",
+        "MPOP-P2-200-2405"
+      ]
+    },
+    {
+      "id": "MPOP-P0-200-2505",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-200-2505",
+        "MPOP-P2-200-2505"
+      ]
+    },
+    {
+      "id": "MPOP-P0-200-2605",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-200-2605",
+        "MPOP-P2-200-2605"
+      ]
+    },
+    {
+      "id": "MPOP-P0-660-2305",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MPOP-P1-660-2305",
+        "MPOP-P2-660-2305"
+      ]
+    },
+    {
+      "id": "MPOP-P0-660-2405",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-660-2405",
+        "MPOP-P2-660-2405"
+      ]
+    },
+    {
+      "id": "MPOP-P0-660-2505",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-660-2505",
+        "MPOP-P2-660-2505"
+      ]
+    },
+    {
+      "id": "MPOP-P0-660-2605",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "660",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-660-2605",
+        "MPOP-P2-660-2605"
+      ]
+    },
+    {
+      "id": "MPOP-P0-700-2305",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2305",
+      "state": "no_scheme",
+      "versions": [],
+      "parts": [
+        "MPOP-P1-700-2305",
+        "MPOP-P2-700-2305"
+      ]
+    },
+    {
+      "id": "MPOP-P0-700-2405",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2405",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-700-2405",
+        "MPOP-P2-700-2405"
+      ]
+    },
+    {
+      "id": "MPOP-P0-700-2505",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-700-2505",
+        "MPOP-P2-700-2505"
+      ]
+    },
+    {
+      "id": "MPOP-P0-700-2605",
+      "subject": "MPOP",
+      "level": "P0",
+      "variant": "700",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-P1-700-2605",
+        "MPOP-P2-700-2605"
+      ]
+    },
+    {
+      "id": "MPOP-R0-100-2305",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "converted",
+      "versions": [],
+      "parts": [
+        "MPOP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MPOP-R0-100-2405",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "converted",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MPOP-R0-100-2505",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "converted",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MPOP-R0-100-2605",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MPOP-R0-200-2305",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MPOP-R0-200-2405",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2405",
+      "state": "converted",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-R0-200-2405"
+      ]
+    },
+    {
+      "id": "MPOP-R0-200-2505",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2505",
+      "state": "converted",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-R0-200-2505"
+      ]
+    },
+    {
+      "id": "MPOP-R0-200-2605",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "200",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOP-R0-200-2605"
+      ]
+    },
+    {
+      "id": "MPOP-R0-660-2305",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MPOP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MPOP-R0-660-2405",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MPOP-R0-660-2505",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MPOP-R0-660-2605",
+      "subject": "MPOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MPOU-P0-100-2305",
+      "subject": "MPOU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2305",
+      "state": "no_scheme",
+      "versions": [],
+      "parts": [
+        "MPOU-P1-100-2305",
+        "MPOU-P2-100-2305"
+      ]
+    },
+    {
+      "id": "MPOU-P0-100-2405",
+      "subject": "MPOU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2405",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOU-P1-100-2405",
+        "MPOU-P2-100-2405"
+      ]
+    },
+    {
+      "id": "MPOU-P0-100-2505",
+      "subject": "MPOU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2505",
+      "state": "no_scheme",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MPOU-P1-100-2505",
+        "MPOU-P2-100-2505"
+      ]
+    },
+    {
+      "id": "MPOU-P0-100-2605",
+      "subject": "MPOU",
+      "level": "P0",
+      "variant": "100",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MWHP-R0-100-2305",
+      "subject": "MWHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MWHP-R0-100-2405",
+      "subject": "MWHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MWHP-R0-100-2505",
+      "subject": "MWHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MWHP-R0-100-2605",
+      "subject": "MWHP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MWHP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MWOP-R0-100-2305",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2305",
+      "state": "held",
+      "versions": [],
+      "parts": [
+        "MWOP-R0-100-2305"
+      ]
+    },
+    {
+      "id": "MWOP-R0-100-2405",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2405",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MWOP-R0-100-2405"
+      ]
+    },
+    {
+      "id": "MWOP-R0-100-2505",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2505",
+      "state": "held",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MWOP-R0-100-2505"
+      ]
+    },
+    {
+      "id": "MWOP-R0-100-2605",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "100",
+      "session": "2605",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MWOP-R0-100-2605"
+      ]
+    },
+    {
+      "id": "MWOP-R0-600-2305",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2305",
+      "state": "partial",
+      "versions": [],
+      "parts": [
+        "MWOP-R0-600-2305"
+      ]
+    },
+    {
+      "id": "MWOP-R0-600-2405",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2405",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MWOP-R0-600-2505",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2505",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MWOP-R0-600-2605",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "600",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    },
+    {
+      "id": "MWOP-R0-660-2305",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2305",
+      "state": "published",
+      "versions": [],
+      "parts": [
+        "MWOP-R0-660-2305"
+      ]
+    },
+    {
+      "id": "MWOP-R0-660-2405",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2405",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MWOP-R0-660-2405"
+      ]
+    },
+    {
+      "id": "MWOP-R0-660-2505",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2505",
+      "state": "published",
+      "versions": [
+        "A"
+      ],
+      "parts": [
+        "MWOP-R0-660-2505"
+      ]
+    },
+    {
+      "id": "MWOP-R0-660-2605",
+      "subject": "MWOP",
+      "level": "R0",
+      "variant": "660",
+      "session": "2605",
+      "state": "absent",
+      "versions": [],
+      "parts": []
+    }
+  ]
+}

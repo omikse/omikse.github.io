@@ -12,17 +12,18 @@
 
 import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange,
          gradesDeterministically }
-  from "./renderers.js?v=d8eb8833";
+  from "./renderers.js?v=51736e61";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=d8eb8833";
+         submitAttempt, startOver } from "./progress.js?v=51736e61";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=d8eb8833";
+  from "./grading.js?v=51736e61";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=d8eb8833";
+  from "./admin.js?v=51736e61";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
 let catalog = {};     // catalog/{examId} — what students are allowed to see
+let paperCatalogue = [];  // exams/papers.json — every paper CKE printed, and its state
 let adminMode = false; // admins get the per-question analysis button
 
 /* ------------------------------------------------------------------ *
@@ -191,6 +192,115 @@ function renderMenu(showHidden = false) {
     card.addEventListener("click", () => loadExam(entry.id, "practice"));
     grid.appendChild(card);
   });
+
+  renderCatalogue(grid);
+}
+
+/* Everything else CKE ever printed, and why you cannot open it.
+ *
+ * Four states, not two. "We have not converted it yet", "we never downloaded
+ * it" and "CKE never printed that paper" are different answers, and a single
+ * greyed-out card tells the student the same thing for all three — which is a
+ * lie in two of the cases. The states come from exams/papers.json, which the
+ * pipeline builds by comparing the corpus against CKE's own published listing.
+ *
+ * These are tiles, not cards: there are two dozen of them against six real
+ * exams, and giving them equal visual weight would bury the papers that work. */
+const PAPER_STATE = {
+  held: { chip: "w przygotowaniu",
+          why: "Arkusz jest u nas, czeka na przetworzenie.",
+          cls: "border-amber-200 bg-amber-50/60", dot: "bg-amber-400" },
+  no_scheme: { chip: "bez zasad oceniania",
+               why: "Mamy arkusz, ale CKE nie wydała do niego zasad oceniania.",
+               cls: "border-slate-200 bg-white", dot: "bg-slate-300" },
+  published: { chip: "niepobrany",
+               why: "CKE go opublikowała, my jeszcze go nie pobraliśmy.",
+               cls: "border-slate-200 bg-white", dot: "bg-slate-300" },
+  partial: { chip: "niekompletny",
+             why: "Brakuje arkusza albo zasad oceniania.",
+             cls: "border-slate-200 bg-white", dot: "bg-slate-300" },
+  absent: { chip: "nie powstał",
+            why: "CKE nie wydrukowała takiego arkusza w tej sesji.",
+            cls: "border-slate-100 bg-slate-50", dot: "bg-slate-200" },
+};
+
+/* 660 is labelled by its code on purpose. cke-filename-spec.md calls it
+   "niesłyszący", but CKE's own 2025 and 2026 pages describe MPOP-P1-660 as an
+   arkusz "dla zdających niewidomych" and ship it in Braille. Until that
+   contradiction is settled against a paper's cover, the UI states the code and
+   claims nothing. See tools/cke-domain/exam-system.md 7a. */
+const VARIANT_LABEL = {
+  "100": "standardowy",
+  "200": "dostosowany — autyzm",
+  "600": "dostosowany — Braille",
+  "660": "dostosowany (660)",
+  "700": "dostosowany — niepełnosprawność ruchowa",
+  K00: "dostosowany (K00)",
+};
+
+/* The fourth letter of the SUBJECT code is the language the paper is printed
+   in, not the subject: MPOP and MPOU are both język polski, one in Polish and
+   one translated for pupils from Ukraine. Without this the two render as
+   identical tiles with contradictory statuses, which is how it first shipped.
+   Polish is the default and stays unlabelled — every other paper here is one. */
+const PAPER_LANGUAGE = { U: "wersja ukraińska", B: "wersja białoruska",
+                         K: "wersja kaszubska", L: "wersja litewska" };
+
+function paperLanguage(subject) {
+  return PAPER_LANGUAGE[String(subject).slice(3, 4)] || "";
+}
+
+function renderCatalogue(grid) {
+  if (!paperCatalogue.length) return;
+
+  // Only papers from the subject this site serves. The catalogue carries every
+  // matura CKE prints; a polski picker listing biologia would be noise.
+  const served = new Set(examIndex.map(e => String(e.id).slice(0, 3)));
+  if (!served.size) served.add("MPO");
+  const rows = paperCatalogue.filter(
+    p => served.has(String(p.subject).slice(0, 3)) && p.state !== "converted");
+  if (!rows.length) return;
+
+  const section = document.createElement("div");
+  section.className = "col-span-full mt-10";
+  const bySession = [...new Set(rows.map(r => r.session))].sort().reverse();
+
+  section.innerHTML = `
+    <h2 class="text-sm font-bold text-slate-700 mb-1">Pozostałe arkusze</h2>
+    <p class="text-xs text-slate-500 mb-4">Wszystko, co CKE wydała — łącznie z tym,
+      czego jeszcze nie mamy. Kafelek mówi, dlaczego nie da się go otworzyć.</p>
+    ${bySession.map(session => {
+      const group = rows.filter(r => r.session === session);
+      const year = "20" + String(session).slice(0, 2);
+      return `
+      <div class="mb-5">
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Maj ${esc(year)}</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          ${group.map(r => {
+            const s = PAPER_STATE[r.state] || PAPER_STATE.published;
+            const extended = String(r.level).startsWith("R");
+            const vers = (r.versions || []).length > 1
+              ? ` · wersje ${esc(r.versions.join("/"))}` : "";
+            const lang = paperLanguage(r.subject);
+            const langBit = lang ? ` · ${esc(lang)}` : "";
+            return `
+            <div class="border rounded-xl px-3 py-2 ${s.cls} flex items-start gap-2"
+                 title="${esc(s.why)}">
+              <span class="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}"></span>
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-slate-600 truncate">
+                  ${extended ? "Rozszerzona" : "Podstawowa"} ·
+                  ${esc(VARIANT_LABEL[r.variant] || r.variant)}${langBit}${vers}
+                </p>
+                <p class="text-[11px] text-slate-400">${esc(s.chip)} — ${esc(s.why)}</p>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>`;
+    }).join("")}`;
+
+  grid.appendChild(section);
 }
 
 /* Which build is this browser actually running?
@@ -1260,6 +1370,15 @@ async function init() {
     console.error("Nie wczytano exams/index.json", err);
     examIndex = [];
   }
+  // Optional on purpose: a checkout that has never run scrape_cke.py still
+  // works, it just shows nothing but the converted exams.
+  try {
+    const res = await fetch("exams/papers.json", { cache: "reload" });
+    paperCatalogue = res.ok ? (await res.json()).papers || [] : [];
+  } catch {
+    paperCatalogue = [];
+  }
+
   renderMenu();
   renderBuildStamp();
   console.info(`zdamtoio build ${BUILD}`);

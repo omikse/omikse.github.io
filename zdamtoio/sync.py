@@ -7,6 +7,7 @@ Two upstream components, each the owner of what it produces:
     renderers.js            <- tools/web-renderer/renderers.js
     exam-styles.css         <- tools/web-renderer/styles.css
     exams/index.json        <- tools/pdf-json/exams/index.json
+    exams/papers.json       <- the catalogue: what exists, and how far along
     exams/<part>/*.json     <- the booklet deliverables it lists
     exams/<part>/assets/    <- the extracted illustrations
 
@@ -109,6 +110,20 @@ def main():
             total += size
             print(f"  {part_id:24} json + {count} asset file(s)")
             kept += 1
+
+    # papers.json is the catalogue view: every paper that exists and how far
+    # along it is, so the picker can grey a row for the right reason. Unlike
+    # index.json it IS copied verbatim -- nothing here rebuilds it, and it
+    # describes papers this folder deliberately does not hold. It is optional,
+    # because a checkout that has never run scrape_cke.py still has to sync.
+    papers_src = SRC / "exams" / "papers.json"
+    if papers_src.is_file():
+        total += copy_file(papers_src, HERE / "exams" / "papers.json")
+        rows = read_json(papers_src).get("papers", [])
+        print(f"  {'papers.json':24} {len(rows)} paper(s) in the catalogue")
+    else:
+        print("  papers.json               absent -- picker will show only what "
+              "is converted (run scrape_cke.py then `pipeline index`)")
 
     print(f"\nSynced {kept} booklet(s), {total / 1024 / 1024:.2f} MB"
           + (f", skipped {skipped} out of scope" if skipped else ""))
