@@ -10,21 +10,30 @@
  * same renderer; loadExam and resolveAssets are lifted from it deliberately.
  */
 
-import { RENDERERS, esc, stripJsonc, renderReference, aggregateEssay, scoreRange,
-         gradesDeterministically }
-  from "./renderers.js?v=51736e61";
+import { RENDERERS, esc, stripJsonc, renderReference, renderStem, aggregateEssay,
+         scoreRange, gradesDeterministically }
+  from "./renderers.js?v=ea590ad1";
 import { startOrResume, save, flushNow, listAttempts, userReady, onSaveState,
-         submitAttempt, startOver } from "./progress.js?v=51736e61";
+         submitAttempt, startOver } from "./progress.js?v=ea590ad1";
 import { gradeQuestion, gradeEssay, GradingError, runConcurrently }
-  from "./grading.js?v=51736e61";
+  from "./grading.js?v=ea590ad1";
 import { isAdmin, loadCatalog, isPublished, mountAdminButton, hideAdminView }
-  from "./admin.js?v=51736e61";
+  from "./admin.js?v=ea590ad1";
 
 let exam = null;      // the loaded exam: { id, name, questions[] }
 let examIndex = [];   // exams/index.json — everything the pipeline produced
 let catalog = {};     // catalog/{examId} — what students are allowed to see
 let paperCatalogue = [];  // exams/papers.json — every paper CKE printed, and its state
+let paperSubjects = {};   // its `subjects` map: SUBJECT code -> { name, note }
 let adminMode = false; // admins get the per-question analysis button
+/* examId -> { answered, points, maxPoints, done }, filled from the attempt
+   history so a card can show how far this student has got. Read, never
+   fetched, by renderMenu: listAttempts() is a Firestore round trip and the
+   history panel is already making it — doing it twice doubles the reads on
+   every return to the menu. */
+let attemptIndex = {};
+// Which subject sections the student has opened, so a re-render keeps them.
+const openSubjects = new Set();
 
 /* ------------------------------------------------------------------ *
  * Gemini API key (per student, in localStorage)
@@ -125,88 +134,47 @@ function describeContents(entry) {
   return `${n} ${plural(n, "zadanie", "zadania", "zadań")}`;
 }
 
-function renderMenu(showHidden = false) {
-  const grid = document.getElementById("exam-grid");
-  grid.innerHTML = "";
-
-  if (!examIndex.length) {
-    grid.innerHTML = `<p class="text-slate-500 text-sm col-span-full">
-      Brak arkuszy. Uruchom <code>python sync.py</code>.</p>`;
-    return;
-  }
-
-  // Students see only published exams. An admin sees the hidden ones too, so
-  // they can check a sheet before releasing it — dimmed, so the difference
-  // between what they see and what a student sees is never a guess.
-  const visible = examIndex.filter(e => showHidden || isPublished(catalog, e.id));
-
-  if (!visible.length) {
-    grid.innerHTML = `<p class="text-slate-500 text-sm col-span-full">
-      Brak opublikowanych arkuszy.</p>`;
-    return;
-  }
-
-  visible.forEach(entry => {
-    const { level, when } = describeExam(entry.id);
-    const extended = level.includes("rozszerzony");
-    const colour = extended ? "purple" : "indigo";
-
-    const hidden = !isPublished(catalog, entry.id);
-    const card = document.createElement("div");
-    card.className = "group bg-white rounded-2xl shadow-sm border border-slate-200 p-6 cursor-pointer "
-      + "hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden flex flex-col h-full"
-      + (hidden ? " opacity-50 ring-1 ring-dashed ring-slate-300" : "");
-    card.innerHTML = `
-      <div class="absolute -right-6 -top-6 w-24 h-24 bg-${colour}-50 rounded-full group-hover:bg-${colour}-100 transition-colors"></div>
-      <div class="relative z-10 flex flex-col h-full">
-        <div class="flex items-center justify-between mb-4">
-          <!-- The badge carries the level, not "Oficjalny": every paper here is
-               official, but each year ships both a podstawowy and a rozszerzony
-               sheet, so without this the six cards read as three duplicates. -->
-          <span class="bg-${colour}-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">${extended ? "Rozszerzona" : "Podstawowa"}</span>
-          <span class="material-symbols-outlined text-${colour}-300 text-3xl">history_edu</span>
-        </div>
-        <h3 class="text-lg font-bold text-slate-800 mb-1">Matura ${esc(when)}</h3>
-        <p class="text-xs text-slate-500 mb-4">${esc(level)}</p>
-        <ul class="text-xs text-slate-500 space-y-1 mb-4 flex-grow">
-          <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">list</span> ${esc(describeContents(entry))}</li>
-          <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">grade</span> ${esc(entry.max_points)} pkt</li>
-        </ul>
-        <div class="mt-auto flex items-center justify-between gap-2">
-          <span class="text-${colour}-600 font-semibold text-xs flex items-center gap-1">
-            Rozwiąż <span class="material-symbols-outlined text-sm">arrow_forward</span>
-          </span>
-          <button type="button" data-mode="exam" title="Z zegarem, bez sprawdzania w trakcie"
-            class="text-[10px] font-semibold text-slate-400 hover:text-${colour}-600 border border-slate-200
-                   hover:border-${colour}-300 rounded-full px-2 py-1 transition-colors flex items-center gap-1">
-            <span class="material-symbols-outlined text-xs">timer</span>${esc(examMinutes(entry.id))} min
-          </button>
-        </div>
-      </div>`;
-    // Clicking the card practises; the small button sits the paper under the
-    // clock. Two targets rather than a dialog, so the default stays one click.
-    card.querySelector('[data-mode="exam"]').addEventListener("click", event => {
-      event.stopPropagation();
-      loadExam(entry.id, "exam");
-    });
-    card.addEventListener("click", () => loadExam(entry.id, "practice"));
-    grid.appendChild(card);
-  });
-
-  renderCatalogue(grid);
-}
-
-/* Everything else CKE ever printed, and why you cannot open it.
+/* The picker is a matrix, not a pile of cards.
  *
- * Four states, not two. "We have not converted it yet", "we never downloaded
- * it" and "CKE never printed that paper" are different answers, and a single
- * greyed-out card tells the student the same thing for all three — which is a
- * lie in two of the cases. The states come from exams/papers.json, which the
- * pipeline builds by comparing the corpus against CKE's own published listing.
+ * Subjects run down the page, sessions run across it, and every cell is the
+ * same card whether you can open it or not. The previous menu had two shapes --
+ * big cards for the six converted exams, small tiles for everything else --
+ * which made "we have not converted this yet" look like a different KIND of
+ * thing from an exam rather than the same exam at an earlier stage. One card,
+ * one size, and the state written on it.
  *
- * These are tiles, not cards: there are two dozen of them against six real
- * exams, and giving them equal visual weight would bury the papers that work. */
+ * Adapted papers are not top-level cells. A blind student's arkusz is the same
+ * exam as everyone else's, so it belongs inside that cell, behind a disclosure
+ * -- not as a sibling row that doubles the height of the grid for a variant
+ * almost nobody is looking for.
+ *
+ * Subject names come from exams/papers.json, which the pipeline derives from
+ * CKE's own url folders. Do not hardcode them here: two of the 34 codes (MJUP,
+ * MWHP) are not in cke-filename-spec.md at all, and a table in the renderer
+ * would silently go stale the next time CKE adds a subject. */
+
+// Ordered by what a student is most likely to be sitting, then alphabetically.
+// Polish collation is not ASCII collation -- ł sorts after l, not after z.
+const SUBJECT_FIRST = ["Język polski", "Matematyka", "Język angielski"];
+const collator = new Intl.Collator("pl");
+
+// P1/P2 are booklets of one podstawowy exam and the pipeline joins them into
+// P0; D0 is the poziom dwujęzyczny paper for modern languages.
+const LEVEL_ROWS = [
+  { code: "P0", label: "Podstawowa", long: "poziom podstawowy", colour: "indigo" },
+  { code: "R0", label: "Rozszerzona", long: "poziom rozszerzony", colour: "purple" },
+  { code: "D0", label: "Dwujęzyczna", long: "poziom dwujęzyczny", colour: "teal" },
+];
+
+/* Why a cell cannot be opened. Six answers, not one.
+ *
+ * "We have not converted it yet", "we never downloaded it" and "CKE never
+ * printed that paper" are different facts, and a single greyed card asserts
+ * the same thing about all three -- which is a lie about two of them. The
+ * states are computed in the pipeline by comparing the corpus against CKE's
+ * published listing; this map only says how each one reads. */
 const PAPER_STATE = {
+  converted: { chip: "gotowy", why: "Arkusz jest przetworzony." },
   held: { chip: "w przygotowaniu",
           why: "Arkusz jest u nas, czeka na przetworzenie.",
           cls: "border-amber-200 bg-amber-50/60", dot: "bg-amber-400" },
@@ -221,8 +189,16 @@ const PAPER_STATE = {
              cls: "border-slate-200 bg-white", dot: "bg-slate-300" },
   absent: { chip: "nie powstał",
             why: "CKE nie wydrukowała takiego arkusza w tej sesji.",
-            cls: "border-slate-100 bg-slate-50", dot: "bg-slate-200" },
+            cls: "border-slate-100 bg-slate-50/60", dot: "bg-slate-200" },
 };
+
+// Converted, but not served from this folder: sync.py copies only the standard
+// `100` papers, so an adapted booklet can be converted upstream and still not
+// be here. Saying "gotowy" about a card that does not open would be a bug
+// report waiting to happen.
+const STATE_ELSEWHERE = { chip: "poza stroną",
+                          why: "Przetworzony w narzędziu, nieopublikowany tutaj.",
+                          cls: "border-slate-200 bg-white", dot: "bg-slate-300" };
 
 /* 660 is labelled by its code on purpose. cke-filename-spec.md calls it
    "niesłyszący", but CKE's own 2025 and 2026 pages describe MPOP-P1-660 as an
@@ -232,75 +208,440 @@ const PAPER_STATE = {
 const VARIANT_LABEL = {
   "100": "standardowy",
   "200": "dostosowany — autyzm",
+  "400": "dostosowany (400)",
   "600": "dostosowany — Braille",
   "660": "dostosowany (660)",
   "700": "dostosowany — niepełnosprawność ruchowa",
   K00: "dostosowany (K00)",
 };
 
-/* The fourth letter of the SUBJECT code is the language the paper is printed
-   in, not the subject: MPOP and MPOU are both język polski, one in Polish and
-   one translated for pupils from Ukraine. Without this the two render as
-   identical tiles with contradictory statuses, which is how it first shipped.
-   Polish is the default and stays unlabelled — every other paper here is one. */
-const PAPER_LANGUAGE = { U: "wersja ukraińska", B: "wersja białoruska",
-                         K: "wersja kaszubska", L: "wersja litewska" };
-
-function paperLanguage(subject) {
-  return PAPER_LANGUAGE[String(subject).slice(3, 4)] || "";
+function sessionYear(session) {
+  return "20" + String(session).slice(0, 2);
 }
 
-function renderCatalogue(grid) {
-  if (!paperCatalogue.length) return;
+function subjectMeta(code) {
+  return paperSubjects[code] || { name: String(code), note: "" };
+}
 
-  // Only papers from the subject this site serves. The catalogue carries every
-  // matura CKE prints; a polski picker listing biologia would be noise.
-  const served = new Set(examIndex.map(e => String(e.id).slice(0, 3)));
-  if (!served.size) served.add("MPO");
-  const rows = paperCatalogue.filter(
-    p => served.has(String(p.subject).slice(0, 3)) && p.state !== "converted");
-  if (!rows.length) return;
+/* Group the flat catalogue into subject -> level -> session -> one cell.
+ *
+ * Every visible exam is guaranteed a cell even if the catalogue has never been
+ * generated: a checkout that has not run scrape_cke.py still has to show the
+ * exams it holds, so anything in the index with no catalogue row is synthesised
+ * into one rather than disappearing from the menu. */
+function buildMatrix(visible) {
+  const rows = paperCatalogue.slice();
+  const seen = new Set(rows.map(r => r.id));
 
-  const section = document.createElement("div");
-  section.className = "col-span-full mt-10";
-  const bySession = [...new Set(rows.map(r => r.session))].sort().reverse();
+  visible.forEach(entry => {
+    if (seen.has(entry.id)) return;
+    const [subject, level, variant, session] = String(entry.id).split("-");
+    if (!session) return;
+    rows.push({ id: entry.id, subject, level, variant, session,
+                state: "converted", versions: [], parts: [entry.id] });
+  });
 
-  section.innerHTML = `
-    <h2 class="text-sm font-bold text-slate-700 mb-1">Pozostałe arkusze</h2>
-    <p class="text-xs text-slate-500 mb-4">Wszystko, co CKE wydała — łącznie z tym,
-      czego jeszcze nie mamy. Kafelek mówi, dlaczego nie da się go otworzyć.</p>
-    ${bySession.map(session => {
-      const group = rows.filter(r => r.session === session);
-      const year = "20" + String(session).slice(0, 2);
-      return `
-      <div class="mb-5">
-        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Maj ${esc(year)}</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          ${group.map(r => {
-            const s = PAPER_STATE[r.state] || PAPER_STATE.published;
-            const extended = String(r.level).startsWith("R");
-            const vers = (r.versions || []).length > 1
-              ? ` · wersje ${esc(r.versions.join("/"))}` : "";
-            const lang = paperLanguage(r.subject);
-            const langBit = lang ? ` · ${esc(lang)}` : "";
-            return `
-            <div class="border rounded-xl px-3 py-2 ${s.cls} flex items-start gap-2"
-                 title="${esc(s.why)}">
-              <span class="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${s.dot}"></span>
-              <div class="min-w-0">
-                <p class="text-xs font-semibold text-slate-600 truncate">
-                  ${extended ? "Rozszerzona" : "Podstawowa"} ·
-                  ${esc(VARIANT_LABEL[r.variant] || r.variant)}${langBit}${vers}
-                </p>
-                <p class="text-[11px] text-slate-400">${esc(s.chip)} — ${esc(s.why)}</p>
-              </div>
-            </div>`;
-          }).join("")}
-        </div>
-      </div>`;
-    }).join("")}`;
+  const sessions = [...new Set(rows.map(r => r.session))].sort();
+  const groups = new Map();
 
-  grid.appendChild(section);
+  rows.forEach(row => {
+    const { name } = subjectMeta(row.subject);
+    if (!groups.has(name)) groups.set(name, { name, cells: new Map() });
+    const level = LEVEL_ROWS.some(l => l.code === row.level) ? row.level : "R0";
+    const key = `${level}|${row.session}`;
+    const cell = groups.get(name).cells.get(key)
+      || { level, session: row.session, papers: [] };
+    cell.papers.push(row);
+    groups.get(name).cells.set(key, cell);
+  });
+
+  const order = [...groups.keys()].sort((a, b) => {
+    const ia = SUBJECT_FIRST.indexOf(a), ib = SUBJECT_FIRST.indexOf(b);
+    if (ia !== ib) return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    return collator.compare(a, b);
+  });
+
+  return { sessions, subjects: order.map(name => shapeSubject(groups.get(name))) };
+}
+
+/* Which paper owns the cell, and which ones hide behind the disclosure.
+ *
+ * The standard `100` paper in the subject's plain code is the one a student
+ * means; the Ukrainian translation, the dwujęzyczny sheet and every adapted
+ * variant are alternatives to it. Picking by state instead would promote
+ * whichever paper happened to be furthest along, so a cell could show an
+ * autism-adapted arkusz as the headline of a session. */
+function shapeSubject(group) {
+  const levels = new Set(), cells = new Map();
+
+  group.cells.forEach(cell => {
+    const sorted = cell.papers.slice().sort((a, b) => {
+      const na = subjectMeta(a.subject).note ? 1 : 0;
+      const nb = subjectMeta(b.subject).note ? 1 : 0;
+      if (na !== nb) return na - nb;                 // plain code first
+      if ((a.variant === "100") !== (b.variant === "100"))
+        return a.variant === "100" ? -1 : 1;         // then the standard paper
+      return a.id < b.id ? -1 : 1;
+    });
+    const primary = sorted[0];
+    const others = sorted.slice(1).filter(p => p.state !== "absent");
+    if (primary.state !== "absent" || others.length) levels.add(cell.level);
+    cells.set(`${cell.level}|${cell.session}`, { primary, others });
+  });
+
+  return {
+    name: group.name,
+    levels: LEVEL_ROWS.filter(l => levels.has(l.code)),
+    cell: (level, session) => cells.get(`${level}|${session}`) || null,
+  };
+}
+
+/* One card, in the shape the exam cards have always had.
+ *
+ * The chrome below -- rounded-2xl, the corner blob, the level badge, the
+ * history_edu glyph, the two-line fact list, the footer -- is the original
+ * exam card, unchanged. What varies is only what the body SAYS: an exam you
+ * can open lists its questions, points and clock; one you cannot lists why.
+ *
+ * Making the greyed papers wear the same card is the point. A different, much
+ * smaller tile would say "this is a different kind of thing", when a 2026
+ * arkusz sitting unconverted on our disk is the same exam as a 2023 one, at an
+ * earlier stage. */
+const CARD_SHELL = "rounded-2xl shadow-sm border p-4 relative overflow-hidden "
+                 + "flex flex-col w-[15rem] shrink-0";
+
+/* How much of this paper the student has done.
+ *
+ * "0/20 zadań", not "19 zadań + wypracowanie". The wypracowanie counts as a
+ * question because CKE numbers it as one — it is Zadanie 18 on the 2024 and
+ * 2025 podstawowy sheets, carrying straight on from Arkusz 1 — so splitting it
+ * out made the card disagree with the paper it describes. entry.questions
+ * already includes it.
+ *
+ * The fraction reads "zadań" at every value on purpose: Polish takes the
+ * genitive plural after a fraction, so "0/1 zadanie" is wrong where the
+ * rozszerzony sheet's single wypracowanie would otherwise put it. */
+function answeredLine(entry, examId) {
+  const total = Number(entry.questions) || 0;
+  const done = attemptIndex[examId]?.answered ?? 0;
+  return `${Math.min(done, total)}/${total} zadań`;
+}
+
+/* Points, but only once the paper is actually marked — see indexAttempts.
+   Before that the card states what the paper is worth, which is a fact about
+   the exam rather than a claim about the student. */
+function pointsLine(entry, examId) {
+  const a = attemptIndex[examId];
+  if (!a?.done || !a.maxPoints) return `${entry.max_points} pkt`;
+  const pct = Math.round((a.points / a.maxPoints) * 100);
+  return `${a.points}/${a.maxPoints} pkt · ${pct}%`;
+}
+
+function paperCard(cell, session, level) {
+  const card = document.createElement("div");
+  const colour = level.colour;
+
+  if (!cell) {
+    // Keeps the column width when CKE printed nothing at all for a session,
+    // so the years below stay under the years above.
+    card.className = "w-[15rem] shrink-0 rounded-2xl border border-dashed border-slate-200/70";
+    return card;
+  }
+
+  const { primary, others } = cell;
+  const entry = examIndex.find(e => e.id === primary.id);
+  const hidden = entry && !isPublished(catalog, primary.id);
+  // Converted upstream but not served from this folder -- sync.py copies only
+  // the standard `100` papers, so an adapted booklet can be converted and
+  // still not be here. "gotowy" on a card that does not open is a bug report.
+  const shown = entry ? null
+    : (primary.state === "converted" ? STATE_ELSEWHERE
+       : PAPER_STATE[primary.state] || PAPER_STATE.published);
+
+  // A note that names the level ("poziom dwujęzyczny") repeats the row it sits
+  // in, so it goes unsaid. Notes naming a LANGUAGE stay: those distinguish two
+  // papers that would otherwise look identical.
+  const raw = subjectMeta(primary.subject).note;
+  const note = raw.startsWith("poziom") ? "" : raw;
+
+  card.className = CARD_SHELL + " "
+    + (entry
+        ? "group bg-white border-slate-200 cursor-pointer hover:shadow-xl "
+          + "hover:-translate-y-1 transition-all"
+        : `${shown.cls} shadow-none`)
+    + (hidden ? " opacity-50 ring-1 ring-dashed ring-slate-300" : "");
+
+  const versions = (primary.versions || []).length > 1
+    ? `<li class="flex items-center gap-2">
+         <span class="material-symbols-outlined text-sm">content_copy</span>
+         wersje ${esc(primary.versions.join("/"))}</li>`
+    : "";
+
+  const facts = entry
+    ? `<li class="flex items-center gap-1.5">
+         <span class="material-symbols-outlined text-sm">list</span>
+         ${esc(answeredLine(entry, primary.id))}</li>
+       <li class="flex items-center gap-1.5">
+         <span class="material-symbols-outlined text-sm">grade</span>
+         ${esc(pointsLine(entry, primary.id))}</li>`
+    : `<li class="leading-snug">${esc(shown.why)}</li>${versions}`;
+
+  const footer = entry
+    ? `<span class="text-${colour}-600 font-semibold text-xs flex items-center gap-1">
+         Rozwiąż <span class="material-symbols-outlined text-sm">arrow_forward</span></span>
+       <button type="button" data-mode="exam" title="Z zegarem, bez sprawdzania w trakcie"
+         class="text-[10px] font-semibold text-slate-400 hover:text-${colour}-600 border
+                border-slate-200 hover:border-${colour}-300 rounded-full px-2 py-1
+                transition-colors flex items-center gap-1">
+         <span class="material-symbols-outlined text-xs">timer</span>${esc(examMinutes(primary.id))} min
+       </button>`
+    : `<span class="text-[11px] font-semibold text-slate-500 flex items-center gap-1.5">
+         <span class="w-1.5 h-1.5 rounded-full ${shown.dot}"></span>${esc(shown.chip)}</span>`;
+
+  card.innerHTML = `
+    <div class="absolute -right-5 -top-5 w-20 h-20 rounded-full transition-colors
+                ${entry ? `bg-${colour}-50 group-hover:bg-${colour}-100` : "bg-slate-100/70"}"></div>
+    <div class="relative z-10 flex flex-col h-full">
+      <div class="flex items-center justify-between mb-3">
+        <!-- The badge carries the level, not "Oficjalny": every paper here is
+             official, but a session ships a podstawowy and a rozszerzony sheet,
+             so without this the cards in a column read as duplicates. -->
+        <span class="text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide
+                     ${entry ? `bg-${colour}-600 text-white` : "bg-slate-200 text-slate-500"}"
+          >${esc(level.label)}</span>
+        <span class="material-symbols-outlined text-2xl
+                     ${entry ? `text-${colour}-300` : "text-slate-200"}">history_edu</span>
+      </div>
+      <h3 class="text-base font-bold mb-0.5 ${entry ? "text-slate-800" : "text-slate-500"}">
+        Matura Maj ${esc(sessionYear(session))}</h3>
+      <p class="text-[11px] text-slate-500 mb-3">${esc(level.long)}${note ? ` · ${esc(note)}` : ""}</p>
+      <ul class="text-[11px] text-slate-500 space-y-1 mb-3 flex-grow">${facts}</ul>
+      <div class="mt-auto flex items-center justify-between gap-2">${footer}</div>
+      ${adaptedDisclosure(others)}
+    </div>`;
+
+  card.title = entry ? "" : shown.why;
+
+  // The disclosure lives inside a clickable card, so its clicks must not also
+  // open the exam behind it.
+  const details = card.querySelector("details");
+  if (details) details.addEventListener("click", e => e.stopPropagation());
+
+  if (entry) {
+    // Clicking the card practises; the small button sits the paper under the
+    // clock. Two targets rather than a dialog, so the default stays one click.
+    card.querySelector('[data-mode="exam"]').addEventListener("click", event => {
+      event.stopPropagation();
+      loadExam(primary.id, "exam");
+    });
+    card.addEventListener("click", () => loadExam(primary.id, "practice"));
+  }
+  return card;
+}
+
+function adaptedDisclosure(others) {
+  if (!others.length) return "";
+  return `
+    <details class="mt-3 border-t border-slate-100 pt-2">
+      <summary class="text-[11px] text-slate-400 cursor-pointer hover:text-slate-600 select-none">
+        inne wersje (${others.length})</summary>
+      <ul class="mt-2 space-y-1">
+        ${others.map(p => {
+          const st = p.state === "converted"
+            ? STATE_ELSEWHERE : (PAPER_STATE[p.state] || PAPER_STATE.published);
+          const note = subjectMeta(p.subject).note;
+          const label = p.variant === "100"
+            ? (note || VARIANT_LABEL[p.variant] || p.variant)
+            : (VARIANT_LABEL[p.variant] || p.variant) + (note ? ` · ${note}` : "");
+          const vers = (p.versions || []).length > 1
+            ? ` · wersje ${p.versions.join("/")}` : "";
+          return `<li class="flex items-start gap-1.5" title="${esc(st.why)}">
+                    <span class="mt-1.5 w-1 h-1 rounded-full shrink-0 ${st.dot}"></span>
+                    <span class="text-[11px] text-slate-400 leading-snug">
+                      ${esc(label)}${esc(vers)} — ${esc(st.chip)}</span>
+                  </li>`;
+        }).join("")}
+      </ul>
+    </details>`;
+}
+
+/* Turn the wheel sideways over a session strip.
+ *
+ * The strip's scrollbar is hidden (see .no-scrollbar in index.html), so
+ * something has to move it, and reaching for a shift-wheel chord to read a
+ * grid of exams is not it. Over the cards the wheel walks the sessions; the
+ * page's own gutters, left and right of the strip, still scroll the page.
+ *
+ * The strip owns the wheel completely while it can still move, INCLUDING at
+ * either end — running out of columns must not tip the page into scrolling
+ * down under the cursor. The one case left alone is a strip whose sessions all
+ * fit: there is nothing to scroll sideways, so capturing the wheel there would
+ * strand a narrow window with no gutter to aim at.
+ *
+ * Motion is animated rather than applied per event. Writing scrollLeft
+ * straight from deltaY steps the strip a whole notch at a time — ~100px in
+ * Chrome, and a different number in every browser — which reads as chopping
+ * rather than scrolling. Instead each event moves a TARGET and a rAF loop
+ * eases the strip toward it, so several notches in quick succession blend into
+ * one continuous movement.
+ *
+ * deltaMode matters: Firefox reports lines, not pixels, and without the
+ * conversion a wheel notch there would nudge the strip three pixels. */
+function bindSidewaysWheel(scroller) {
+  let target = null;
+  let frame = 0;
+
+  const maxScroll = () => scroller.scrollWidth - scroller.clientWidth;
+
+  const settle = () => { frame = 0; target = null; };
+
+  const step = () => {
+    const before = scroller.scrollLeft;
+    const distance = target - before;
+    if (Math.abs(distance) < 0.5) {
+      scroller.scrollLeft = target;
+      return settle();
+    }
+    scroller.scrollLeft = before + distance * 0.22;   // ease out, ~15 frames
+
+    // The strip can refuse to move even though the target says it should:
+    // scrollWidth rounds up, so the real maximum scrollLeft is a pixel or two
+    // short of scrollWidth - clientWidth. Measured 274 against a target of 276.
+    // Without this the loop would never satisfy the test above and would spin
+    // a requestAnimationFrame for the life of the page.
+    if (Math.abs(scroller.scrollLeft - before) < 0.5) {
+      scroller.scrollLeft = target;              // the browser clamps it
+      return settle();
+    }
+    frame = requestAnimationFrame(step);
+  };
+
+  scroller.addEventListener("wheel", event => {
+    if (event.ctrlKey) return;                   // pinch-zoom is not ours
+    const max = maxScroll();
+    if (max <= 0) return;
+    // A trackpad's real sideways swipe already scrolls the strip; only the
+    // vertical component needs translating.
+    if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+    if (!event.deltaY) return;
+
+    event.preventDefault();
+    const unit = event.deltaMode === 1 ? 16
+               : event.deltaMode === 2 ? scroller.clientWidth : 1;
+    const from = target ?? scroller.scrollLeft;
+    target = Math.max(0, Math.min(max, from + event.deltaY * unit));
+    if (!frame) frame = requestAnimationFrame(step);
+  }, { passive: false });
+}
+
+function renderMenu(showHidden = false) {
+  const grid = document.getElementById("exam-grid");
+  grid.className = "space-y-4";
+  grid.innerHTML = "";
+
+  if (!examIndex.length && !paperCatalogue.length) {
+    grid.innerHTML = `<p class="text-slate-500 text-sm">
+      Brak arkuszy. Uruchom <code>python sync.py</code>.</p>`;
+    return;
+  }
+
+  // Students see only published exams. An admin sees the hidden ones too, so
+  // they can check a sheet before releasing it — dimmed, so the difference
+  // between what they see and what a student sees is never a guess.
+  const visible = examIndex.filter(e => showHidden || isPublished(catalog, e.id));
+  const { sessions, subjects } = buildMatrix(visible);
+
+  if (!sessions.length) {
+    grid.innerHTML = `<p class="text-slate-500 text-sm">
+      Brak opublikowanych arkuszy.</p>`;
+    return;
+  }
+
+  /* One scroller per subject, not per row.
+   *
+   * Full-size cards times four sessions do not fit on any laptop, so the years
+   * scroll sideways. Both level rows of a subject live in ONE scroll container
+   * so they move together — scrolling them separately would let Podstawowa
+   * 2023 sit above Rozszerzona 2025, which is worse than not aligning at all.
+   * The level label is sticky at the left edge so you never lose which row you
+   * are reading; it carries the page's own bg-slate-100 so cards slide under
+   * it cleanly. */
+  const track = "grid gap-4 "
+    + `grid-cols-[4.5rem_repeat(${sessions.length},15rem)] `
+    + `sm:grid-cols-[7rem_repeat(${sessions.length},15rem)]`;
+
+  subjects.forEach(subject => {
+    if (!subject.levels.length) return;
+
+    /* Collapsed by default, all 23 of them.
+     *
+     * Expanded, the grid is a couple of hundred cards and the six you can
+     * actually sit are buried three screens up from the rest. Closed, the page
+     * is a list of subjects you open on purpose. The summary carries the count
+     * of openable papers so a shut section still says whether it holds
+     * anything, rather than making you open it to find out.
+     *
+     * renderMenu re-runs when the attempt history lands, so the open sections
+     * are remembered — otherwise a section would snap shut under the cursor a
+     * second after being opened. */
+    const openable = subject.levels.reduce((n, level) => n + sessions.filter(s => {
+      const cell = subject.cell(level.code, s);
+      return cell && examIndex.some(e => e.id === cell.primary.id);
+    }).length, 0);
+
+    const section = document.createElement("details");
+    section.open = openSubjects.has(subject.name);
+    section.addEventListener("toggle", () => {
+      section.open ? openSubjects.add(subject.name) : openSubjects.delete(subject.name);
+    });
+    section.className = "group";
+    section.innerHTML = `
+      <summary class="cursor-pointer select-none flex items-center gap-2 mb-3
+                      text-base font-bold text-slate-700 hover:text-slate-900">
+        <!-- summary is a flex box, which suppresses the browser's own
+             disclosure marker, so the chevron is drawn here or the heading
+             looks like plain text nobody would think to click. -->
+        <span class="material-symbols-outlined text-lg text-slate-400
+                     transition-transform group-open:rotate-90">chevron_right</span>
+        ${esc(subject.name)}
+        ${openable ? `<span class="text-[10px] font-semibold uppercase tracking-wide
+              bg-indigo-100 text-indigo-600 rounded-full px-2 py-0.5"
+              >${esc(openable)} do rozwiązania</span>` : ""}
+      </summary>`;
+
+    const scroller = document.createElement("div");
+    scroller.className = "overflow-x-auto no-scrollbar pb-1";
+    bindSidewaysWheel(scroller);
+
+    const rows = document.createElement("div");
+    rows.className = "space-y-4 w-max";
+
+    const head = document.createElement("div");
+    head.className = track;
+    head.innerHTML = `<div class="sticky left-0 z-20 bg-slate-100"></div>`
+      + sessions.map(s => `<div class="text-[11px] font-bold text-slate-400
+           uppercase tracking-wide px-1">Maj ${esc(sessionYear(s))}</div>`).join("");
+    rows.appendChild(head);
+
+    subject.levels.forEach(level => {
+      const row = document.createElement("div");
+      row.className = `${track} items-stretch`;
+
+      const label = document.createElement("div");
+      label.className = "sticky left-0 z-20 bg-slate-100 pr-3 flex items-center "
+                      + "text-sm font-semibold text-slate-500";
+      label.textContent = level.label;
+      row.appendChild(label);
+
+      sessions.forEach(session =>
+        row.appendChild(paperCard(subject.cell(level.code, session), session, level)));
+      rows.appendChild(row);
+    });
+
+    scroller.appendChild(rows);
+    section.appendChild(scroller);
+    grid.appendChild(section);
+  });
 }
 
 /* Which build is this browser actually running?
@@ -328,6 +669,13 @@ function renderBuildStamp() {
   el.textContent = `build ${BUILD}`;
 }
 
+/* The two views are siblings in one scrolling document -- hiding one and
+   showing the other does not touch the scroll offset, so opening an arkusz,
+   reading to zadanie 12 and coming back used to leave the picker scrolled to
+   wherever the sheet had been. Park the menu's offset on the way in and put it
+   back on the way out; an exam always opens at its first page. */
+let menuScrollY = 0;
+
 function showMenu() {
   flushNow();                     // leaving the sheet must not drop pending work
   hideAdminView();
@@ -336,6 +684,9 @@ function showMenu() {
   document.getElementById("back-btn").classList.add("hidden");
   document.getElementById("logo-container").classList.remove("hidden");
   renderHistory();
+  // After renderHistory: it appends to #view-menu, and restoring before the
+  // page has its full height back would clamp the offset to a shorter page.
+  window.scrollTo(0, menuScrollY);
 }
 
 /* ------------------------------------------------------------------ *
@@ -358,9 +709,44 @@ function formatWhen(ts) {
   return d ? new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium", timeStyle: "short" }).format(d) : "—";
 }
 
+/* The live attempt for each exam, as the cards need it.
+ *
+ * startOver() archives a finished attempt under `<examId>__<stamp>`, so only
+ * the doc whose id IS the exam id is the one in play; the archived ones belong
+ * to the history list below and must not overwrite it here.
+ *
+ * `done` is what unlocks the score on a card, and it means every question is
+ * MARKED, not merely answered. totals.points accumulates per question as each
+ * one is checked, so a half-marked paper reports a real number that is not the
+ * student's result — putting it on the card would read as "you scored 12/60"
+ * when they have simply not finished. Submitting in exam mode does not grade
+ * anything either, so `pending` is the honest test and `status` is not. */
+function indexAttempts(attempts) {
+  const index = {};
+  attempts.forEach(a => {
+    if (!a.examId || a.id !== a.examId) return;
+    const t = a.totals || {};
+    const graded = Number(t.graded) || 0;
+    index[a.examId] = {
+      answered: Object.keys(a.answers || {}).length,
+      points: Number(t.points) || 0,
+      maxPoints: Number(t.maxPoints) || 0,
+      done: graded > 0 && (Number(t.pending) || 0) === 0,
+    };
+  });
+  return index;
+}
+
 async function renderHistory() {
   const box = historyBox();
   const attempts = await listAttempts();
+
+  // The cards read this, so refresh them once the attempts land — the menu is
+  // painted before this promise resolves.
+  attemptIndex = indexAttempts(attempts);
+  if (!document.getElementById("view-menu").classList.contains("hidden")) {
+    renderMenu(adminMode);
+  }
 
   if (!attempts.length) {
     box.innerHTML = "";
@@ -394,6 +780,10 @@ async function renderHistory() {
 
 function showExam() {
   hideAdminView();
+  if (!document.getElementById("view-menu").classList.contains("hidden")) {
+    menuScrollY = window.scrollY;        // only when we are actually leaving it
+  }
+  window.scrollTo(0, 0);
   document.getElementById("view-menu").classList.add("hidden");
   document.getElementById("view-exam").classList.remove("hidden");
   document.getElementById("back-btn").classList.remove("hidden");
@@ -776,7 +1166,7 @@ function renderCard(question, { alone = false } = {}) {
       <div class="q-head-bar">Zadanie ${esc(question.number)}. (0–${esc(maxPoints)})</div>${stack}
     </header>
     ${renderReference(question.reference_data)}
-    <p class="q-prompt">${esc(question.question || "")}</p>
+    <div class="q-prompt">${renderStem(question.question, question)}</div>
     <div class="q-answer">${answerHtml}</div>
     <div class="q-result"></div>
     <footer class="q-actions">
@@ -1374,9 +1764,12 @@ async function init() {
   // works, it just shows nothing but the converted exams.
   try {
     const res = await fetch("exams/papers.json", { cache: "reload" });
-    paperCatalogue = res.ok ? (await res.json()).papers || [] : [];
+    const doc = res.ok ? await res.json() : {};
+    paperCatalogue = doc.papers || [];
+    paperSubjects = doc.subjects || {};
   } catch {
     paperCatalogue = [];
+    paperSubjects = {};
   }
 
   renderMenu();

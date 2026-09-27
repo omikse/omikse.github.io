@@ -15,7 +15,17 @@
           "author": "Carl Sagan",
           "title": "Błękitna kropka",
           "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.",
-          "path": ""
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka."
+            },
+            {
+              "n": 2,
+              "text": "Emisariusz – wysłannik."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -51,8 +61,18 @@
           "name": "",
           "author": "Carl Sagan",
           "title": "Błękitna kropka",
-          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.\n\n1 Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka.\n2 Emisariusz – wysłannik.",
-          "path": ""
+          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka."
+            },
+            {
+              "n": 2,
+              "text": "Emisariusz – wysłannik."
+            }
+          ]
         },
         {
           "id": "text-2",
@@ -60,8 +80,14 @@
           "name": "",
           "author": "Marta Trepczyńska",
           "title": "Ziemia 2.0 – poszukiwania nadal trwają",
-          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl\n\n1 NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego.",
-          "path": ""
+          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -103,8 +129,18 @@
           "name": "",
           "author": "Carl Sagan",
           "title": "Błękitna kropka",
-          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.\n1 Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka.\n2 Emisariusz – wysłannik.",
-          "path": ""
+          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka."
+            },
+            {
+              "n": 2,
+              "text": "Emisariusz – wysłannik."
+            }
+          ]
         },
         {
           "id": "text-2",
@@ -112,8 +148,14 @@
           "name": "",
           "author": "Marta Trepczyńska",
           "title": "Ziemia 2.0 – poszukiwania nadal trwają",
-          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl\n1 NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego.",
-          "path": ""
+          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -160,8 +202,18 @@
           "name": "",
           "author": "Carl Sagan",
           "title": "Błękitna kropka",
-          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\n\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.\n1 Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka.\n2 Emisariusz – wysłannik.",
-          "path": ""
+          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\n\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka."
+            },
+            {
+              "n": 2,
+              "text": "Emisariusz – wysłannik."
+            }
+          ]
         },
         {
           "id": "text-2",
@@ -169,8 +221,14 @@
           "name": "",
           "author": "Marta Trepczyńska",
           "title": "Ziemia 2.0 – poszukiwania nadal trwają",
-          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\n\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl\n1 NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego.",
-          "path": ""
+          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\n\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -203,8 +261,18 @@
           "name": "",
           "author": "Carl Sagan",
           "title": "Błękitna kropka",
-          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.\n1 Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka.\n2 Emisariusz – wysłannik.",
-          "path": ""
+          "content": "Nasi dalecy przodkowie, gdy obserwowali „gwiazdy”, zauważyli, że pięć z nich zachowuje się odmiennie niż pozostałe. W odróżnieniu od tak zwanych gwiazd stałych, wschodzących i zachodzących w niewzruszonym porządku, ruch tamtej piątki był dziwnie skomplikowany. Z upływem miesięcy „gwiazdy” wędrowały powoli wśród innych, niekiedy nawet zataczały pętle. Dzisiaj te ciała nazywamy planetami, od greckiego słowa planetes, które oznacza „wędrujący”. Wyobrażam sobie, że naszym przodkom taka cecha musiała się wydać bardzo bliska.\nDziś wiemy, że planety są nie gwiazdami, lecz ciałami niebieskimi, które – tak jak Ziemia – krążą wokół Słońca, utrzymywane siłą jego grawitacji.\nStany Zjednoczone i nieistniejący już Związek Radziecki dokonały czegoś zadziwiającego: badały z bliska owe świetlne plamki – od Merkurego do Saturna – które wprawiały naszych przodków w podziw i skłaniały do uprawiania nauki. Od pierwszych pomyślnych wypraw w kosmos statki kosmiczne z Ziemi przelatywały, okrążały lub lądowały na ponad siedemdziesięciu ciałach niebieskich. Rozpoczęliśmy wędrówkę pośród „wędrowców”. Znaleźliśmy rozległe wulkaniczne wzniesienia, przy których najwyższe góry na Ziemi wydają się karłami.\nOdkryliśmy cuda, o jakich naszym przodkom nawet się nie śniło, gdy zastanawiali się oni nad naturą światełek błądzących po nocnym niebie. Badamy początki naszej planety i początki nas samych. Dzięki temu, że odkryliśmy inne możliwości, to znaczy zmierzyliśmy się z odmiennymi losami globów mniej lub bardziej podobnych do naszego, zaczęliśmy lepiej rozumieć Ziemię. Każdy z tych światów jest na swój sposób piękny i pouczający. Niemniej, o ile nam wiadomo, są one zarazem, wszystkie bez wyjątku, puste i jałowe. Nigdzie nie czeka na nas „lepsze miejsce”, przynajmniej na razie.\nObecnie przekroczyliśmy nieznacznie granice Układu Słonecznego, wysłaliśmy cztery statki kosmiczne ku gwiazdom. Neptun znajduje się milion razy dalej od Ziemi niż Nowy Jork od brzegów Bugu. W tych odległych światach, do których dotarliśmy, nie czekają jednak na nas dalecy krewni; nie ma tam ani istot ludzkich, ani – jak wiele na to wskazuje – śladów życia. Nie dysponujemy żadnymi listami od emigrantów, które mogłyby nam dopomóc w poznaniu nowych światów, a jedynie cieszymy się cyfrowymi danymi, przesłanymi nam z szybkością światła przez naszych precyzyjnych, automatycznych emisariuszy2. Z tych informacji wynika, że te światy znacznie różnią się od naszego. Mimo to nadal poszukujemy ich mieszkańców – taka już nasza natura. Życie szuka innego życia.\nNikogo na Ziemi, nawet najbogatszych ludzi, nie stać na razie na taką podróż. Nie możemy po prostu spakować się i wyruszyć na Marsa lub na Tytana. Nie widać też żadnych krótkoterminowych zysków, które mogłyby stanowić motywację dla prywatnych przedsiębiorców. Jeśli ludzie kiedykolwiek wyruszą ku tym światom, to dlatego, że jakieś państwo lub grupa państw uzna to za korzystne dla siebie lub dla całego rodzaju ludzkiego.\nW chwili obecnej istnieje wiele innych, pilnych spraw do załatwienia za pieniądze, które wydano by na wysyłanie ludzi w kosmos.\nNa podstawie: Carl Sagan, Błękitna kropka. Człowiek i jego przyszłość w kosmosie, tłum. Marek Krośniak, Poznań 2018.",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Tekst dotyczy stanu wiedzy o kosmosie z 1994 r. Tytuł stanowi nawiązanie do zdjęcia Ziemi wykonanego przez sondę kosmiczną w 1990 r. Na tym zdjęciu Ziemia wygląda jak błękitna kropka."
+            },
+            {
+              "n": 2,
+              "text": "Emisariusz – wysłannik."
+            }
+          ]
         },
         {
           "id": "text-2",
@@ -212,8 +280,14 @@
           "name": "",
           "author": "Marta Trepczyńska",
           "title": "Ziemia 2.0 – poszukiwania nadal trwają",
-          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl\n1 NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego.",
-          "path": ""
+          "content": "Czy ludzie mogą żyć na innej planecie niż Ziemia? W NASA1 od kilkudziesięciu lat trwają intensywne badania, mające na celu coraz głębszą eksplorację kosmosu i znalezienie odpowiedzi na pytanie, czy na jakiejkolwiek innej planecie mogły w przeszłości bądź mogą w przyszłości istnieć warunki dla przetrwania roślin i ludzi. O planach kolonizacji Marsa słyszeliśmy już niejeden raz. Teraz naukowcy idą o krok dalej. Czy możliwe jest, aby ludzie zamieszkali kiedykolwiek planetę Wenus? Ich nowe ustalenia nie wykluczają tego! Jest jednak kilka „ale”.\nPlanetą najlepiej zbadaną przez człowieka jest oczywiście Mars, a o planach jego kolonizacji poważnie wypowiadali się wybitni naukowcy, np. Stephen Hawking. Badania potwierdzają istnienie na Marsie wody oraz prawdopodobnie innych substancji chemicznych niezbędnych do życia. W dalekiej przeszłości powierzchnię Marsa miał pokrywać ocean. Doba trwa tam niemal tyle samo, ile doba na Ziemi. Przeszkody dla pojawienia się tam ludzi to m.in. niebezpieczne promieniowanie kosmiczne oraz zbyt niskie temperatury dochodzące do nawet −140 stopni Celsjusza. Jednak naukowcy nieustępliwie badają możliwość zasiedlenia Marsa. Ale to nie jest jedyna opcja na przyszłość.\nJak twierdzą naukowcy, przyjazną planetą dla człowieka może być też Wenus, która jest drugą pod względem odległości od Słońca planetą Układu Słonecznego. Pod wieloma względami jest podobna do Ziemi, czasem jest nawet nazywana jej siostrzaną planetą. Ma podobną masę oraz rozmiar zbliżony do Ziemi. Jest też pokryta podobną skalistą strukturą. Tu podobieństwa się jednak kończą. Na powierzchni Wenus panuje piekielnie wysoka temperatura: 462 stopnie Celsjusza, a ciśnienie jest prawie sto razy wyższe od tego na Ziemi, czyli mniej więcej takie, jak kilometr pod powierzchnią oceanu. Jak więc mielibyśmy zasiedlić Wenus w takich warunkach? Planetę pokrywa gruba warstwa chmur i to właśnie w nich, około 50 km nad powierzchnią Wenus, naukowcy dopatrzyli się podobnych warunków jak na Ziemi. Zarówno temperatura, jak i ciśnienie są tam zbliżone do ziemskich. Naukowcy uważają, że można by stworzyć specjalną skorupę, która oddzieliłaby chmury od piekielnie gorącej powierzchni Wenus. Wtedy ludzie mogliby nawet wyjść z kapsuły kosmicznej. Oczywiście, potrzebowaliby specjalnych aparatów do oddychania, ponieważ planetę pokrywa w głównej mierze nie tlen, ale dwutlenek węgla.\nWedług naukowców, możliwa byłaby też kolonizacja Księżyca. Ogromnym plusem jest jego odległość od Ziemi, co pozwoliłoby na szybkie i stosunkowo tanie przeloty ludzi oraz dostawy paliwa. Są również przeszkody. Dzień na Księżycu trwa dwa ziemskie tygodnie, podobnie – noc, a wówczas nie można korzystać z energii słonecznej.\nBadania przeprowadzone w latach 2015–2016 na Międzynarodowej Stacji Kosmicznej dowiodły, że człowiek nie może na razie na stałe mieszkać w kosmosie. W tym eksperymencie wzięli udział dwaj bracia Scottowie – pierwszy poleciał w kosmos, a drugi został na Ziemi, by można było porównywać ich stan zdrowia. To doświadczenie dowiodło, że przeszkodą do zamieszkania w kosmosie jest m.in. za bardzo pomniejszające się serce – po blisko roku trwania eksperymentu zmalało u pierwszego z braci o 27 procent, pomimo intensywnych ćwiczeń fizycznych.\nJedno jest pewne: przy obecnym stanie wiedzy, a przede wszystkim przez warunki w kosmosie niesprzyjające ludziom, z planami kolonizacji planet musimy na razie „zejść na Ziemię”. Nauka robi jednak wszystko, aby pozwolić nam na przezwyciężenie fizycznych niedoskonałości i „odblokować” możliwość życia poza Ziemią. Od tego zależy w końcu przyszłość ludzkości.\nNa podstawie: Marta Trepczyńska, Ziemia 2.0 – poszukiwania nadal trwają, www.komputerswiat.pl",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "NASA (ang. National Aeronautics and Space Administration) – instytucja rządowa Stanów Zjednoczonych odpowiedzialna za planowanie, koordynację, realizację i finansowanie programu badań kosmicznych oraz rozwoju astronautyki i lotnictwa cywilnego."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -332,8 +406,42 @@
           "name": "Rozmowa Mistrza Polikarpa ze Śmiercią",
           "author": "",
           "title": "",
-          "content": "MORS DICIT1:\n[…] \nAle gdy przyjdzie dzień sądny,\nGdzie się nie skryje żadny,\nUźrzą2 mądrzy tego świata,\nIż dobra boska odpłata;\nChowali tu żywot swoj ciasno3,\nAlić jich sirca nad słońce jasno4;\nJidą5 w niebieskie radości,\nA nie w piekielne żałości.\nCo nam pomogło odzienie6\nAlbo obłudne jimienie7,\nCośmy się w niem kochali,\nA swe dusze za nie dali?\nPrzeminęło jak obłoki,\nA my jidzim przez otwłoki8.\n\nRozmowa Mistrza Polikarpa ze Śmiercią, [w:] […] poezja polska świecka, oprac. Stefan Vrtel-Wierczyński, Wrocław 1952.\n\n1 Mors dicit (łac.) – Śmierć mówi.\n2 Uźrzą – ujrzą.\n3 Chowali tu żywot swoj ciasno – prowadzili tu (tj. na ziemi) surowy tryb życia.\n4 Alić jich sirca nad słońce jasno – i oto ich serca są jaśniejsze od słońca.\n5 Jidą – idą.\n6 Odzienie – tu: drogocenne ubranie.\n7 Obłudne jimienie – zwodnicze dobra materialne.\n8 A my jidzim przez otwłoki – a my odejdziemy bez zwłoki.",
-          "path": ""
+          "content": "MORS DICIT1:\n[…] \nAle gdy przyjdzie dzień sądny,\nGdzie się nie skryje żadny,\nUźrzą2 mądrzy tego świata,\nIż dobra boska odpłata;\nChowali tu żywot swoj ciasno3,\nAlić jich sirca nad słońce jasno4;\nJidą5 w niebieskie radości,\nA nie w piekielne żałości.\nCo nam pomogło odzienie6\nAlbo obłudne jimienie7,\nCośmy się w niem kochali,\nA swe dusze za nie dali?\nPrzeminęło jak obłoki,\nA my jidzim przez otwłoki8.\n\nRozmowa Mistrza Polikarpa ze Śmiercią, [w:] […] poezja polska świecka, oprac. Stefan Vrtel-Wierczyński, Wrocław 1952.",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Mors dicit (łac.) – Śmierć mówi."
+            },
+            {
+              "n": 2,
+              "text": "Uźrzą – ujrzą."
+            },
+            {
+              "n": 3,
+              "text": "Chowali tu żywot swoj ciasno – prowadzili tu (tj. na ziemi) surowy tryb życia."
+            },
+            {
+              "n": 4,
+              "text": "Alić jich sirca nad słońce jasno – i oto ich serca są jaśniejsze od słońca."
+            },
+            {
+              "n": 5,
+              "text": "Jidą – idą."
+            },
+            {
+              "n": 6,
+              "text": "Odzienie – tu: drogocenne ubranie."
+            },
+            {
+              "n": 7,
+              "text": "Obłudne jimienie – zwodnicze dobra materialne."
+            },
+            {
+              "n": 8,
+              "text": "A my jidzim przez otwłoki – a my odejdziemy bez zwłoki."
+            }
+          ]
         },
         {
           "id": "text-2",
@@ -341,8 +449,34 @@
           "name": "Wiosna",
           "author": "Jan Andrzej Morsztyn",
           "title": "",
-          "content": "Spieszmy się, spieszmy, niż nas czas nadgoni\nI śmierć, której się dobra myśl nie schroni:\nTa niedyskretka tejże pchnięciem nogi\nOtwiera chaty i królewskie progi.\n\nŻyj w skok1, bo-ć zamknął do niezmiernej wrota\nNadzieje2 krótki kres dany żywota3;\nZarwij4, co możesz, dobrych dni pod miarą5,\nWnet będziesz bajką, nieboszczykiem, marą6.\n\nJan Andrzej Morsztyn, Wiosna, [w:] tegoż, Utwory zebrane, Warszawa 1971.\n\n1 W skok – szybko.\n2 Do niezmiernej […] nadzieje – do długotrwałej nadziei.\n3 Krótki kres dany żywota – szybki koniec życia.\n4 Zarwij – urwij, tj. skorzystaj.\n5 Pod miarą – z tych, które ci wymierzono.\n6 Mara – widzenie senne; duch zmarłego.",
-          "path": ""
+          "content": "Spieszmy się, spieszmy, niż nas czas nadgoni\nI śmierć, której się dobra myśl nie schroni:\nTa niedyskretka tejże pchnięciem nogi\nOtwiera chaty i królewskie progi.\n\nŻyj w skok1, bo-ć zamknął do niezmiernej wrota\nNadzieje2 krótki kres dany żywota3;\nZarwij4, co możesz, dobrych dni pod miarą5,\nWnet będziesz bajką, nieboszczykiem, marą6.\n\nJan Andrzej Morsztyn, Wiosna, [w:] tegoż, Utwory zebrane, Warszawa 1971.",
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "W skok – szybko."
+            },
+            {
+              "n": 2,
+              "text": "Do niezmiernej […] nadzieje – do długotrwałej nadziei."
+            },
+            {
+              "n": 3,
+              "text": "Krótki kres dany żywota – szybki koniec życia."
+            },
+            {
+              "n": 4,
+              "text": "Zarwij – urwij, tj. skorzystaj."
+            },
+            {
+              "n": 5,
+              "text": "Pod miarą – z tych, które ci wymierzono."
+            },
+            {
+              "n": 6,
+              "text": "Mara – widzenie senne; duch zmarłego."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -378,7 +512,41 @@
           "name": "",
           "author": "",
           "title": "Rozmowa Mistrza Polikarpa ze Śmiercią",
-          "content": "MORS DICIT1:\n[…] \nAle gdy przyjdzie dzień sądny,\nGdzie się nie skryje żadny,\nUźrzą2 mądrzy tego świata,\nIż dobra boska odpłata;\nChowali tu żywot swoj ciasno3,\nAlić jich sirca nad słońce jasno4;\nJidą5 w niebieskie radości,\nA nie w piekielne żałości.\n\nCo nam pomogło odzienie6\nAlbo obłudne jimienie7,\nCośmy się w niem kochali,\nA swe dusze za nie dali?\nPrzeminęło jak obłoki,\nA my jidzim przez otwłoki8.\n\nRozmowa Mistrza Polikarpa ze Śmiercią, [w:] […] poezja polska świecka, oprac. Stefan Vrtel-Wierczyński, Wrocław 1952.\n\nPrzypisy:\n1 Mors dicit (łac.) – Śmierć mówi.\n2 Uźrzą – ujrzą.\n3 Chowali tu żywot swoj ciasno – prowadzili tu (tj. na ziemi) surowy tryb życia.\n4 Alić jich sirca nad słońce jasno – i oto ich serca są jaśniejsze od słońca.\n5 Jidą – idą.\n6 Odzienie – tu: drogocenne ubranie.\n7 Obłudne jimienie – zwodnicze dobra materialne.\n8 A my jidzim przez otwłoki – a my odejdziemy bez zwłoki."
+          "content": "MORS DICIT1:\n[…] \nAle gdy przyjdzie dzień sądny,\nGdzie się nie skryje żadny,\nUźrzą2 mądrzy tego świata,\nIż dobra boska odpłata;\nChowali tu żywot swoj ciasno3,\nAlić jich sirca nad słońce jasno4;\nJidą5 w niebieskie radości,\nA nie w piekielne żałości.\n\nCo nam pomogło odzienie6\nAlbo obłudne jimienie7,\nCośmy się w niem kochali,\nA swe dusze za nie dali?\nPrzeminęło jak obłoki,\nA my jidzim przez otwłoki8.\n\nRozmowa Mistrza Polikarpa ze Śmiercią, [w:] […] poezja polska świecka, oprac. Stefan Vrtel-Wierczyński, Wrocław 1952.",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Mors dicit (łac.) – Śmierć mówi."
+            },
+            {
+              "n": 2,
+              "text": "Uźrzą – ujrzą."
+            },
+            {
+              "n": 3,
+              "text": "Chowali tu żywot swoj ciasno – prowadzili tu (tj. na ziemi) surowy tryb życia."
+            },
+            {
+              "n": 4,
+              "text": "Alić jich sirca nad słońce jasno – i oto ich serca są jaśniejsze od słońca."
+            },
+            {
+              "n": 5,
+              "text": "Jidą – idą."
+            },
+            {
+              "n": 6,
+              "text": "Odzienie – tu: drogocenne ubranie."
+            },
+            {
+              "n": 7,
+              "text": "Obłudne jimienie – zwodnicze dobra materialne."
+            },
+            {
+              "n": 8,
+              "text": "A my jidzim przez otwłoki – a my odejdziemy bez zwłoki."
+            }
+          ]
         },
         {
           "id": "text-2",
@@ -386,7 +554,33 @@
           "name": "",
           "author": "Jan Andrzej Morsztyn",
           "title": "Wiosna",
-          "content": "Spieszmy się, spieszmy, niż nas czas nadgoni\nI śmierć, której się dobra myśl nie schroni:\nTa niedyskretka tejże pchnięciem nogi\nOtwiera chaty i królewskie progi.\n\nŻyj w skok1, bo-ć zamknął do niezmiernej wrota\nNadzieje2 krótki kres dany żywota3;\nZarwij4, co możesz, dobrych dni pod miarą5,\nWnet będziesz bajką, nieboszczykiem, marą6.\n\nJan Andrzej Morsztyn, Wiosna, [w:] tegoż, Utwory zebrane, Warszawa 1971.\n\nPrzypisy:\n1 W skok – szybko.\n2 Do niezmiernej […] nadzieje – do długotrwałej nadziei.\n3 Krótki kres dany żywota – szybki koniec życia.\n4 Zarwij – urwij, tj. skorzystaj.\n5 Pod miarą – z tych, które ci wymierzono.\n6 Mara – widzenie senne; duch zmarłego."
+          "content": "Spieszmy się, spieszmy, niż nas czas nadgoni\nI śmierć, której się dobra myśl nie schroni:\nTa niedyskretka tejże pchnięciem nogi\nOtwiera chaty i królewskie progi.\n\nŻyj w skok1, bo-ć zamknął do niezmiernej wrota\nNadzieje2 krótki kres dany żywota3;\nZarwij4, co możesz, dobrych dni pod miarą5,\nWnet będziesz bajką, nieboszczykiem, marą6.\n\nJan Andrzej Morsztyn, Wiosna, [w:] tegoż, Utwory zebrane, Warszawa 1971.",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "W skok – szybko."
+            },
+            {
+              "n": 2,
+              "text": "Do niezmiernej […] nadzieje – do długotrwałej nadziei."
+            },
+            {
+              "n": 3,
+              "text": "Krótki kres dany żywota – szybki koniec życia."
+            },
+            {
+              "n": 4,
+              "text": "Zarwij – urwij, tj. skorzystaj."
+            },
+            {
+              "n": 5,
+              "text": "Pod miarą – z tych, które ci wymierzono."
+            },
+            {
+              "n": 6,
+              "text": "Mara – widzenie senne; duch zmarłego."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -427,7 +621,49 @@
           "name": "Pieśń 14 (Księgi wtóre)",
           "author": "Jan Kochanowski",
           "title": "",
-          "content": "Wy, którzy Pospolitą Rzeczą1 władacie,\nA ludzką sprawiedliwość2 w ręku trzymacie,\nWy, mówię, którym ludzi paść poruczono3\nI zwierzchności nad stadem Bożym zwierzono4,\nMiejcie to przed oczyma zawżdy5 swojemi,\nŻeście miejsce zasiedli Boże na ziemi,\nZ którego macie nie tak swe własne rzeczy6\nJako wszytek ludzki mieć rodzaj na pieczy7. […]\nWięc ja podobno8 z mniejszym niebezpieczeństwem\nGrzeszę: bo sam sie tracę swym wszeteczeństwem9.\nPrzełożonych występki miasta zgubiły\nI szerokie do gruntu carstwa10 zniszczyły."
+          "content": "Wy, którzy Pospolitą Rzeczą1 władacie,\nA ludzką sprawiedliwość2 w ręku trzymacie,\nWy, mówię, którym ludzi paść poruczono3\nI zwierzchności nad stadem Bożym zwierzono4,\nMiejcie to przed oczyma zawżdy5 swojemi,\nŻeście miejsce zasiedli Boże na ziemi,\nZ którego macie nie tak swe własne rzeczy6\nJako wszytek ludzki mieć rodzaj na pieczy7. […]\nWięc ja podobno8 z mniejszym niebezpieczeństwem\nGrzeszę: bo sam sie tracę swym wszeteczeństwem9.\nPrzełożonych występki miasta zgubiły\nI szerokie do gruntu carstwa10 zniszczyły.",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Pospolita Rzecz – państwo."
+            },
+            {
+              "n": 2,
+              "text": "Ludzka sprawiedliwość – tu: sprawiedliwość wobec ludzi."
+            },
+            {
+              "n": 3,
+              "text": "Poruczyć – powierzyć wykonanie czegoś komuś zaufanemu."
+            },
+            {
+              "n": 4,
+              "text": "Zwierzchności […] zwierzono – przekazano władzę."
+            },
+            {
+              "n": 5,
+              "text": "Zawżdy – zawsze."
+            },
+            {
+              "n": 6,
+              "text": "Rzeczy – sprawy."
+            },
+            {
+              "n": 7,
+              "text": "Mieć […] na pieczy – troszczyć się."
+            },
+            {
+              "n": 8,
+              "text": "Podobno – zapewne."
+            },
+            {
+              "n": 9,
+              "text": "Wszeteczeństwo – nieprzyzwoite, gorszące postępowanie."
+            },
+            {
+              "n": 10,
+              "text": "Carstwa – państwa."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -487,7 +723,49 @@
           "author": "Jan Kochanowski",
           "title": "Pieśń 14 (Księgi wtóre)",
           "content": "Wy, którzy Pospolitą Rzeczą1 władacie,\nA ludzką sprawiedliwość2 w ręku trzymacie,\nWy, mówię, którym ludzi paść poruczono3\nI zwierzchności nad stadem Bożym zwierzono4,\nMiejcie to przed oczyma zawżdy5 swojemi,\nŻeście miejsce zasiedli Boże na ziemi,\nZ którego macie nie tak swe własne rzeczy6\nJako wszytek ludzki mieć rodzaj na pieczy7. […]\nWięc ja podobno8 z mniejszym niebezpieczeństwem\nGrzeszę: bo sam sie tracę swym wszeteczeństwem9.\nPrzełożonych występki miasta zgubiły\nI szerokie do gruntu carstwa10 zniszczyły.",
-          "path": ""
+          "path": "",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Pospolita Rzecz – państwo."
+            },
+            {
+              "n": 2,
+              "text": "Ludzka sprawiedliwość – tu: sprawiedliwość wobec ludzi."
+            },
+            {
+              "n": 3,
+              "text": "Poruczyć – powierzyć wykonanie czegoś komuś zaufanemu."
+            },
+            {
+              "n": 4,
+              "text": "Zwierzchności […] zwierzono – przekazano władzę."
+            },
+            {
+              "n": 5,
+              "text": "Zawżdy – zawsze."
+            },
+            {
+              "n": 6,
+              "text": "Rzeczy – sprawy."
+            },
+            {
+              "n": 7,
+              "text": "Mieć […] na pieczy – troszczyć się."
+            },
+            {
+              "n": 8,
+              "text": "Podobno – zapewne."
+            },
+            {
+              "n": 9,
+              "text": "Wszeteczeństwo – nieprzyzwoite, gorszące postępowanie."
+            },
+            {
+              "n": 10,
+              "text": "Carstwa – państwa."
+            }
+          ]
         }
       ],
       "scoring": {
@@ -528,7 +806,13 @@
           "name": "",
           "author": "Józef Wittlin",
           "title": "Stabat Mater",
-          "content": "Stała matka boleściwa – na rynku,\nPrzy swym martwym powieszonym synku.\n\nStała w świata przeraźliwej pustce\nPolska matka w służącowskiej chustce.\n\nNie płakała i nic nie mówiła,\nZimne oczy w zimne zwłoki wbiła.\n\nWisiał martwy, z wszystkiego wyzuty,\nNiemcy przedtem zabrali mu buty.\n\nBędą w butach jej syna chodzili\nPo tej ziemi, którą pohańbili.\n\nPo tej ziemi, która umęczona\nStoi – patrzy – i milczy – jak ona.\n\n[1942]\n\nJózef Wittlin, Stabat Mater, [w:] tegoż, Poezje, Warszawa 1978.\n\n1 Stabat Mater (łac.) – Stała Matka."
+          "content": "Stała matka boleściwa – na rynku,\nPrzy swym martwym powieszonym synku.\n\nStała w świata przeraźliwej pustce\nPolska matka w służącowskiej chustce.\n\nNie płakała i nic nie mówiła,\nZimne oczy w zimne zwłoki wbiła.\n\nWisiał martwy, z wszystkiego wyzuty,\nNiemcy przedtem zabrali mu buty.\n\nBędą w butach jej syna chodzili\nPo tej ziemi, którą pohańbili.\n\nPo tej ziemi, która umęczona\nStoi – patrzy – i milczy – jak ona.\n\n[1942]\n\nJózef Wittlin, Stabat Mater, [w:] tegoż, Poezje, Warszawa 1978.",
+          "footnotes": [
+            {
+              "n": 1,
+              "text": "Stabat Mater (łac.) – Stała Matka."
+            }
+          ]
         }
       ],
       "scoring": {

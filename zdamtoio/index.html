@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Styling for rendered questions; generated, see sync.py -->
-    <link rel="stylesheet" href="exam-styles.css?v=51736e61">
+    <link rel="stylesheet" href="exam-styles.css?v=ea590ad1">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-serif { font-family: 'Lora', serif; }
@@ -25,6 +25,14 @@
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* The session strips in the picker scroll sideways under the wheel
+           (see renderMenu), so their scrollbar is only noise -- a grey bar
+           under every subject row. Hidden here rather than with a Tailwind
+           class because there is no utility for it. Scrolling still works:
+           this hides the bar, it does not disable the overflow. */
+        .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -139,10 +147,10 @@
 </dialog>
 
 <!-- Arkusze, renderowanie i ocenianie -->
-<script type="module" src="exam.js?v=51736e61"></script>
+<script type="module" src="exam.js?v=ea590ad1"></script>
 
 <!-- Logowanie Google + profil w Firestore -->
-<script type="module" src="auth.js?v=51736e61"></script>
+<script type="module" src="auth.js?v=ea590ad1"></script>
 
 </body>
 </html>

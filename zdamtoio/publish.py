@@ -11,8 +11,10 @@ Everything is published, including CLAUDE.md and these scripts. The repo is
 public already and Pages serves them as inert text. To stop publishing a file,
 add it to EXCLUDE.
 
-The Pages repo holds the history -- there is deliberately no second git repo
-here, because two repos tracking identical files only drift.
+This folder is versioned with the rest of the toolchain (the repo root moved up
+to the project root on 2026-09-27); the Pages repo is a deployment MIRROR, not a
+second source of truth. Edit here, publish there, never the other way round --
+that direction is what stops the two copies drifting.
 """
 
 import argparse

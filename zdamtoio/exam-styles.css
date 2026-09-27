@@ -357,7 +357,18 @@ button.q-score-box.q-score-box-filled { background: #fff; color: var(--sc-purple
   border-radius: 6px;
 }
 
-.q-prompt { font-weight: 700; line-height: 1.4; margin: 14px 0; }
+/* The stem: a bold lead line, then the polecenie as a list (renderStem).
+   A one-line stem is still one bold line, so nothing else moved. The bullet
+   body is NOT bold -- CKE prints it upright and bolds single phrases inside
+   it, and a wall of bold is further from the paper than none at all.
+   `list-style` is spelled out because the site loads Tailwind, whose preflight
+   strips markers off every <ul>; without it the bullets vanish there while
+   still showing in this harness. */
+.q-prompt { line-height: 1.5; margin: 14px 0; }
+.q-lead { font-weight: 700; margin: 0 0 6px; }
+.q-bullets { list-style: disc outside; margin: 0 0 6px; padding-left: 22px; }
+.q-bullets li { margin: 3px 0; }
+.q-bullets + .q-lead { margin-top: 10px; }
 
 /* reference materials */
 .q-reference { margin: 6px 0 4px; }
@@ -379,7 +390,37 @@ button.q-score-box.q-score-box-filled { background: #fff; color: var(--sc-purple
 }
 .ref-author { color: var(--q-muted); font-size: 13px; }
 .ref-title { font-weight: 700; font-style: italic; margin-bottom: 8px; }
-.ref-content { white-space: pre-wrap; }
+/* One <p> per source paragraph (renderProse). Indented and justified the way
+   the paper sets a text, with the attribution line set apart at the end.
+   This replaced `white-space: pre-wrap`, which ran all six paragraphs of a
+   CKE text together into one slab. */
+.ref-content p { margin: 0 0 6px; text-indent: 1.6em; text-align: justify; hyphens: auto; }
+.ref-content p:last-child { margin-bottom: 0; }
+.ref-content sup { font-size: 0.7em; line-height: 0; }
+.ref-source {
+  text-indent: 0;
+  text-align: right;
+  font-size: 12px;
+  color: var(--q-muted);
+  margin-top: 10px !important;
+}
+/* Przypisy, set the way CKE prints them: small, tight, under a hairline rule,
+   the number raised to match the superscript in the text above. `list-style`
+   is spelled out because the site loads Tailwind, whose preflight strips list
+   markers — and here the numbers are our own, so the marker must stay off. */
+.ref-footnotes {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid #e2e2e2;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--q-muted);
+}
+.footnote-item { margin: 0 0 3px; padding-left: 1.2em; text-indent: -1.2em; }
+.footnote-item:last-child { margin-bottom: 0; }
+.footnote-n { vertical-align: super; font-size: 0.8em; margin-right: 2px; }
+
 .ref-image { max-width: 100%; border-radius: 6px; }
 .ref-audio { width: 100%; }
 .ref-missing {
@@ -535,8 +576,13 @@ table.task-table th { text-align: center; font-weight: 700; background: #fafafa;
 .topic-head { display: flex; align-items: center; gap: 8px; }
 .topic-num { font-weight: 600; }
 .topic-title { font-weight: 700; font-size: 15px; margin: 8px 0; }
+/* A temat that opens with a cytat: the quotation upright-italic, the
+   attribution small and right-aligned under it, exactly as the paper sets it. */
+.topic-quote { font-style: italic; margin: 8px 0 2px; }
+.topic-source { font-size: 12px; text-align: right; color: var(--q-muted); margin: 0 0 8px; }
 .topic-req-intro { font-weight: 600; margin-bottom: 4px; }
-.topic-req { margin: 0; padding-left: 20px; font-size: 14px; color: #333; }
+/* list-style spelled out: Tailwind's preflight removes markers on the site. */
+.topic-req { list-style: disc outside; margin: 0; padding-left: 22px; font-size: 14px; color: #333; }
 .topic-req li { margin: 2px 0; }
 
 .essay-heading { text-align: center; margin-top: 4px; }
@@ -585,6 +631,10 @@ table.task-table th { text-align: center; font-weight: 700; background: #fafafa;
 .result-ai { background: #f5f2fb; border: 1px solid #d9cbe9; }
 .result-points { font-weight: 700; color: #4a2c73; }
 .result-expl { font-weight: 400; margin-top: 6px; line-height: 1.4; color: #333; }
+/* The AI answers in paragraphs; flat, they ran together. No indent here --
+   this is the grader talking, not the paper. */
+.result-expl p { margin: 0 0 6px; text-indent: 0; }
+.result-expl p:last-child { margin-bottom: 0; }
 
 /* ============================================================
    Essay scorecard (examiner table) — matches the printed CKE sheet

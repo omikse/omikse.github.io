@@ -6,6 +6,178 @@
     "2505",
     "2605"
   ],
+  "subjects": {
+    "MBIP": {
+      "name": "Biologia",
+      "note": "",
+      "folder": "Biologia"
+    },
+    "MCHP": {
+      "name": "Chemia",
+      "note": "",
+      "folder": "Chemia"
+    },
+    "MFAP": {
+      "name": "Fizyka",
+      "note": "",
+      "folder": "Fizyka"
+    },
+    "MFIP": {
+      "name": "Filozofia",
+      "note": "",
+      "folder": "Filozofia"
+    },
+    "MGEP": {
+      "name": "Geografia",
+      "note": "",
+      "folder": "Geografia"
+    },
+    "MHIP": {
+      "name": "Historia",
+      "note": "",
+      "folder": "Historia"
+    },
+    "MHMP": {
+      "name": "Historia muzyki",
+      "note": "",
+      "folder": "Historia_muzyki"
+    },
+    "MHSP": {
+      "name": "Historia sztuki",
+      "note": "",
+      "folder": "Historia_sztuki"
+    },
+    "MINP": {
+      "name": "Informatyka",
+      "note": "",
+      "folder": "Informatyka"
+    },
+    "MJAA": {
+      "name": "Język angielski",
+      "note": "poziom dwujęzyczny",
+      "folder": "Jezyk_angielski"
+    },
+    "MJAP": {
+      "name": "Język angielski",
+      "note": "",
+      "folder": "Jezyk_angielski"
+    },
+    "MJAU": {
+      "name": "Język angielski",
+      "note": "wersja ukraińska",
+      "folder": "Jezyk_angielski"
+    },
+    "MJFF": {
+      "name": "Język francuski",
+      "note": "poziom dwujęzyczny",
+      "folder": "Jezyk_francuski"
+    },
+    "MJFP": {
+      "name": "Język francuski",
+      "note": "",
+      "folder": "Jezyk_francuski"
+    },
+    "MJHH": {
+      "name": "Język hiszpański",
+      "note": "poziom dwujęzyczny",
+      "folder": "Jezyk_hiszpanski"
+    },
+    "MJHP": {
+      "name": "Język hiszpański",
+      "note": "",
+      "folder": "Jezyk_hiszpanski"
+    },
+    "MJLP": {
+      "name": "Język łaciński i kultura antyczna",
+      "note": "",
+      "folder": "Jezyk_lacinski_i_kultura_antyczna"
+    },
+    "MJNN": {
+      "name": "Język niemiecki",
+      "note": "poziom dwujęzyczny",
+      "folder": "Jezyk_niemiecki"
+    },
+    "MJNP": {
+      "name": "Język niemiecki",
+      "note": "",
+      "folder": "Jezyk_niemiecki"
+    },
+    "MJRP": {
+      "name": "Język rosyjski",
+      "note": "",
+      "folder": "Jezyk_rosyjski"
+    },
+    "MJRR": {
+      "name": "Język rosyjski",
+      "note": "poziom dwujęzyczny",
+      "folder": "Jezyk_rosyjski"
+    },
+    "MJRU": {
+      "name": "Język rosyjski",
+      "note": "wersja ukraińska",
+      "folder": "Jezyk_rosyjski"
+    },
+    "MJUP": {
+      "name": "Język ukraiński",
+      "note": "MJUP",
+      "folder": "Jezyk_ukrainski"
+    },
+    "MJWP": {
+      "name": "Język włoski",
+      "note": "",
+      "folder": "Jezyk_wloski"
+    },
+    "MMAP": {
+      "name": "Matematyka",
+      "note": "",
+      "folder": "Matematyka"
+    },
+    "MMAU": {
+      "name": "Matematyka",
+      "note": "wersja ukraińska",
+      "folder": "Matematyka"
+    },
+    "MMBB": {
+      "name": "Język białoruski",
+      "note": "",
+      "folder": "Jezyk_bialoruski"
+    },
+    "MMKK": {
+      "name": "Język kaszubski",
+      "note": "",
+      "folder": "Jezyk_kaszubski"
+    },
+    "MMLL": {
+      "name": "Język litewski",
+      "note": "",
+      "folder": "Jezyk_litewski"
+    },
+    "MMUU": {
+      "name": "Język ukraiński",
+      "note": "",
+      "folder": "Jezyk_ukrainski"
+    },
+    "MPOP": {
+      "name": "Język polski",
+      "note": "",
+      "folder": "Jezyk_polski"
+    },
+    "MPOU": {
+      "name": "Język polski",
+      "note": "wersja ukraińska",
+      "folder": "Jezyk_polski"
+    },
+    "MWHP": {
+      "name": "Wiedza o społeczeństwie",
+      "note": "MWHP",
+      "folder": "Wiedza_o_spoleczenstwie"
+    },
+    "MWOP": {
+      "name": "Wiedza o społeczeństwie",
+      "note": "",
+      "folder": "Wiedza_o_spoleczenstwie"
+    }
+  },
   "papers": [
     {
       "id": "MBIP-R0-100-2305",

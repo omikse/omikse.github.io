@@ -1,6 +1,6 @@
 """Dev server for the app: `python serve.py` then http://localhost:8000
 
-Same reason as tools/pdf-json/serve.py. `python -m http.server` sends
+Same reason as tools/web-renderer/serve.py. `python -m http.server` sends
 Last-Modified but no Cache-Control, so Chrome applies *heuristic freshness* and
 serves exam.js / renderers.js from cache without revalidating. Edits then appear
 to do nothing, and a normal reload does not help because the HTTP cache is

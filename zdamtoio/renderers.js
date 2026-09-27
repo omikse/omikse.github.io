@@ -68,9 +68,101 @@ export function stripJsonc(text) {
     .replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
 
+/** Shared: the question stem, laid out the way CKE prints it — a lead line
+ *  and, under it, the polecenie as a list.
+ *
+ *  The JSON keeps the stem as the paper's own plain text: one `• ` line per
+ *  bullet. Escaped into a single <p> those newlines collapse, and the whole
+ *  polecenie came out as one bold slab with stray dots in it. Nothing here
+ *  interprets the text — it only honours line breaks that are already there.
+ *
+ *  `question` is optional and used for one thing: the minimum length. CKE
+ *  prints it as the last bullet, but the 2025 papers carry it only as
+ *  `minimum_word_count`, so the bullet is restored from that field (and
+ *  skipped when the stem states it already, as the 2023 papers do). */
+export function renderStem(text, question) {
+  const raw = String(text ?? "");
+  const min = Number(question?.minimum_word_count) || 0;
+  const lines = raw.split("\n").map(line => line.trim());
+  if (min && !/wyraz/i.test(raw)) {
+    lines.push(`• Twoja praca powinna liczyć co najmniej ${min} wyrazów.`);
+  }
+
+  /* A line that neither opens a bullet nor follows a finished sentence is the
+     tail of a wrapped one: the PDF broke "powieści Stefana / Żeromskiego." in
+     two, and one <p> per line printed it as two paragraphs. Only a BLANK line
+     is a real paragraph break -- see MPOP-P1-100-2305-6, where CKE's "Uwaga:"
+     is separated exactly that way. */
+  const blocks = [];                       // { list: bool, text } in order
+  let blank = true;
+  const open = last => last && !/[.:;?!…)]$/.test(last.text);
+  for (const line of lines) {
+    if (!line) { blank = true; continue; }
+    const bullet = /^[•·*–—-]\s+(.+)$/.exec(line);
+    const last = blocks[blocks.length - 1];
+    if (bullet) blocks.push({ list: true, text: bullet[1] });
+    else if (!blank && open(last)) last.text += " " + line;
+    else blocks.push({ list: false, text: line });
+    blank = false;
+  }
+
+  let html = "";
+  let inList = false;
+  for (const block of blocks) {
+    if (block.list && !inList) { html += `<ul class="q-bullets">`; inList = true; }
+    if (!block.list && inList) { html += `</ul>`; inList = false; }
+    html += block.list ? `<li>${esc(block.text)}</li>` : `<p class="q-lead">${esc(block.text)}</p>`;
+  }
+  return inList ? html + "</ul>" : html;
+}
+
+/** A footnote marker as CKE prints it: a lone digit glued to the end of a word
+ *  ("Grand Tour1", "Kołakowski2"). The converter keeps it as an ordinary
+ *  character, so on screen it read as a typo. Raised to a <sup> here rather
+ *  than in the data, which stays the paper's own text.
+ *
+ *  Runs on ESCAPED html. A digit that follows a space ("t. 33"), or that is
+ *  part of a longer number or of something like H2O, is left alone. The
+ *  przypisy themselves are NOT in the JSON at all — see DOCUMENTATION §15. */
+function footnoteMarks(escaped) {
+  // The char before is a letter OR a closing quote/bracket: CKE prints
+  // „Piołun”1 as well as Kołakowski2 (MPOP-P1-100-2305 q8, found by the
+  // footnote probe). A space or another digit before it is an ordinary
+  // number — "t. 33", "nr 3–4/2020" — and must stay untouched.
+  return escaped.replace(/(\p{L}|[”’»)\]])([1-9])(?![\d\p{L}])/gu, "$1<sup>$2</sup>");
+}
+
+/** Prose from the paper: one source paragraph per line.
+ *
+ *  `white-space: pre-wrap` on the whole block, which this replaces, printed
+ *  the six paragraphs of a CKE text as one unbroken slab. The closing
+ *  "Na podstawie: …" is the attribution, and the paper sets it apart. */
+function renderProse(text) {
+  const paras = String(text ?? "").split("\n").map(p => p.trim()).filter(Boolean);
+  return paras.map((para, i) => {
+    const source = i === paras.length - 1 && /^(na podstawie|źródło|źr\.)\b/i.test(para);
+    return `<p${source ? ` class="ref-source"` : ""}>${footnoteMarks(esc(para))}</p>`;
+  }).join("");
+}
+
 /** Shared: render the source materials block (text / image / sound).
  *  `ref.path` is used as-is: the shell resolves it against the booklet the
  *  question came from, because a two-part exam has two asset directories. */
+/** CKE's przypisy, under the text they gloss, the way the paper prints them.
+ *
+ * The number is the same one `footnoteMarks` raises to a superscript inside the
+ * text, so the two line up. The pipeline lifts these from the arkusz PDF
+ * (`pdf-json/pipeline/footnotes.py`); a block that has none simply has no
+ * `footnotes` key, and this renders nothing rather than an empty rule.
+ */
+function renderFootnotes(footnotes) {
+  if (!Array.isArray(footnotes) || !footnotes.length) return "";
+  const items = footnotes.map(f =>
+    `<li class="footnote-item"><span class="footnote-n">${esc(String(f.n ?? ""))}</span> ${esc(f.text || "")}</li>`
+  ).join("");
+  return `<ul class="ref-footnotes">${items}</ul>`;
+}
+
 export function renderReference(referenceData) {
   if (!referenceData || !referenceData.length) return "";
   const items = referenceData.map(ref => {
@@ -87,13 +179,14 @@ export function renderReference(referenceData) {
         <audio class="ref-audio" controls src="${esc(ref.path)}"></audio>
         <div class="ref-missing">🔊 plik dźwiękowy: ${esc(ref.path)}</div>`;
     } else {
-      body = `<div class="ref-content">${esc(ref.content || "")}</div>`;
+      body = `<div class="ref-content">${renderProse(ref.content)}</div>`;
     }
     return `
       <figure class="q-reference-item">
         ${ref.author ? `<figcaption class="ref-author">${esc(ref.author)}</figcaption>` : ""}
         ${(ref.title || ref.name) ? `<figcaption class="ref-title">${esc(ref.title || ref.name)}</figcaption>` : ""}
         ${body}
+        ${renderFootnotes(ref.footnotes)}
       </figure>`;
   }).join("");
   // With more than one source, lay them out in columns (side by side) rather
@@ -141,7 +234,7 @@ function aiResultBox(r, q) {
   const max = r.max_points ?? q.scoring?.max_points ?? "";
   return `<div class="q-result-box result-ai">
       <div class="result-points">Ocena AI: ${esc(r.points)}/${esc(max)} pkt</div>
-      ${r.explanation ? `<div class="result-expl">${esc(r.explanation)}</div>` : ""}
+      ${r.explanation ? `<div class="result-expl">${renderProse(r.explanation)}</div>` : ""}
     </div>`;
 }
 
@@ -694,6 +787,24 @@ Odpowiedź podaj w formacie { "points": int, "explanation": "Text." }, nic więc
 /* here later when the essay grading flow is built out.                */
 /* ------------------------------------------------------------------ */
 
+/* A temat is not always one sentence. Where it opens with a cytat the paper
+   prints three blocks — the quotation, its attribution ("Na podstawie: …",
+   right-aligned and small), then the question itself in bold — and the JSON
+   keeps them as blank-line-separated paragraphs of one `title` string. Run
+   together in one bold line they read as a single garbled sentence. A plain
+   one-paragraph temat is left exactly as it was. */
+function renderTopicTitle(title) {
+  const parts = String(title ?? "").split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+  if (parts.length < 2) return `<div class="topic-title">${esc(title || "")}</div>`;
+  return parts.map((part, i) => {
+    if (/^(na podstawie|źródło|źr\.)\b/i.test(part)) return `<p class="topic-source">${esc(part)}</p>`;
+    // The last block is the polecenie; anything before it is the quoted text.
+    return i === parts.length - 1
+      ? `<div class="topic-title">${esc(part)}</div>`
+      : `<p class="topic-quote">${esc(part)}</p>`;
+  }).join("");
+}
+
 const PEssay = {
   type: "P-ESSAY",
 
@@ -714,7 +825,7 @@ const PEssay = {
           <input type="radio" name="${groupName}" value="${esc(t.id)}" ${selectedTopic === t.id ? "checked" : ""}>
           <span class="topic-num">${esc(t.number || "")}</span>
         </div>
-        <div class="topic-title">${esc(t.title || "")}</div>
+        ${renderTopicTitle(t.title)}
         ${(t.requirements || []).length ? `
           <div class="topic-req-intro">W pracy odwołaj się do:</div>
           <ul class="topic-req">${t.requirements.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}

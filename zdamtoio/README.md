@@ -102,8 +102,15 @@ python publish.py -m "what changed"  # mirror, commit, push
 ```
 
 It mirrors this folder into the `zdamtoio/` subtree of the `omikse.github.io`
-clone, so deletions here become deletions there. The Pages repo holds the
-history; there is deliberately no second git repo in this folder.
+clone, so deletions here become deletions there.
+
+**Changed 2026-09-27:** this folder is now part of the toolchain repo, whose
+root moved up from `tools/` to the project root. The source of truth is that
+repo; the Pages repo is a **deployment mirror**, not a second place to edit.
+There is still no `.git` inside this folder — the old note said there never
+would be, on the grounds that two repos tracking identical files drift. The
+drift it feared is real, and the fix is the direction of travel: edit here,
+`publish.py` pushes there, never the other way round.
 
 GitHub Pages takes a minute or two to rebuild after the push.
 

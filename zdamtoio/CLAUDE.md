@@ -66,12 +66,57 @@ edits appear to do nothing. Same trap as `tools/web-renderer`.
    repo. `GEMINI_API_KEY` is a real secret and never goes in a file here.
 7a. **The picker shows papers we do not have, on purpose.** `exams/papers.json`
    comes from the pipeline (`python -m pipeline index`) and carries a state for
-   every paper CKE ever printed. Four states, because "not converted yet",
-   "held but CKE published no marking scheme", "published but never fetched"
-   and "never printed" are different facts and one greyed card asserts the same
-   wrong thing for three of them. It is generated — fix it in
+   every paper CKE ever printed — 364 rows, 34 subjects. Six states
+   (`converted / held / no_scheme / published / partial / absent`) plus a
+   seventh the renderer adds, `poza stroną`: converted upstream but not served
+   here, because `sync.py` copies only the standard `100` papers and "gotowy"
+   on a card that does not open is a bug report waiting to happen. Six rather
+   than one because "not converted yet", "held but CKE published no marking
+   scheme", "published but never fetched" and "never printed" are different
+   facts, and a single greyed card asserts the same wrong thing about most of
+   them. It is generated — fix it in
    `../tools/pdf-json/pipeline/assemble.py`, never here. Scope in rule 7 still
    governs what gets *converted*; this only governs what gets *listed*.
+
+7b. **The picker is a matrix: subjects down, sessions across, adapted papers
+   one level in.** Subject names come from papers.json's `subjects` map — never
+   hardcode a code table here, see the pipeline's CLAUDE.md for why. Order is
+   polski, matematyka, angielski, then alphabetical under `Intl.Collator("pl")`,
+   because ASCII collation puts *łaciński* after *z*. Four things about this
+   are deliberate and will otherwise get "tidied" back:
+   - **One card design for every paper**, openable or not. A smaller tile for
+     the greyed ones says "different kind of thing", when a 2026 arkusz sitting
+     unconverted on our disk is the same exam at an earlier stage.
+   - **All subjects start collapsed.** Expanded, it is ~200 cards and the six
+     you can actually sit are buried. The summary carries the openable count so
+     a shut section still says whether it holds anything. Open sections survive
+     a re-render (`openSubjects`) because `renderMenu` re-runs when the attempt
+     history lands from Firestore, a second after paint.
+   - **One scroll container per subject, not per level row**, so Podstawowa and
+     Rozszerzona cannot drift apart and put 2023 above 2025.
+   - **The sticky level label needs `z-20`, not `z-10`.** The cards are
+     `position: relative` with an inner `z-10`, and `relative` + `z-index: auto`
+     creates no stacking context, so at `z-10` the label loses the tie to
+     later-in-DOM cards and they paint straight over it.
+   - **The strip's scrollbar is hidden and the wheel scrolls it sideways**
+     (`bindSidewaysWheel`), page gutters excepted. Two traps live in that
+     function and both were hit: writing `scrollLeft` straight from `deltaY`
+     chops a notch at a time, and easing toward a target with
+     `scrollWidth - clientWidth` never converges — `scrollWidth` rounds up, so
+     the real maximum is a pixel or two short (measured 274 against 276) and
+     the `requestAnimationFrame` loop spins for the life of the page. It stops
+     when a step fails to move the strip, not only when it reaches the target.
+
+7c. **A card shows a score only once every question is marked.**
+   `totals.points` accumulates per question as each is checked, so a
+   half-marked paper holds a real number that is not the student's result;
+   showing it reads as "you scored 12/60" to someone who simply has not
+   finished. The test is `totals.graded > 0 && totals.pending === 0` — **not**
+   `status === "submitted"`, because submitting in exam mode grades nothing.
+   Before that the card states what the paper is worth. The question line
+   counts the wypracowanie as a question (`0/20 zadań`) because CKE numbers it
+   as one, and reads "zadań" at every value: Polish takes the genitive plural
+   after a fraction, so `0/1 zadanie` on a rozszerzony sheet would be wrong.
 
 7. **Scope is the standard `100` papers only.** Everything else is an *arkusz
    dostosowany*; `sync.py` skips them.
@@ -142,6 +187,14 @@ was left clicking a dead button. One rule, one place.
   is killed and Firebase reports `auth/popup-closed-by-user`, which is swallowed
   by design. Test sign-in in a real browser; verify the data in the Firebase
   console.
+- **The two views share one scroll offset.** `#view-menu` and `#view-exam` are
+  siblings in the scrolling document, so hiding one does not move the page:
+  reading an arkusz down to zadanie 12 and pressing *Wybór Arkusza* left the
+  picker scrolled to the same offset. `showExam` parks `window.scrollY` in
+  `menuScrollY` (only when the menu is the visible view, so returning from the
+  admin panel cannot clobber it) and opens the sheet at the top; `showMenu`
+  restores it **after** `renderHistory()`, which appends to `#view-menu` — restore
+  first and the offset is clamped to the shorter page.
 - The Firestore database is in **europe-central2** and its location **cannot be
   changed**.
 
